@@ -1,0 +1,200 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:1.0'
+    }
+}
+
+apply plugin: "java"
+apply plugin: 'download-task'
+
+project.ext.pluginVersions = [
+        /* plugin version,  required JOSM version */
+        [28498,    4394]
+]
+
+def currentPluginVersion() {
+    return project.ext.pluginVersions.collect{it[0]}.max()
+}
+
+def currentPluginMainVersion() {
+    return project.ext.pluginVersions.collect{it[1]}.max()
+}
+
+def bestPluginVersion(josmVersion) {
+    return project.ext.pluginVersions
+            .findAll{it[1] == josmVersion}
+            .collect{it[0]}
+            .max()
+}
+
+repositories {
+    mavenLocal()
+}
+
+
+configurations {
+    matsim
+}
+
+dependencies {
+    matsim group: "org.matsim", name: "matsim", version: "0.7.0-SNAPSHOT"
+    compile configurations.matsim.dependencies
+    compile files("libs/josm-latest.jar")
+}
+
+
+jar.baseName = "matsim"
+
+jar {
+    metaInf {
+        from("resources") {
+            include "mime.types"
+        }
+    }
+    manifest {
+        attributes(
+                "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
+                "Plugin-Version": currentPluginVersion(),
+                "Plugin-Mainversion": currentPluginMainVersion(),
+                "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
+                "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
+                "Plugin-Author" : "Nico Kuehnel",
+                "Plugin-Class" : "org.matsim.contrib.josm.MATSimPlugin",
+                "Plugin-Description": "Allows to edit and extract network information for the traffic simulation MATSim",
+                "Plugin-Icon" : "images/dialogs/logo.png",
+                "Plugin-Link" : "http://gubaer.github.com/josm-scripting-plugin"
+        )
+
+        pluginVersions.collect{it[1]}.unique().sort().each {jv ->
+            def dv = bestPluginVersion(jv)
+            def key = "${jv}_Plugin-Url".toString()
+            def value = "${dv};https://raw.github.com/michaz/josm-matsim-plugin/for-josm-${jv}/dist/matsim.jar".toString()
+            attributes([(key):value])
+        }
+    }
+
+    from {
+        configurations.matsim.collect { zipTree(it) }
+    }
+
+}
+
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+project.ext.josmUrl = "http://josm.openstreetmap.de/josm-latest.jar"
+task  getJosm {
+    description = "Download the latest JOSM build jar from the JOSM website"
+    doLast {
+        if (! file("libs").exists()) {
+            file("libs").mkdir()
+        }
+        if (!file("libs/josm-latest.jar").exists()) {
+            download {
+                src project.ext.josmUrl
+                dest 'libs'
+            }
+        }
+    }
+}
+compileJava.dependsOn "getJosm"
+
+sourceSets {
+    rootDirectoryShit {
+        resources {
+            srcDir "."
+            include "README"
+            include "images/**/*.png"
+        }
+    }
+    main {
+        resources {
+            srcDir "src/main/resources"
+            source rootDirectoryShit.resources
+        }
+    }
+}
+
+task deploy {
+    doLast {
+        def deployBranch = "deploy"
+        def jar = "dist/matsim.jar";
+        file("dist").mkdirs()
+        ant.copy(todir: "dist") {
+            fileset(dir : "build/libs") {
+                include(name:"matsim.jar")
+            }
+        }
+        Git.ensureOnBranch(deployBranch)
+        Git.add(jar)
+        Git.commit(jar, "commited plugin build ${currentPluginVersion()}")
+        def tag = "for-josm-${currentPluginMainVersion()}"
+        Git.tagHead(tag)
+        Git.push("origin", deployBranch)
+        Git.pushTags()
+    }
+}
+
+task installLocalJosm {
+    doLast {
+        def homePath = System.properties['user.home']
+        ant.copy(todir: homePath + "/.josm/plugins") {
+            fileset(dir: "build/libs") {
+                include(name: "matsim.jar")
+            }
+        }
+    }
+}
+installLocalJosm.dependsOn "jar"
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
+
+class Git {
+
+    static private def executeAndLog(cmd) {
+        def proc = cmd.execute()
+        proc.waitFor()
+        println "Exit Value: ${proc.exitValue()}"
+        println "Output: ${proc.in.text}"
+        println "Error: ${proc.err.text}"
+        if (proc.exitValue() != 0) {
+            throw new Error("git command failed. command was <$cmd>")
+        }
+    }
+
+    static def ensureOnBranch(branch) {
+        def proc = "git rev-parse --abbrev-ref HEAD".execute()
+        def ret = proc.in.text.trim()
+        if (ret != branch) {
+            throw new Error("currently on branch '$ret', but expected branch '$branch'")
+        }
+    }
+
+    static def add(file) {
+        executeAndLog(["git", "add", file])
+    }
+
+    static def commit(file, message) {
+        executeAndLog(["git", "commit", "-m", message, file])
+    }
+
+    static def push(remote, branch) {
+        executeAndLog("git push $remote $branch")
+    }
+
+    static def tagHead(tag) {
+        executeAndLog(["git", "tag", "-f", tag, "HEAD"])
+    }
+
+    static def pushTags() {
+        executeAndLog("git push --tags -f")
+    }
+}
