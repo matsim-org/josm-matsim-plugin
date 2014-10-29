@@ -34,7 +34,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
 	private final static JCheckBox cleanNetwork = new JCheckBox("Clean Network");
 	private final static JCheckBox keepPaths = new JCheckBox("Keep Paths");
 
-	protected static String[] coordSystems = { TransformationFactory.WGS84,
+	static final String[] coordSystems = { TransformationFactory.WGS84,
 			TransformationFactory.ATLANTIS, TransformationFactory.CH1903_LV03,
 			TransformationFactory.GK4, TransformationFactory.WGS84_UTM47S,
 			TransformationFactory.WGS84_UTM48N,
@@ -48,13 +48,13 @@ final class Preferences extends DefaultTabPreferenceSetting {
 			TransformationFactory.WGS84_SVY21,
 			TransformationFactory.NAD83_UTM17N, TransformationFactory.WGS84_TM };
 
-	private JButton convertingDefaults = new JButton("Set converting defaults");
+	private final JButton convertingDefaults = new JButton("Set converting defaults");
 
-	protected final static JCheckBox filterActive = new JCheckBox(
+	private final static JCheckBox filterActive = new JCheckBox(
 			"Activate hierarchy filter");
 	private final static JLabel hierarchyLabel = new JLabel(
 			"Only convert hierarchies up to: ");
-	final static JTextField hierarchyLayer = new JTextField();
+	private final static JTextField hierarchyLayer = new JTextField();
 
 	public static class Factory implements PreferenceSettingFactory {
 		@Override
@@ -130,7 +130,6 @@ final class Preferences extends DefaultTabPreferenceSetting {
 				OsmConvertDefaultsDialog dialog = new OsmConvertDefaultsDialog();
 				JOptionPane pane = new JOptionPane(dialog,
 						JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				dialog.setOptionPane(pane);
 				JDialog dlg = pane.createDialog(Main.parent, tr("Defaults"));
 				dlg.setAlwaysOnTop(true);
 				dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -189,7 +188,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
 		return pnl;
 	}
 
-	protected JTabbedPane buildContentPane() {
+	JTabbedPane buildContentPane() {
 		JTabbedPane pane = getTabPane();
 		pane.addTab(tr("Visualization"), buildVisualizationPanel());
 		pane.addTab(tr("Converter Options"), buildConvertPanel());

@@ -33,28 +33,21 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
  * 
  */
 class MATSimLayer extends OsmDataLayer {
-	private Scenario matsimScenario;
-	private String coordSystem;
+	private final Scenario matsimScenario;
 
-	// data mappings
-	private Map<Way, List<Link>> way2Links = new HashMap<Way, List<Link>>();
-	private Map<Link, List<WaySegment>> link2Segment = new HashMap<Link, List<WaySegment>>();
-	private Map<Relation, TransitRoute> relation2Route = new HashMap<Relation, TransitRoute>();
+    // data mappings
+	private Map<Way, List<Link>> way2Links = new HashMap<>();
+	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
+	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
 
-	// get coord system of layer, currently always wgs84
-	public String getCoordSystem() {
-		return coordSystem;
-	}
-
-	public MATSimLayer(DataSet data, String name, File associatedFile,
-			Scenario scenario, String coordSystem,
-			HashMap<Way, List<Link>> way2Links,
-			Map<Link, List<WaySegment>> link2Segment,
-			Map<Relation, TransitRoute> relation2Route) {
+    public MATSimLayer(DataSet data, String name, File associatedFile,
+                       Scenario scenario,
+                       HashMap<Way, List<Link>> way2Links,
+                       Map<Link, List<WaySegment>> link2Segment,
+                       Map<Relation, TransitRoute> relation2Route) {
 		super(data, name, associatedFile);
 		this.matsimScenario = scenario;
-		this.coordSystem = coordSystem;
-		this.way2Links = way2Links;
+        this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
 
@@ -105,18 +98,15 @@ class MATSimLayer extends OsmDataLayer {
 //					new RenameLayerAction(getAssociatedFile(), this),
 //					SeparatorLayerAction.INSTANCE,
 //					new LayerListPopup.InfoAction(this) };
-		List<Action> actions = new ArrayList<Action>();
-		actions.addAll(Arrays.asList(new Action[] {
-				LayerListDialog.getInstance().createActivateLayerAction(this),
-				LayerListDialog.getInstance().createShowHideLayerAction(),
-				LayerListDialog.getInstance().createDeleteLayerAction(),
-				SeparatorLayerAction.INSTANCE, new LayerSaveAsAction(this), }));
-		actions.addAll(Arrays.asList(new Action[] {
-				SeparatorLayerAction.INSTANCE,
-				new RenameLayerAction(getAssociatedFile(), this) }));
-		actions.addAll(Arrays.asList(new Action[] {
-				SeparatorLayerAction.INSTANCE,
-				new LayerListPopup.InfoAction(this) }));
+		List<Action> actions = new ArrayList<>();
+		actions.addAll(Arrays.asList(LayerListDialog.getInstance().createActivateLayerAction(this),
+                LayerListDialog.getInstance().createShowHideLayerAction(),
+                LayerListDialog.getInstance().createDeleteLayerAction(),
+                SeparatorLayerAction.INSTANCE, new LayerSaveAsAction(this)));
+		actions.addAll(Arrays.asList(SeparatorLayerAction.INSTANCE,
+                new RenameLayerAction(getAssociatedFile(), this)));
+		actions.addAll(Arrays.asList(SeparatorLayerAction.INSTANCE,
+                new LayerListPopup.InfoAction(this)));
 		return actions.toArray(new Action[actions.size()]);
 	}
 

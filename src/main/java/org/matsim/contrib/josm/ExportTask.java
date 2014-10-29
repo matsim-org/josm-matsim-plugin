@@ -36,8 +36,8 @@ import org.xml.sax.SAXException;
 
 class ExportTask extends PleaseWaitRunnable {
 
-	private File networkFile;
-	private File scheduleFile;
+	private final File networkFile;
+	private final File scheduleFile;
 
 	/**
 	 * Creates a new Export task with the given export <code>file</code>

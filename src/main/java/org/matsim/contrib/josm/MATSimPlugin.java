@@ -37,10 +37,10 @@ import org.xml.sax.SAXException;
  * 
  */
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
-	private MATSimAction MATSimAction;
 
-	protected static MATSimToggleDialog toggleDialog;
-	private static boolean matsimRenderer = Main.pref.getBoolean(
+    static MATSimToggleDialog toggleDialog;
+
+    private static final boolean matsimRenderer = Main.pref.getBoolean(
 			"matsim_renderer", false);
 
 	public MATSimPlugin(PluginInformation info) throws IOException,
@@ -51,10 +51,10 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		ExtensionFileFilter.exporters.add(0, new MATSimNetworkFileExporter());
 
 		// add commands to tools list
-		MATSimAction = new MATSimAction();
-		Main.main.menu.toolsMenu.add(MATSimAction.getImportAction());
-		Main.main.menu.toolsMenu.add(MATSimAction.getNewNetworkAction());
-		Main.main.menu.toolsMenu.add(MATSimAction.getConvertAction());
+        MATSimAction matsimAction = new MATSimAction();
+		Main.main.menu.toolsMenu.add(matsimAction.getImportAction());
+		Main.main.menu.toolsMenu.add(matsimAction.getNewNetworkAction());
+		Main.main.menu.toolsMenu.add(matsimAction.getConvertAction());
 
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream(
@@ -72,7 +72,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 			}
 		}
 		AutoCompletionManager.cachePresets(tps);
-		HashMap<TaggingPresetMenu, JMenu> submenus = new HashMap<TaggingPresetMenu, JMenu>();
+		HashMap<TaggingPresetMenu, JMenu> submenus = new HashMap<>();
 		for (final TaggingPreset p : tps) {
 			JMenu m = p.group != null ? submenus.get(p.group)
 					: Main.main.menu.presetsMenu;
@@ -135,7 +135,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		if (e.getKey().equalsIgnoreCase("matsim_renderer")) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
-			if (Main.pref.getBoolean("matsim_renderer") == true) {
+			if (Main.pref.getBoolean("matsim_renderer")) {
 				factory.register(MapRenderer.class, "MATSim Renderer",
 						"This is the MATSim map renderer");
 				factory.activate(MapRenderer.class);

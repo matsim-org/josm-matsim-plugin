@@ -95,7 +95,7 @@ final class MATSimNetworkFileExporter extends FileExporter {
 			}
 		}
 
-		if (okToExport == true) { // check if export should be continued when
+		if (okToExport) { // check if export should be continued when
 									// warnings occur
 			for (TestError error : test.getErrors()) {
 				if (error.getSeverity().equals(Severity.WARNING)) {

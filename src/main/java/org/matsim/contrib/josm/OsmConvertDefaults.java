@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.api.core.v01.Coord;
 import org.openstreetmap.josm.Main;
 
 import java.util.HashMap;
@@ -12,22 +11,22 @@ import java.util.Map;
  * 
  */
 class OsmConvertDefaults {
-	private static Map<String, OsmHighwayDefaults> defaults = new HashMap<String, OsmHighwayDefaults>();
+	private static final Map<String, OsmHighwayDefaults> defaults = new HashMap<>();
 
-	static String[] types = { "motorway", "motorway_link", "trunk",
+	static final String[] types = { "motorway", "motorway_link", "trunk",
 			"trunk_link", "primary", "primary_link", "secondary", "tertiary",
 			"minor", "unclassified", "residential", "living_street" };
 
-	static String[] attributes = { "hierarchy", "lanes", "freespeed",
+	static final String[] attributes = { "hierarchy", "lanes", "freespeed",
 			"freespeedFactor", "laneCapacity", "oneway" };
 
 	public static Map<String, OsmHighwayDefaults> getDefaults() {
 		return defaults;
 	}
 
-	protected static void load() {
+	static void load() {
 
-		Map<String, String> values = new HashMap<String, String>();
+		Map<String, String> values = new HashMap<>();
 		values.put(
 				"motorway",
 				Main.pref.get("matsim_convertDefaults_motorway", "1;2;"
@@ -73,23 +72,23 @@ class OsmConvertDefaults {
 				Main.pref.get("matsim_convertDefaults_living_street", "6;1;"
 						+ Double.toString(15. / 3.6) + ";1.0;300;false"));
 
-		for (int i = 0; i < types.length; i++) {
-			String temp = values.get(types[i]);
-			String tempArray[] = temp.split(";");
+        for (String type : types) {
+            String temp = values.get(type);
+            String tempArray[] = temp.split(";");
 
-			int hierarchy = Integer.parseInt(tempArray[0]);
-			double lanes = Double.parseDouble(tempArray[1]);
-			double freespeed = Double.parseDouble(tempArray[2]);
-			double freespeedFactor = Double.parseDouble(tempArray[3]);
-			double laneCapacity = Double.parseDouble(tempArray[4]);
-			boolean oneway = (Boolean.parseBoolean(tempArray[5]));
+            int hierarchy = Integer.parseInt(tempArray[0]);
+            double lanes = Double.parseDouble(tempArray[1]);
+            double freespeed = Double.parseDouble(tempArray[2]);
+            double freespeedFactor = Double.parseDouble(tempArray[3]);
+            double laneCapacity = Double.parseDouble(tempArray[4]);
+            boolean oneway = (Boolean.parseBoolean(tempArray[5]));
 
-			defaults.put(types[i], new OsmHighwayDefaults(hierarchy, lanes,
-					freespeed, freespeedFactor, laneCapacity, oneway));
-		}
+            defaults.put(type, new OsmHighwayDefaults(hierarchy, lanes,
+                    freespeed, freespeedFactor, laneCapacity, oneway));
+        }
 	}
 
-	protected static void reset() {
+	static void reset() {
 
 		Main.pref.put("matsim_convertDefaults_motorway",
 				"1;2;" + Double.toString(120. / 3.6) + ";1.0;2000;true");
@@ -117,7 +116,7 @@ class OsmConvertDefaults {
 				"6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false");
 	}
 
-	protected static class OsmHighwayDefaults {
+	static class OsmHighwayDefaults {
 
 		public final int hierarchy;
 		public final double lanes;
@@ -136,20 +135,6 @@ class OsmConvertDefaults {
 			this.laneCapacity = laneCapacity;
 			this.oneway = oneway;
 		}
-	}
-
-	protected static double calculateWGS84Length(Coord coord, Coord coord2) {
-		double lon1 = coord.getX();
-		double lat1 = coord.getY();
-
-		double lon2 = coord2.getX();
-		double lat2 = coord2.getY();
-
-		double lat = (lat1 + lat2) / 2 * 0.01745;
-		double dx = 111.3 * Math.cos(lat) * (lon1 - lon2);
-		double dy = 111.3 * (lat1 - lat2);
-
-		return Math.sqrt(dx * dx + dy * dy) * 1000;
 	}
 
 }

@@ -48,14 +48,12 @@ class ImportTask extends PleaseWaitRunnable {
 	 * The String representing the id tagging-key for ways.
 	 */
 	public static final String WAY_TAG_ID = "id";
-	private MATSimLayer layer;
-	private String path;
+    private final String path;
 	private DataSet dataSet;
 	private Scenario scenario;
-	private String importSystem;
-	private HashMap<Way, List<Link>> way2Links;
+    private HashMap<Way, List<Link>> way2Links;
 	private HashMap<Link, List<WaySegment>> link2Segment;
-	private HashMap<Relation, TransitRoute> relation2Route = new HashMap<Relation, TransitRoute>();
+	private final HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
 
 	/**
 	 * Creates a new Import task with the given <code>path</code>.
@@ -83,9 +81,9 @@ class ImportTask extends PleaseWaitRunnable {
 	protected void finish() {
 		// layer = null happens if Exception happens during import,
 		// as Exceptions are handled only after this method is called.
-		layer = new MATSimLayer(dataSet, ImportDialog.path.getText(), new File(
-				path), scenario, importSystem, way2Links, link2Segment,
-				relation2Route);
+        MATSimLayer layer = new MATSimLayer(dataSet, ImportDialog.path.getText(), new File(
+                path), scenario, way2Links, link2Segment,
+                relation2Route);
 		if (layer != null) {
 			Main.main.addLayer(layer);
 			Main.map.mapView.setActiveLayer(layer);
@@ -104,7 +102,7 @@ class ImportTask extends PleaseWaitRunnable {
 		// prepare empty data set
 		dataSet = new DataSet();
 
-		importSystem = (String) ImportDialog.importSystem.getSelectedItem();
+        String importSystem = (String) ImportDialog.importSystem.getSelectedItem();
 		CoordinateTransformation ct = TransformationFactory
 				.getCoordinateTransformation(importSystem,
 						TransformationFactory.WGS84);
@@ -118,10 +116,10 @@ class ImportTask extends PleaseWaitRunnable {
 		new MatsimNetworkReader(tempScenario).readFile(path);
 		scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 
-		way2Links = new HashMap<Way, List<Link>>();
-		link2Segment = new HashMap<Link, List<WaySegment>>();
+		way2Links = new HashMap<>();
+		link2Segment = new HashMap<>();
 
-		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<Node, org.openstreetmap.josm.data.osm.Node>();
+		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
 		this.progressMonitor.setTicks(3);
 		this.progressMonitor.setCustomText("creating nodes..");
 		for (Node node : tempScenario.getNetwork().getNodes().values()) {

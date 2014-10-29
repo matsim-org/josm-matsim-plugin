@@ -23,11 +23,10 @@ class ImportDialog extends JPanel {
 	/**
 	 * Holds the path of the import file
 	 */
-	protected static JLabel path = new JLabel();
-	private JLabel importSystemLabel = new JLabel("origin system:");
+	static final JLabel path = new JLabel();
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected final static JComboBox importSystem = new JComboBox(
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    final static JComboBox importSystem = new JComboBox(
 			Preferences.coordSystems);
 
 	public ImportDialog() {
@@ -47,7 +46,8 @@ class ImportDialog extends JPanel {
 		c.gridx = 0;
 		c.gridy = 1;
 
-		add(importSystemLabel, c);
+        JLabel importSystemLabel = new JLabel("origin system:");
+        add(importSystemLabel, c);
 
 		c.gridx = 1;
 		add(importSystem, c);

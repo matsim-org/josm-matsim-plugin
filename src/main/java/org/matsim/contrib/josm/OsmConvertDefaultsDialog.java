@@ -23,13 +23,12 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 @SuppressWarnings("serial")
 class OsmConvertDefaultsDialog extends JPanel {
-	private JOptionPane optionPane;
-	private Map<String, JComponent> input = new HashMap<String, JComponent>();
-	private GridBagConstraints c = new GridBagConstraints();
+    private final Map<String, JComponent> input = new HashMap<>();
 
-	public OsmConvertDefaultsDialog() {
+    public OsmConvertDefaultsDialog() {
 		setLayout(new GridBagLayout());
-		c.insets = new Insets(4, 4, 4, 4);
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(4, 4, 4, 4);
 		c.gridwidth = 1;
 		c.weightx = 0.8;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -136,12 +135,8 @@ class OsmConvertDefaultsDialog extends JPanel {
 		}
 	}
 
-	public void setOptionPane(JOptionPane optionPane) {
-		this.optionPane = optionPane;
-	}
-
 	// processes the input given by user and stores values in preferences
-	protected void handleInput() {
+    void handleInput() {
 		for (int i = 0; i < OsmConvertDefaults.types.length; i++) {
 
 			int hierarchy = Integer.parseInt(((JTextField) input.get(i + "_0"))

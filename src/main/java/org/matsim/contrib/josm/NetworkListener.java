@@ -39,11 +39,11 @@ class NetworkListener implements DataSetListener, Visitor {
 
 	private final Logger log = Logger.getLogger(NetworkListener.class);
 
-	private Scenario scenario;
+	private final Scenario scenario;
 
-	private Map<Way, List<Link>> way2Links;
-	private Map<Link, List<WaySegment>> link2Segments;
-	private Map<Relation, TransitRoute> relation2Route;
+	private final Map<Way, List<Link>> way2Links;
+	private final Map<Link, List<WaySegment>> link2Segments;
+	private final Map<Relation, TransitRoute> relation2Route;
 
 	public NetworkListener(Scenario scenario, Map<Way, List<Link>> way2Links,
 			Map<Link, List<WaySegment>> link2Segments,
@@ -267,10 +267,10 @@ class NetworkListener implements DataSetListener, Visitor {
 	public void visit(Relation relation) {
 		// convert Relation, remove previous references in the MATSim data
 		if (!relation.isDeleted()
-				&& relation.hasTag("type", new String[] { "route",
-						"matsimRoute" })) {
-			if (relation.hasTag("route", new String[] { "train", "track",
-					"bus", "light_rail", "tram", "subway" })
+				&& relation.hasTag("type", "route",
+                "matsimRoute")) {
+			if (relation.hasTag("route", "train", "track",
+                    "bus", "light_rail", "tram", "subway")
 					|| relation.hasTag("type", "matsimRoute")) {
 
 				if (relation2Route.containsKey(relation)) {
@@ -321,8 +321,8 @@ class NetworkListener implements DataSetListener, Visitor {
 					relation2Route.remove(relation);
 				}
 
-				if (relation.hasTag("route", new String[] { "train", "track",
-						"bus", "light_rail", "tram", "subway" })) {
+				if (relation.hasTag("route", "train", "track",
+                        "bus", "light_rail", "tram", "subway")) {
 
 					NewConverter.convertTransitRouteOsm(relation, scenario,
 							relation2Route);

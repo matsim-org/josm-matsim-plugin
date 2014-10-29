@@ -47,7 +47,7 @@ public class MapRenderer extends StyledMapRenderer {
 	/**
 	 * Maps links to their corresponding way.
 	 */
-	private static Map<Way, List<Link>> way2Links = new HashMap<Way, List<Link>>();
+	private static Map<Way, List<Link>> way2Links = new HashMap<>();
 
 	public static void setWay2Links(Map<Way, List<Link>> way2LinksTmp) {
 		way2Links = way2LinksTmp;
@@ -172,10 +172,6 @@ public class MapRenderer extends StyledMapRenderer {
 		static boolean showIds = Main.pref.getBoolean("matsim_showIds", false);
 		static float wayOffset = ((float) Main.pref.getDouble(
 				"matsim_wayOffset", 0));
-
-		public static void initialize() {
-			Main.pref.addPreferenceChangeListener(INSTANCE);
-		}
 
 		@SuppressWarnings("rawtypes")
 		@Override

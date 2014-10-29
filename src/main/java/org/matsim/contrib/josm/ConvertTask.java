@@ -19,7 +19,6 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -114,11 +113,11 @@ class ConvertTask extends PleaseWaitRunnable {
 		DataSet dataSet = new DataSet();
 
 		// data mappings
-		HashMap<Way, List<Link>> way2Links = new HashMap<Way, List<Link>>();
-		HashMap<Link, List<WaySegment>> link2Segment = new HashMap<Link, List<WaySegment>>();
-		HashMap<Relation, TransitRoute> relation2Route = new HashMap<Relation, TransitRoute>();
-		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<Node, org.openstreetmap.josm.data.osm.Node>();
-		HashMap<TransitStopFacility, TransitStopFacility> stop2Stop = new HashMap<TransitStopFacility, TransitStopFacility>();
+		HashMap<Way, List<Link>> way2Links = new HashMap<>();
+		HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
+		HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
+		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
+		HashMap<TransitStopFacility, TransitStopFacility> stop2Stop = new HashMap<>();
 		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
 
 		this.progressMonitor.setTicks(4);
@@ -206,7 +205,7 @@ class ConvertTask extends PleaseWaitRunnable {
 
 				Relation relation = new Relation();
 
-				List<TransitRouteStop> newTransitStops = new ArrayList<TransitRouteStop>();
+				List<TransitRouteStop> newTransitStops = new ArrayList<>();
 
 				for (TransitRouteStop tRStop : route.getStops()) {
 
@@ -242,7 +241,7 @@ class ConvertTask extends PleaseWaitRunnable {
 						linkId2Way.get(route.getRoute().getStartLinkId()));
 				relation.addMember(start);
 
-				List<Id<Link>> links = new ArrayList<Id<Link>>();
+				List<Id<Link>> links = new ArrayList<>();
 				for (Id<Link> linkId : route.getRoute().getLinkIds()) {
 					RelationMember member = new RelationMember("stop_link",
 							linkId2Way.get(linkId));
@@ -289,7 +288,7 @@ class ConvertTask extends PleaseWaitRunnable {
 
 		// create layer
 		newLayer = new MATSimLayer(dataSet, null, null, scenario,
-				TransformationFactory.WGS84, way2Links, link2Segment,
+                way2Links, link2Segment,
 				relation2Route);
 	}
 

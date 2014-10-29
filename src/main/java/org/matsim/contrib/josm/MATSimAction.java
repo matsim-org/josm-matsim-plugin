@@ -19,7 +19,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
@@ -126,8 +125,8 @@ class MATSimAction {
 			Config config = ConfigUtils.createConfig();
 			Scenario scenario = ScenarioUtils.createScenario(config);
 			MATSimLayer layer = new MATSimLayer(dataSet, "new Layer", null,
-					scenario, TransformationFactory.WGS84,
-					new HashMap<Way, List<Link>>(),
+					scenario,
+                    new HashMap<Way, List<Link>>(),
 					new HashMap<Link, List<WaySegment>>(),
 					new HashMap<Relation, TransitRoute>());
 			Main.main.addLayer(layer);
@@ -144,9 +143,7 @@ class MATSimAction {
 	@SuppressWarnings("serial")
 	public static class ConvertAction extends JosmAction {
 
-		public static JDialog dlg;
-
-		public ConvertAction() {
+        public ConvertAction() {
 			super(tr("Convert to MATSim Layer"), null,
 					tr("Convert Osm layer to MATSim network layer"), Shortcut
 							.registerShortcut(

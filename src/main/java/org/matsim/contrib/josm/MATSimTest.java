@@ -38,36 +38,32 @@ class MATSimTest extends Test {
 	 * Maps ways (the links, respectively) to their id. Ways whose links share
 	 * the same id are added up in a list.
 	 */
-	Map<String, ArrayList<Way>> linkIds;
+    private Map<String, ArrayList<Way>> linkIds;
 	/**
 	 * Maps nodes to their id. Nodes that share the same id are added up in a
 	 * list.
 	 */
-	Map<String, ArrayList<Node>> nodeIds;
-	MATSimLayer layer;
-	Network network;
+    private Map<String, ArrayList<Node>> nodeIds;
+	private MATSimLayer layer;
+	private Network network;
 
 	/**
 	 * Identifies the link id to be fixed from a specific error.
 	 */
-	Map<TestError, String> links2Fix;
-	/**
-	 * Identifies the node id to be fixed from a specific error.
-	 */
-	Map<TestError, String> nodes2Fix;
+    private Map<TestError, String> links2Fix;
 
-	/**
+    /**
 	 * Integer code for duplicated link id error.
 	 */
-	protected final static int DUPLICATE_LINK_ID = 3001;
+	private final static int DUPLICATE_LINK_ID = 3001;
 	/**
 	 * Integer code for duplicated node id error.
 	 */
-	protected final static int DUPLICATE_NODE_ID = 3002;
+	private final static int DUPLICATE_NODE_ID = 3002;
 	/**
 	 * Integer code for doubtful link attribute(s).
 	 */
-	protected final static int DOUBTFUL_LINK_ATTRIBUTE = 3003;
+	private final static int DOUBTFUL_LINK_ATTRIBUTE = 3003;
 
 	/**
 	 * Creates a new {@code MATSimTest}.
@@ -84,8 +80,8 @@ class MATSimTest extends Test {
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		super.startTest(monitor);
-		this.nodeIds = new HashMap<String, ArrayList<Node>>();
-		this.linkIds = new HashMap<String, ArrayList<Way>>();
+		this.nodeIds = new HashMap<>();
+		this.linkIds = new HashMap<>();
 		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
 			layer = (MATSimLayer) Main.main.getActiveLayer();
 			this.network = layer.getMatsimScenario().getNetwork();
@@ -127,12 +123,9 @@ class MATSimTest extends Test {
 	 *         attributes. <code>false</code> otherwise
 	 */
 	private boolean doubtfulAttributes(Link link) {
-		if (link.getFreespeed() == 0 || link.getCapacity() == 0
-				|| link.getLength() == 0 || link.getNumberOfLanes() == 0) {
-			return true;
-		}
-		return false;
-	}
+        return link.getFreespeed() == 0 || link.getCapacity() == 0
+                || link.getLength() == 0 || link.getNumberOfLanes() == 0;
+    }
 
 	/**
 	 * Visits a node and stores it's Id.
@@ -158,10 +151,10 @@ class MATSimTest extends Test {
 	@Override
 	public void endTest() {
 
-		links2Fix = new HashMap<TestError, String>();
+		links2Fix = new HashMap<>();
 		for (Entry<String, ArrayList<Way>> entry : linkIds.entrySet()) {
 			if (entry.getValue().size() > 1) {
-				List<WaySegment> segments = new ArrayList<WaySegment>();
+				List<WaySegment> segments = new ArrayList<>();
 				for (Way way : entry.getValue()) {
 					List<Link> links = layer.getWay2Links().get(way);
 					for (Link link : links) {
@@ -201,12 +194,9 @@ class MATSimTest extends Test {
 
 	@Override
 	public boolean isFixable(TestError testError) {
-		if (testError.getCode() == DUPLICATE_LINK_ID
-				|| testError.getCode() == DUPLICATE_NODE_ID) {
-			return true;
-		}
-		return false;
-	}
+        return testError.getCode() == DUPLICATE_LINK_ID
+                || testError.getCode() == DUPLICATE_NODE_ID;
+    }
 
 	@Override
 	public Command fixError(TestError testError) {
@@ -234,7 +224,7 @@ class MATSimTest extends Test {
 				} else if (primitive instanceof Node) {
 					org.matsim.api.core.v01.network.Node node = this.network
 							.getNodes()
-							.get(Id.create(((Node) primitive).getUniqueId(),
+							.get(Id.create(primitive.getUniqueId(),
 									org.matsim.api.core.v01.network.Node.class));
 					String origId = ((NodeImpl) node).getOrigId();
 					((NodeImpl) node).setOrigId(origId + "(" + j + ")");

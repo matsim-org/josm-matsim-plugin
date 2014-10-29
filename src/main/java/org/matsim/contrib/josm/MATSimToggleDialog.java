@@ -70,20 +70,20 @@ import org.xml.sax.SAXException;
 @SuppressWarnings("serial")
 class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		PreferenceChangedListener {
-	private JTable table_links;
-	private JTable table_pt;
+	private final JTable table_links;
+	private final JTable table_pt;
 	private OsmDataLayer layer;
 	private MATSimTableModel_links tableModel_links;
 	private MATSimTableModel_pt tableModel_pt;
-	private JButton networkAttributes = new JButton(new ImageProvider(
+	private final JButton networkAttributes = new JButton(new ImageProvider(
 			"dialogs", "edit").setWidth(16).get());
-	private JButton manualConvert = new JButton(new ImageProvider("restart")
+	private final JButton manualConvert = new JButton(new ImageProvider("restart")
 			.setWidth(16).get());
-	private List<FileExporter> exporterCopy = new ArrayList<FileExporter>();
+	private final List<FileExporter> exporterCopy = new ArrayList<>();
 	private Scenario currentScenario;
-	private Map<Way, List<Link>> way2Links = new HashMap<Way, List<Link>>();
-	private Map<Link, List<WaySegment>> link2Segments = new HashMap<Link, List<WaySegment>>();
-	private Map<Relation, TransitRoute> relation2Route = new HashMap<Relation, TransitRoute>();
+	private Map<Way, List<Link>> way2Links = new HashMap<>();
+	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
+	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
 	private NetworkListener osmNetworkListener;
 
 	public MATSimToggleDialog() {
@@ -122,7 +122,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				NetworkAttributes dialog = new NetworkAttributes();
 				JOptionPane pane = new JOptionPane(dialog,
 						JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				dialog.setOptionPane(pane);
 				JDialog dlg = pane.createDialog(Main.parent,
 						tr("Network Attributes"));
 				dlg.setAlwaysOnTop(true);
@@ -151,9 +150,9 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 							.createConfig());
 					currentScenario.getConfig().scenario().setUseTransit(true);
 					currentScenario.getConfig().scenario().setUseVehicles(true);
-					way2Links = new HashMap<Way, List<Link>>();
-					link2Segments = new HashMap<Link, List<WaySegment>>();
-					relation2Route = new HashMap<Relation, TransitRoute>();
+					way2Links = new HashMap<>();
+					link2Segments = new HashMap<>();
+					relation2Route = new HashMap<>();
 					LayerChangeTask task = new LayerChangeTask(
 							(OsmDataLayer) tmpLayer);
 					task.run();
@@ -225,9 +224,9 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 						.createConfig());
 				currentScenario.getConfig().scenario().setUseTransit(true);
 				currentScenario.getConfig().scenario().setUseVehicles(true);
-				way2Links = new HashMap<Way, List<Link>>();
-				link2Segments = new HashMap<Link, List<WaySegment>>();
-				relation2Route = new HashMap<Relation, TransitRoute>();
+				way2Links = new HashMap<>();
+				link2Segments = new HashMap<>();
+				relation2Route = new HashMap<>();
 				LayerChangeTask task = new LayerChangeTask(
 						(OsmDataLayer) newLayer);
 				task.run();
@@ -295,10 +294,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
 			setBackground(null);
-			Component tableCellRendererComponent = super
-					.getTableCellRendererComponent(table, value, isSelected,
-							hasFocus, row, column);
-			return tableCellRendererComponent;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}
 	}
 
@@ -306,16 +302,16 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private class MATSimTableModel_links extends AbstractTableModel implements
 			SelectionChangedListener, ListSelectionListener {
 
-		private String[] columnNames = { "id", "internal-id", "length",
+		private final String[] columnNames = { "id", "internal-id", "length",
 				"freespeed", "capacity", "permlanes", "modes" };
 
-		private Network network;
+		private final Network network;
 
 		private Map<Integer, Id<Link>> links;
 
 		MATSimTableModel_links(Network network) {
 			this.network = network;
-			this.links = new HashMap<Integer, Id<Link>>();
+			this.links = new HashMap<>();
 			DataSet.addSelectionListener(this);
 			table_links.getSelectionModel().addListSelectionListener(this);
 		}
@@ -392,7 +388,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		public void selectionChanged(
 				Collection<? extends OsmPrimitive> newSelection) {
 			layer.data.clearHighlightedWaySegments();
-			this.links = new HashMap<Integer, Id<Link>>();
+			this.links = new HashMap<>();
 			int i = 0;
 			for (OsmPrimitive primitive : newSelection) {
 				if (primitive instanceof Way) {
@@ -421,7 +417,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				if (link2Segments.containsKey(link)) {
 					List<WaySegment> segments = link2Segments.get(link);
 					layer.data.setHighlightedWaySegments(segments);
-					Collection<OsmPrimitive> zoom = new ArrayList<OsmPrimitive>();
+					Collection<OsmPrimitive> zoom = new ArrayList<>();
 					if (!segments.isEmpty()) {
 						zoom.add(segments.get(0).way);
 						AutoScaleAction.zoomTo(zoom);
@@ -436,13 +432,13 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private class MATSimTableModel_pt extends AbstractTableModel implements
 			SelectionChangedListener, ListSelectionListener {
 
-		private String[] columnNames = { "route id", "mode", "#stops", "#links" };
+		private final String[] columnNames = { "route id", "mode", "#stops", "#links" };
 
 
 		private Map<Integer, TransitRoute> routes;
 
 		MATSimTableModel_pt() {
-			this.routes = new HashMap<Integer, TransitRoute>();
+			this.routes = new HashMap<>();
 			DataSet.addSelectionListener(this);
 			table_pt.getSelectionModel().addListSelectionListener(this);
 		}
@@ -506,7 +502,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		public void selectionChanged(
 				Collection<? extends OsmPrimitive> newSelection) {
 			layer.data.clearHighlightedWaySegments();
-			this.routes = new HashMap<Integer, TransitRoute>();
+			this.routes = new HashMap<>();
 			int i = 0;
 			for (OsmPrimitive primitive : newSelection) {
 				for (OsmPrimitive primitive_2 : primitive.getReferrers()) {
@@ -528,10 +524,10 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	// dialog that handles editing of global network attributes
 	private class NetworkAttributes extends JPanel {
 
-		private JLabel laneWidth = new JLabel("effective lane width [m]:");
-		private JLabel capacityPeriod = new JLabel("capacity period [s]:");
-		private JTextField laneWidthValue = new JTextField();
-		private JTextField capacityPeriodValue = new JTextField();
+		private final JLabel laneWidth = new JLabel("effective lane width [m]:");
+		private final JLabel capacityPeriod = new JLabel("capacity period [s]:");
+		private final JTextField laneWidthValue = new JTextField();
+		private final JTextField capacityPeriodValue = new JTextField();
 
 		public NetworkAttributes() {
 			Layer layer = Main.main.getActiveLayer();
@@ -549,10 +545,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			add(capacityPeriodValue);
 		}
 
-		public void setOptionPane(JOptionPane optionPane) {
-		}
-
-		protected void apply() {
+        void apply() {
 			Layer layer = Main.main.getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 				String lW = laneWidthValue.getText();
@@ -582,7 +575,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 
 	private class LayerChangeTask extends PleaseWaitRunnable {
 
-		private OsmDataLayer newLayer;
+		private final OsmDataLayer newLayer;
 
 		public LayerChangeTask(OsmDataLayer newLayer) {
 			super("Converting to MATSim Network");
