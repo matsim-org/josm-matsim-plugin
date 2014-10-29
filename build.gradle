@@ -1,4 +1,11 @@
+// Prerequisite:
+// Current MATSim snapshot needs to be in the local Maven cache.
+// (Put it there with 'mvn install' from the MATSim directory).
+
 buildscript {
+    // Dependencies of this build script (not of the project we are building):
+    // A Gradle plug-in we will use later to download the JOSM binary.
+    // Fetch it from Maven Central.
     repositories {
         mavenCentral()
     }
@@ -7,79 +14,59 @@ buildscript {
     }
 }
 
+// We use the Java builder and the download plug-in we just fetched.
 apply plugin: "java"
 apply plugin: 'download-task'
 
-project.ext.pluginVersions = [
-        /* plugin version,  required JOSM version */
-        [28498,    4394]
-]
-
-def currentPluginVersion() {
-    return project.ext.pluginVersions.collect{it[0]}.max()
-}
-
-def currentPluginMainVersion() {
-    return project.ext.pluginVersions.collect{it[1]}.max()
-}
-
-def bestPluginVersion(josmVersion) {
-    return project.ext.pluginVersions
-            .findAll{it[1] == josmVersion}
-            .collect{it[0]}
-            .max()
-}
-
+// For the dependencies of our project (not of this build script itself), we only need the
+// local Maven cache. We use it to get the MATSim snapshot.
 repositories {
     mavenLocal()
 }
 
-
+// Declare a configuration for our external dependency (MATSim) so we can later take its classes and zip them into our jar.
 configurations {
-    matsim
+    zipIntoJar
 }
 
 dependencies {
-    matsim group: "org.matsim", name: "matsim", version: "0.7.0-SNAPSHOT"
-    compile configurations.matsim.dependencies
+    zipIntoJar 'org.matsim:matsim:0.7.0-SNAPSHOT'
+    // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
+    // the dependency.
+    // We us zipIntoJar as a middleman, so that it has a name and we can later address its classes.
+    // Here, we add it to compile, so that it actually becomes a dependency of our project.
+    compile configurations.zipIntoJar.dependencies
+    // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     compile files("libs/josm-latest.jar")
 }
 
-
 jar.baseName = "matsim"
-
 jar {
     metaInf {
         from("resources") {
             include "mime.types"
         }
     }
+    // Put in the manifest entries which are required for a JOSM plug-in.
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": currentPluginVersion(),
-                "Plugin-Mainversion": currentPluginMainVersion(),
+                "Plugin-Version": 28500,
+                "Plugin-Mainversion": 7643,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
-                "Plugin-Author" : "Nico Kuehnel",
+                "Author" : "Nico Kuehnel",
                 "Plugin-Class" : "org.matsim.contrib.josm.MATSimPlugin",
                 "Plugin-Description": "Allows to edit and extract network information for the traffic simulation MATSim",
                 "Plugin-Icon" : "images/dialogs/logo.png",
-                "Plugin-Link" : "http://gubaer.github.com/josm-scripting-plugin"
+                "Plugin-Link" : "http://www.matsim.org"
         )
-
-        pluginVersions.collect{it[1]}.unique().sort().each {jv ->
-            def dv = bestPluginVersion(jv)
-            def key = "${jv}_Plugin-Url".toString()
-            def value = "${dv};https://raw.github.com/michaz/josm-matsim-plugin/for-josm-${jv}/dist/matsim.jar".toString()
-            attributes([(key):value])
-        }
     }
-
+    // Now take the dependencies of zipIntoJar (currently only MATSim), and put them into
+    // our target jar.
     from {
-        configurations.matsim.collect { zipTree(it) }
+        configurations.zipIntoJar.collect { zipTree(it) }
     }
-
 }
 
 compileJava {
@@ -87,11 +74,12 @@ compileJava {
     targetCompatibility = 1.7
 }
 
+// Download the JOSM binary and put it into its place.
 project.ext.josmUrl = "http://josm.openstreetmap.de/josm-latest.jar"
-task  getJosm {
+task getJosm {
     description = "Download the latest JOSM build jar from the JOSM website"
     doLast {
-        if (! file("libs").exists()) {
+        if (!file("libs").exists()) {
             file("libs").mkdir()
         }
         if (!file("libs/josm-latest.jar").exists()) {
@@ -108,10 +96,12 @@ sourceSets {
     rootDirectoryShit {
         resources {
             srcDir "."
-            include "README"
             include "images/**/*.png"
         }
     }
+    // Main is the designated source set name for the Java plug-in (just like in Maven).
+    // It has designated sub-sets named Java and Resources (just like in Maven).
+    // We leave Java at the default, but to Resources we add the images from the project root.
     main {
         resources {
             srcDir "src/main/resources"
@@ -120,26 +110,13 @@ sourceSets {
     }
 }
 
-task deploy {
-    doLast {
-        def deployBranch = "deploy"
-        def jar = "dist/matsim.jar";
-        file("dist").mkdirs()
-        ant.copy(todir: "dist") {
-            fileset(dir : "build/libs") {
-                include(name:"matsim.jar")
-            }
-        }
-        Git.ensureOnBranch(deployBranch)
-        Git.add(jar)
-        Git.commit(jar, "commited plugin build ${currentPluginVersion()}")
-        def tag = "for-josm-${currentPluginMainVersion()}"
-        Git.tagHead(tag)
-        Git.push("origin", deployBranch)
-        Git.pushTags()
-    }
-}
-
+// Install the plug-in into the local JOSM plug-in directory.
+// You can start JOSM from your IDE and debug the plug-in, but the JOSM
+// plug-in system still expects the plug-in jar in its correct place.
+//
+// If you use Windows,
+// please add something here which detects this and uses the proper JOSM
+// plug-in path on Windows.
 task installLocalJosm {
     doLast {
         def homePath = System.properties['user.home']
@@ -152,49 +129,6 @@ task installLocalJosm {
 }
 installLocalJosm.dependsOn "jar"
 
-
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
-}
-
-class Git {
-
-    static private def executeAndLog(cmd) {
-        def proc = cmd.execute()
-        proc.waitFor()
-        println "Exit Value: ${proc.exitValue()}"
-        println "Output: ${proc.in.text}"
-        println "Error: ${proc.err.text}"
-        if (proc.exitValue() != 0) {
-            throw new Error("git command failed. command was <$cmd>")
-        }
-    }
-
-    static def ensureOnBranch(branch) {
-        def proc = "git rev-parse --abbrev-ref HEAD".execute()
-        def ret = proc.in.text.trim()
-        if (ret != branch) {
-            throw new Error("currently on branch '$ret', but expected branch '$branch'")
-        }
-    }
-
-    static def add(file) {
-        executeAndLog(["git", "add", file])
-    }
-
-    static def commit(file, message) {
-        executeAndLog(["git", "commit", "-m", message, file])
-    }
-
-    static def push(remote, branch) {
-        executeAndLog("git push $remote $branch")
-    }
-
-    static def tagHead(tag) {
-        executeAndLog(["git", "tag", "-f", tag, "HEAD"])
-    }
-
-    static def pushTags() {
-        executeAndLog("git push --tags -f")
-    }
 }
