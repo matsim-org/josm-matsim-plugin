@@ -64,7 +64,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
 	}
 
 	private Preferences() {
-		super(null, tr("MASim preferences"),
+		super("matsim-scenario.png", tr("MASim preferences"),
 				tr("Configure the MATSim plugin."), false, new JTabbedPane());
 	}
 

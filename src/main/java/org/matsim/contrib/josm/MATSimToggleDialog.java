@@ -87,7 +87,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private NetworkListener osmNetworkListener;
 
 	public MATSimToggleDialog() {
-		super("Links/Nodes", "logo.png", "Links/Nodes", null, 150, true,
+		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true,
 				Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 

@@ -51,14 +51,14 @@ jar {
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": 28500,
+                "Plugin-Version": "v0.3.0",
                 "Plugin-Mainversion": 7643,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
                 "Author" : "Nico Kuehnel",
                 "Plugin-Class" : "org.matsim.contrib.josm.MATSimPlugin",
                 "Plugin-Description": "Allows to edit and extract network information for the traffic simulation MATSim",
-                "Plugin-Icon" : "images/dialogs/logo.png",
+                "Plugin-Icon" : "images/dialogs/matsim-scenario.png",
                 "Plugin-Link" : "http://www.matsim.org"
         )
     }
