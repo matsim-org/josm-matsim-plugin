@@ -33,8 +33,8 @@ dependencies {
     zipIntoJar 'org.matsim:matsim:0.7.0-SNAPSHOT'
     // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
     // the dependency.
-    // We us zipIntoJar as a middleman, so that it has a name and we can later address its classes.
-    // Here, we add it to compile, so that it actually becomes a dependency of our project.
+    // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
+    // We add it to compile, so that it becomes a dependency of our project.
     compile configurations.zipIntoJar.dependencies
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     compile files("libs/josm-latest.jar")
