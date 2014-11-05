@@ -117,10 +117,18 @@ sourceSets {
 // If you use Windows,
 // please add something here which detects this and uses the proper JOSM
 // plug-in path on Windows.
+import org.apache.tools.ant.taskdefs.condition.Os
 task installLocalJosm {
     doLast {
-        def homePath = System.properties['user.home']
-        ant.copy(todir: homePath + "/.josm/plugins") {
+        def josmPluginDir;
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def appDataDir = System.getenv("APPDATA")
+            josmPluginDir = appDataDir + "/JOSM/plugins"
+        } else {
+            def homePath = System.properties['user.home']
+            josmPluginDir = homePath + "/.josm/plugins"
+        }
+        ant.copy(todir: josmPluginDir) {
             fileset(dir: "build/libs") {
                 include(name: "matsim.jar")
             }
@@ -132,3 +140,4 @@ installLocalJosm.dependsOn "jar"
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
 }
+
