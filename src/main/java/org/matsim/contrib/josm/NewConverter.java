@@ -1,10 +1,11 @@
 package org.matsim.contrib.josm;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,11 +25,13 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.utils.geometry.CoordImpl;
+import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
@@ -40,8 +43,12 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.tools.Geometry;
+
+import sun.nio.cs.ext.ISCII91;
 
 class NewConverter {
 	private final static Logger log = Logger.getLogger(NewConverter.class);
@@ -68,7 +75,7 @@ class NewConverter {
 			Map<Link, List<WaySegment>> link2Segments,
 			Map<Relation, TransitRoute> relation2Route) {
 		log.info("=== Starting conversion of Osm data ===");
-		log.setLevel(Level.WARN);
+		log.setLevel(Level.DEBUG);
 
 		// could be used for area filtering in future releases
 		// List<JoinedPolygon> polygons = new ArrayList<JoinedPolygon>();
@@ -119,7 +126,7 @@ class NewConverter {
 			// convert osm tagged relations
 			for (Relation relation : publicTransportRoutesOsm) {
 				sorter.sortMembers(relation.getMembers());
-				convertTransitRouteOsm_2(relation, scenario, relation2Route);
+				convertTransitRouteOsm(relation, scenario, relation2Route, way2Links, link2Segments);
 			}
 			// convert matsim tagged relations
 			for (Relation relation : publicTransportRoutesMatsim) {
@@ -463,60 +470,119 @@ class NewConverter {
 
 	// create stop facility at position of given node, if already used by
 	// another route, duplicate stop with incremental id
-	private static void checkStopFacility(Scenario scenario, Node node,
-			List<TransitStopFacility> stops, Id<TransitStopFacility> stopId) {
+	private static TransitStopFacility createStopFacility(
+			Entry<Node, WaySegment> entry, Relation relation,
+			TransitSchedule schedule) {
+
+		Id<TransitStopFacility> stopId = Id.create(relation.getUniqueId() + "_"
+				+ entry.getKey().getUniqueId(), TransitStopFacility.class);
 
 		int i = 0;
-		while (scenario.getTransitSchedule().getFacilities()
-				.containsKey(stopId)) {
+		while (schedule.getFacilities().containsKey(stopId)) {
 			stopId = Id.create("(" + i + ")_" + stopId.toString(),
 					TransitStopFacility.class);
 			i++;
 		}
-		double lat = node.getCoor().lat();
-		double lon = node.getCoor().lon();
-		TransitStopFacility stop = scenario
-				.getTransitSchedule()
-				.getFactory()
-				.createTransitStopFacility(stopId, new CoordImpl(lon, lat),
-						true);
 
-		stop.setName(node.getLocalName());
-
-		scenario.getTransitSchedule().addStopFacility(stop);
-		stops.add(stop);
-		return;
-
+		double lat = entry.getKey().getCoor().lat();
+		double lon = entry.getKey().getCoor().lon();
+		TransitScheduleFactory factory = new TransitScheduleFactoryImpl();
+		TransitStopFacility stop = factory.createTransitStopFacility(stopId,
+				new CoordImpl(lon, lat), true);
+		if(entry.getKey().getLocalName()!=null) {
+			stop.setName(entry.getKey().getLocalName());
+		} else {
+			stop.setName("unknown stop");
+		}
+		return stop;
 	}
 
 	public static void convertTransitRouteOsm(Relation relation,
-			Scenario scenario, Map<Relation, TransitRoute> relation2Route) {
-		List<Id<Link>> links = new ArrayList<Id<Link>>();
-		List<TransitStopFacility> stops = new ArrayList<TransitStopFacility>();
+			Scenario scenario, Map<Relation, TransitRoute> relation2Route,
+			Map<Way, List<Link>> way2Links,
+			Map<Link, List<WaySegment>> link2Segments) {
+		NetworkRoute route;
+		Map<TransitStopFacility, WaySegment> stops2Segment = new LinkedHashMap<TransitStopFacility, WaySegment>();
 
-		// create stop facilities
+		
+		log.debug("converting route relation" + relation.getUniqueId()+ " " +relation.getName());
+		// filtere nodes heraus
+		Map<Node, WaySegment> nodes2Segment = new LinkedHashMap<Node, WaySegment>();
 		for (RelationMember member : relation.getMembers()) {
-			if (member.isNode() && !member.getMember().isIncomplete()) { // stops
-																			// are
-																			// always
-																			// created
-																			// as
-																			// nodes
-				checkNode(scenario.getNetwork(), member.getNode());
-				Id<TransitStopFacility> stopId = Id.create(
-						relation.getUniqueId() + "_" + member.getUniqueId(),
-						TransitStopFacility.class);
-				checkStopFacility(scenario, member.getNode(), stops, stopId);
+			if (member.isNode() && !member.getMember().isIncomplete()) {
+				nodes2Segment.put(member.getNode(), null);
 			}
 		}
-
-		if (stops.isEmpty()) {
+		if (nodes2Segment.isEmpty()) {
+			log.debug("no nodes found. relation not converted.");
 			return;
 		}
+		log.debug("nodes found. proceeding.");
+		
+		
+		// überprüfe ob alle nodes auf way liegen
+		boolean nodesOnWay = nodesOnWay(relation, nodes2Segment.keySet(),
+				nodes2Segment);
+		if(nodesOnWay) {
+			log.debug("all nodes on ways.");
+		} else {
+			log.debug("not all nodes on ways.");
+		}
 
-		// create beeline route between stop facilities
-		links = createBeeLineRoute(relation, scenario, stops);
+		
+		// überprüfe ob alle nodes verbunden sind
+		boolean nodesConnected = nodesConnected(relation, nodes2Segment);
+		if(nodesConnected) {
+			log.debug("all nodes are connected with each other.");
+		} else {
+			log.debug("not all nodes are connected with each other.");
+		}
 
+		
+		// erstelle / überprüfe MATSim Nodes,
+		for (Node node : nodes2Segment.keySet()) {
+			checkNode(scenario.getNetwork(), node);
+		}
+
+		
+		// erstelle StopFacilities für alle nodes
+		for (Entry<Node, WaySegment> entry : nodes2Segment.entrySet()) {
+			TransitStopFacility stop = createStopFacility(entry, relation,
+					scenario.getTransitSchedule());
+			scenario.getTransitSchedule().addStopFacility(stop);
+			stops2Segment.put(stop, entry.getValue());
+		}
+		nodes2Segment.clear();
+		if (stops2Segment.isEmpty()) {
+			log.debug("no stop facilities created. relation not converted.");
+			return;
+		} else {
+			log.debug("stop facilities created. proceeding.");
+		}
+
+		
+		// erstelle Route zwischen den Stops
+		if (nodesOnWay && nodesConnected) {
+			log.debug("nodes on ways and fully connected. creating topological route.");
+			// route entlang ways
+			route = createConnectedWayRoute(relation, scenario, stops2Segment,
+					way2Links, link2Segments);
+		} else {
+			log.debug("not all nodes on ways or fully conected. creating beeline route.");
+			// beeline route
+			route = createBeeLineRoute(relation, scenario, stops2Segment);
+		}
+		if (route == null) {
+			log.debug("no route created. relation not converted.");
+			for (TransitStopFacility facility: stops2Segment.keySet()){
+				scenario.getTransitSchedule().removeStopFacility(facility);
+			}
+			return;
+		} else {
+			log.debug("route created. proceeding.");
+		}
+
+		
 		TransitSchedule schedule = scenario.getTransitSchedule();
 		TransitScheduleFactory builder = schedule.getFactory();
 
@@ -535,27 +601,166 @@ class NewConverter {
 			tLine = scenario.getTransitSchedule().getTransitLines().get(lineId);
 		}
 
-		Id<Link> firstLinkId = stops.get(0).getLinkId();
-		Id<Link> secondLinkId = stops.get(stops.size() - 1).getLinkId();
-		NetworkRoute networkRoute = new LinkNetworkRouteImpl(firstLinkId,
-				secondLinkId);
-
-		networkRoute.setLinkIds(firstLinkId, links, secondLinkId);
-
 		ArrayList<TransitRouteStop> routeStops = new ArrayList<TransitRouteStop>();
-		for (TransitStopFacility stop : stops) {
+		for (TransitStopFacility stop : stops2Segment.keySet()) {
 			routeStops.add(builder.createTransitRouteStop(stop, 0, 0));
 		}
 
 		TransitRoute tRoute = builder.createTransitRoute(
-				Id.create(relation.getUniqueId(), TransitRoute.class),
-				networkRoute, routeStops, "pt");
+				Id.create(relation.getUniqueId(), TransitRoute.class), route,
+				routeStops, "pt");
 
 		tLine.addRoute(tRoute);
 
 		schedule.removeTransitLine(tLine);
 		schedule.addTransitLine(tLine);
 		relation2Route.put(relation, tRoute);
+	}
+
+	private static NetworkRoute createConnectedWayRoute(Relation relation,
+			Scenario scenario,
+			Map<TransitStopFacility, WaySegment> stops2Segment,
+			Map<Way, List<Link>> way2Links,
+			Map<Link, List<WaySegment>> link2Segments) {
+		// TODO Auto-generated method stub
+		List<Id<Link>> links = new ArrayList<Id<Link>>();
+		TransitStopFacility previous = null;
+		Id<Link> firstLinkId = null;
+		Id<Link> lastLinkId = null;
+
+		for (Entry<TransitStopFacility, WaySegment> entry : stops2Segment
+				.entrySet()) {
+			List<Link> wayLinks = null;
+		
+				
+				
+			if(way2Links.containsKey(entry.getValue().way)) {
+				wayLinks = way2Links.get(entry.getValue().way);
+			} else {
+				throw new RuntimeException("Primitive "+entry.getValue().way.getUniqueId()+"of route relation "+relation.getUniqueId()+" defines no links");
+			}
+			
+			if(previous!=null) {
+//			Node node = 
+					
+					//suche segment heraus, dazugehörigen anfangsknoten über nodeID<->stopId ->anfangslink
+					//und dann etwas wie 	private List<Link> filterConnectedLinks (wayLinks, lastLink) {
+					//							suche wegekette zu lastLink
+					// 						}
+			}
+			
+			//link für stopFacility suchen
+			for (Link link : wayLinks) {
+				if(entry.getKey().getLinkId()!=null) {
+					break;
+				}
+				for (WaySegment segment : link2Segments.get(link)) {
+					if (segment.getFirstNode().equals(entry.getValue().getFirstNode())) {
+						entry.getKey().setLinkId(link.getId());
+						
+					}
+					if(segment.getSecondNode().equals(entry.getValue().getFirstNode())) {
+						entry.getKey().setLinkId(link.getId());
+						break;
+					}  
+				}
+			}
+			log.debug("stop "+entry.getKey().getId()+" referenced by link "+entry.getKey().getLinkId());
+			
+			if(previous != null)  {
+				int i = relation.getMemberPrimitivesList().indexOf(stops2Segment.get(previous).way);
+				int j = relation.getMemberPrimitivesList().indexOf(entry.getValue().way);
+				
+				for(int k = i+1; k<j; k++) {
+					OsmPrimitive primitive = relation.getMemberPrimitivesList().get(k);
+					if(way2Links.containsKey(primitive)) {
+						for(Link link: way2Links.get(primitive)) {
+							links.add(link.getId());
+						}
+					} else {
+						throw new RuntimeException("Primitive "+primitive.getUniqueId()+"of route relation "+relation.getUniqueId()+" defines no links");
+					}
+					
+				}
+			}
+			
+			//links der route hinzufügen
+			for(Link link: wayLinks) {
+				links.add(link.getId());
+			}
+			previous = entry.getKey();
+		}
+		
+		firstLinkId = links.remove(0);
+		lastLinkId = links.remove(links.size()-1);
+		
+		if (firstLinkId == null || lastLinkId == null || links.isEmpty()) {
+			return null;
+		}
+
+		NetworkRoute networkRoute = new LinkNetworkRouteImpl(firstLinkId,
+				lastLinkId);
+		networkRoute.setLinkIds(firstLinkId, links, lastLinkId);
+		return networkRoute;
+	}
+
+	private static boolean nodesConnected(Relation relation,
+			Map<Node, WaySegment> nodes2Segment) {
+		Node previous = null;
+		for (Entry<Node, WaySegment> entry : nodes2Segment.entrySet()) {
+			if (previous != null) {
+				Way way1 = nodes2Segment.get(previous).way;
+				Way way2 = entry.getValue().way;
+				if (waysConnected(way1, way2, relation)) {
+					log.debug(way1.getName() + " " + way2.getName()
+							+ " connected!");
+				} else {
+					log.debug((way1.getName() + " " + way2.getName() + " not connected!"));
+					return false;
+				}
+			}
+			previous = entry.getKey();
+		}
+		return true;
+	}
+
+	private static boolean nodesOnWay(Relation relation, Set<Node> set,
+			Map<Node, WaySegment> nodes2Segment) {
+		for (Node node : set) {
+			boolean nodeOnWay = false;
+			for (OsmPrimitive prim : node.getReferrers()) {
+				if (prim instanceof Way) {
+					if (((Way) prim).containsNode(node)
+							&& relation.getMemberPrimitives().contains(prim)) {
+						nodeOnWay = true;
+
+						if (nodes2Segment.containsKey(node)) {
+							if(nodes2Segment.get(node)!=null) {
+								if (((Way) prim).getNodes().indexOf(node) > nodes2Segment
+										.get(node).lowerIndex) {
+									nodes2Segment.put(node, new WaySegment(
+											((Way) prim), ((Way) prim).getNodes()
+													.indexOf(node)));
+									log.debug(node.getUniqueId()+" is on way "+prim.getUniqueId()+", segment "+((Way) prim).getNodes()
+											.indexOf(node));
+								}
+							} else {
+								nodes2Segment.put(node, new WaySegment(
+										((Way) prim), ((Way) prim).getNodes()
+												.indexOf(node)));
+								log.debug(node.getUniqueId()+" is on way "+prim.getUniqueId()+", segment "+((Way) prim).getNodes()
+										.indexOf(node));
+							}
+						}
+					}
+				}
+			}
+			if (nodeOnWay == false) {
+				nodes2Segment.put(node, null);
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static void convertTransitRouteMatsim(Relation relation,
@@ -688,13 +893,16 @@ class NewConverter {
 		relation2Route.put(relation, tRoute);
 	}
 
-	private static List<Id<Link>> createBeeLineRoute(Relation relation,
-			Scenario scenario, List<TransitStopFacility> stops) {
+	private static NetworkRoute createBeeLineRoute(Relation relation,
+			Scenario scenario,
+			Map<TransitStopFacility, WaySegment> stops2Segment) {
 		List<Id<Link>> links = new ArrayList<Id<Link>>();
 		int increment = 0;
 		TransitStopFacility previous = null;
+		Id<Link> firstLinkId = null;
+		Id<Link> lastLinkId = null;
+		for (TransitStopFacility stop : stops2Segment.keySet()) {
 
-		for (TransitStopFacility stop : stops) {
 			if (previous == null) {
 				previous = stop; // create dummy link with length=null from and
 									// to first stop
@@ -718,16 +926,27 @@ class NewConverter {
 					fromNode, toNode, length, increment, true, false,
 					120 / 3.6, 2000., 1., mode)) {
 				stop.setLinkId(link.getId());
-				if (increment != 0 && increment != stops.size() - 1) {
-
+				if (increment != 0
+						&& increment != stops2Segment.entrySet().size() - 1) {
 					links.add(link.getId());
+				} else if (increment == 0) {
+					firstLinkId = link.getId();
+				} else if (increment == stops2Segment.entrySet().size() - 1) {
+					lastLinkId = link.getId();
 				}
 			}
-
 			previous = stop;
 			increment++;
 		}
-		return links;
+
+		if (firstLinkId == null || lastLinkId == null || links.isEmpty()) {
+			return null;
+		}
+
+		NetworkRoute networkRoute = new LinkNetworkRouteImpl(firstLinkId,
+				lastLinkId);
+		networkRoute.setLinkIds(firstLinkId, links, lastLinkId);
+		return networkRoute;
 	}
 
 	// checks for used MATSim tag scheme
@@ -831,7 +1050,7 @@ class NewConverter {
 	public static void convertTransitRouteOsm_2(Relation relation,
 			Scenario scenario, Map<Relation, TransitRoute> relation2Route) {
 		List<Id<Link>> links = new ArrayList<Id<Link>>();
-		Map<Node, WaySegment> node2WaySegment = new HashMap<Node, WaySegment>();
+		Map<Node, WaySegment> node2WaySegment = new LinkedHashMap<Node, WaySegment>();
 		List<TransitStopFacility> stops = new ArrayList<TransitStopFacility>();
 
 		// create stop facilities
@@ -856,11 +1075,9 @@ class NewConverter {
 																.indexOf(node)));
 									}
 								} else {
-									node2WaySegment
-									.put(node, new WaySegment(
-											((Way) prim),
-											((Way) prim).getNodes()
-													.indexOf(node)));
+									node2WaySegment.put(node, new WaySegment(
+											((Way) prim), ((Way) prim)
+													.getNodes().indexOf(node)));
 								}
 							}
 						}
@@ -897,60 +1114,65 @@ class NewConverter {
 				}
 
 			}
-			for (Entry<Node, WaySegment> entry : node2WaySegment.entrySet()) {
-				System.out.println(entry.getKey().getName() + " "
-						+ entry.getKey().getUniqueId() + " attached to Way "
-						+ entry.getValue().way.getUniqueId() + ", index: "
-						+ entry.getValue().lowerIndex);
+		}
+		for (Entry<Node, WaySegment> entry : node2WaySegment.entrySet()) {
+			System.out.println(entry.getKey().getUniqueId() + " "
+					+ entry.getKey().getName() + " belongs to Way "
+					+ entry.getValue().way.getName() + ", index: "
+					+ entry.getValue().lowerIndex);
+		}
+		Node previous = null;
+		for (Entry<Node, WaySegment> entry : node2WaySegment.entrySet()) {
+			// stop für node erstellen
+			// route zu vorherigen node erstellen
+			if (previous != null) {
+				Way way1 = node2WaySegment.get(previous).way;
+				Way way2 = entry.getValue().way;
+				if (waysConnected(way1, way2, relation)) {
+					System.out.println(way1.getName() + " " + way2.getName()
+							+ " connected!");
+
+				} else {
+					System.out.println(way1.getName() + " " + way2.getName()
+							+ " not connected!");
+					// luftlinie
+				}
 			}
+			previous = entry.getKey();
 		}
 
-		// if (stops.isEmpty()) {
-		// return;
-		// }
-		//
-		// // create beeline route between stop facilities
-		// links = createBeeLineRoute(relation, scenario, stops);
-		//
-		// TransitSchedule schedule = scenario.getTransitSchedule();
-		// TransitScheduleFactory builder = schedule.getFactory();
-		//
-		// Id<TransitLine> lineId;
-		// if (relation.hasKey("ref")) {
-		// lineId = Id.create(relation.get("ref"), TransitLine.class);
-		// } else {
-		// lineId = Id.create(relation.getUniqueId(), TransitLine.class);
-		// }
-		//
-		// TransitLine tLine;
-		// if (!scenario.getTransitSchedule().getTransitLines()
-		// .containsKey(lineId)) {
-		// tLine = builder.createTransitLine(lineId);
-		// } else {
-		// tLine = scenario.getTransitSchedule().getTransitLines().get(lineId);
-		// }
-		//
-		// Id<Link> firstLinkId = stops.get(0).getLinkId();
-		// Id<Link> secondLinkId = stops.get(stops.size() - 1).getLinkId();
-		// NetworkRoute networkRoute = new LinkNetworkRouteImpl(firstLinkId,
-		// secondLinkId);
-		//
-		// networkRoute.setLinkIds(firstLinkId, links, secondLinkId);
-		//
-		// ArrayList<TransitRouteStop> routeStops = new
-		// ArrayList<TransitRouteStop>();
-		// for (TransitStopFacility stop : stops) {
-		// routeStops.add(builder.createTransitRouteStop(stop, 0, 0));
-		// }
-		//
-		// TransitRoute tRoute = builder.createTransitRoute(
-		// Id.create(relation.getUniqueId(), TransitRoute.class),
-		// networkRoute, routeStops, "pt");
-		//
-		// tLine.addRoute(tRoute);
-		//
-		// schedule.removeTransitLine(tLine);
-		// schedule.addTransitLine(tLine);
-		// relation2Route.put(relation, tRoute);
+	}
+
+	private static boolean waysConnected(Way way1, Way way2, Relation relation) {
+		// TODO Auto-generated method stub
+		WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+		List<WayConnectionType> connections = calc.updateLinks(relation
+				.getMembers());
+
+		List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
+		int i = primitiveList.indexOf(way1);
+		int j = primitiveList.indexOf(way2);
+
+		if (i == j) {
+			return true;
+		}
+
+		if (i > j) {
+			return false;
+		}
+
+		for (int k = i; k <= j; k++) {
+			if (k != i) {
+				if (!connections.get(k).linkPrev) {
+					return false;
+				}
+			}
+			if (k != j) {
+				if (!connections.get(k).linkNext) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }
