@@ -7,7 +7,7 @@
 
 	<!-- Please recheck translation. -->
 
-	<group icon="images/dialogs/logo.png" name="MATSim" de.name="MATSim"
+	<group icon="matsim-scenario.png" name="MATSim" de.name="MATSim"
 		fr.name="MATSim">
 		<item name="Link" de.name="Kante" icon="images/dialogs/logo.png"
 			type="way">

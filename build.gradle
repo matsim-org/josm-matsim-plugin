@@ -17,6 +17,7 @@ buildscript {
 // We use the Java builder and the download plug-in we just fetched.
 apply plugin: "java"
 apply plugin: 'download-task'
+apply plugin: "eclipse"
 
 // For the dependencies of our project (not of this build script itself), we only need the
 // local Maven cache. We use it to get the MATSim snapshot.
