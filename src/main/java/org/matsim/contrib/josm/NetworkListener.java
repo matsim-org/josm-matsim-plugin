@@ -324,8 +324,8 @@ class NetworkListener implements DataSetListener, Visitor {
 				if (relation.hasTag("route", "train", "track",
                         "bus", "light_rail", "tram", "subway")) {
 
-					NewConverter.convertTransitRouteOsm_2(relation, scenario,
-							relation2Route);
+					NewConverter.convertTransitRouteOsm(relation, scenario,
+							relation2Route, way2Links, link2Segments);
 				} else if (relation.hasTag("type", "matsimRoute")) {
 					NewConverter.convertTransitRouteMatsim(relation, scenario,
 							way2Links, relation2Route);

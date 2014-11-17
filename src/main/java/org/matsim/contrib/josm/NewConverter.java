@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +30,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
-import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
@@ -47,8 +45,6 @@ import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.tools.Geometry;
-
-import sun.nio.cs.ext.ISCII91;
 
 class NewConverter {
 	private final static Logger log = Logger.getLogger(NewConverter.class);
@@ -435,7 +431,7 @@ class NewConverter {
 
 	// create or update matsim node
 	private static void checkNode(Network network, Node node) {
-		Id<Node> nodeId = Id.create(node.getUniqueId(), Node.class);
+		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
 		if (!node.isIncomplete()) {
 			if (!network.getNodes().containsKey(nodeId)) {
 				double lat = node.getCoor().lat();
@@ -624,14 +620,16 @@ class NewConverter {
 			Map<Link, List<WaySegment>> link2Segments) {
 		// TODO Auto-generated method stub
 		List<Id<Link>> links = new ArrayList<Id<Link>>();
-		TransitStopFacility previous = null;
+		TransitStopFacility previousStop = null;
+		Link previousLink = null;
 		Id<Link> firstLinkId = null;
 		Id<Link> lastLinkId = null;
 
 		for (Entry<TransitStopFacility, WaySegment> entry : stops2Segment
 				.entrySet()) {
 			List<Link> wayLinks = null;
-		
+			List<Link> connectedWayLinks = new ArrayList<Link>();
+			Link nextLink = previousLink;
 				
 				
 			if(way2Links.containsKey(entry.getValue().way)) {
@@ -640,43 +638,22 @@ class NewConverter {
 				throw new RuntimeException("Primitive "+entry.getValue().way.getUniqueId()+"of route relation "+relation.getUniqueId()+" defines no links");
 			}
 			
-			if(previous!=null) {
-//			Node node = 
-					
-					//suche segment heraus, dazugehörigen anfangsknoten über nodeID<->stopId ->anfangslink
-					//und dann etwas wie 	private List<Link> filterConnectedLinks (wayLinks, lastLink) {
-					//							suche wegekette zu lastLink
-					// 						}
-			}
-			
-			//link für stopFacility suchen
-			for (Link link : wayLinks) {
-				if(entry.getKey().getLinkId()!=null) {
-					break;
-				}
-				for (WaySegment segment : link2Segments.get(link)) {
-					if (segment.getFirstNode().equals(entry.getValue().getFirstNode())) {
-						entry.getKey().setLinkId(link.getId());
-						
-					}
-					if(segment.getSecondNode().equals(entry.getValue().getFirstNode())) {
-						entry.getKey().setLinkId(link.getId());
-						break;
-					}  
-				}
-			}
-			log.debug("stop "+entry.getKey().getId()+" referenced by link "+entry.getKey().getLinkId());
-			
-			if(previous != null)  {
-				int i = relation.getMemberPrimitivesList().indexOf(stops2Segment.get(previous).way);
+			if(previousStop != null)  {
+				int i = relation.getMemberPrimitivesList().indexOf(stops2Segment.get(previousStop).way);
 				int j = relation.getMemberPrimitivesList().indexOf(entry.getValue().way);
 				
 				for(int k = i+1; k<j; k++) {
 					OsmPrimitive primitive = relation.getMemberPrimitivesList().get(k);
 					if(way2Links.containsKey(primitive)) {
-						for(Link link: way2Links.get(primitive)) {
-							links.add(link.getId());
-						}
+							nextLink = previousLink;
+							while(nextLink!=null) {
+								nextLink = getNextConnectedLink(way2Links.get(primitive), previousLink);
+								if(nextLink!=null) {
+									connectedWayLinks.add(nextLink);
+									log.debug("link "+previousLink.getId()+" connects with link "+nextLink.getId());
+									previousLink = nextLink;
+								}
+							}
 					} else {
 						throw new RuntimeException("Primitive "+primitive.getUniqueId()+"of route relation "+relation.getUniqueId()+" defines no links");
 					}
@@ -684,11 +661,61 @@ class NewConverter {
 				}
 			}
 			
-			//links der route hinzufügen
-			for(Link link: wayLinks) {
-				links.add(link.getId());
+			
+			if(previousStop==null) {
+				long stopId = Long.parseLong(entry.getKey().getId().toString().substring(entry.getKey().getId().toString().lastIndexOf("_")+1));
+				org.matsim.api.core.v01.network.Node matsimNode = scenario.getNetwork().getNodes().get(Id.create(stopId, org.matsim.api.core.v01.network.Node.class));
+					
+				for (Link link: wayLinks) {
+					if (link.getFromNode().equals(matsimNode)) {
+						previousLink = link;
+						connectedWayLinks.add(previousLink);
+						log.debug("stop "+entry.getKey().getName()+" starts with link "+previousLink.getId());
+						break;
+					}
+				}
 			}
-			previous = entry.getKey();
+			
+			
+			while(nextLink!=null) {
+				nextLink = getNextConnectedLink(wayLinks, previousLink);
+				if(nextLink!=null) {
+					connectedWayLinks.add(nextLink);
+					log.debug("link "+previousLink.getId()+" connects with link "+nextLink.getId());
+					previousLink = nextLink;
+				}
+			}
+			
+			
+			//link für stopFacility suchen
+			if (connectedWayLinks.isEmpty()) {
+				entry.getKey().setLinkId(previousLink.getId());
+			} else {
+				for (Link link : connectedWayLinks) {
+					if(entry.getKey().getLinkId()!=null) {
+						break;
+					}
+					for (WaySegment segment : link2Segments.get(link)) {
+						if (segment.getFirstNode().equals(entry.getValue().getFirstNode())) {
+							entry.getKey().setLinkId(link.getId());
+						}
+						if(segment.getSecondNode().equals(entry.getValue().getFirstNode())) {
+							entry.getKey().setLinkId(link.getId());
+							break;
+						}  
+					}
+				}
+			}
+			log.debug("stop "+entry.getKey().getId()+" referenced by link "+entry.getKey().getLinkId());
+			
+			
+			
+			//links der route hinzufügen
+			for(Link link: connectedWayLinks) {
+				Id<Link> id = link.getId();
+				links.add(id);
+			}
+			previousStop = entry.getKey();
 		}
 		
 		firstLinkId = links.remove(0);
@@ -702,6 +729,16 @@ class NewConverter {
 				lastLinkId);
 		networkRoute.setLinkIds(firstLinkId, links, lastLinkId);
 		return networkRoute;
+	}
+
+	private static Link getNextConnectedLink(List<Link> wayLinks,
+			Link previousLink) {
+		for(Link link: wayLinks) {
+			if(link.getFromNode().equals(previousLink.getToNode()) && !link.getToNode().equals(previousLink.getFromNode())) {
+				return link;
+			}
+		}
+		return null;
 	}
 
 	private static boolean nodesConnected(Relation relation,
@@ -720,6 +757,39 @@ class NewConverter {
 				}
 			}
 			previous = entry.getKey();
+		}
+		return true;
+	}
+	
+	private static boolean waysConnected(Way way1, Way way2, Relation relation) {
+		// TODO Auto-generated method stub
+		WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+		List<WayConnectionType> connections = calc.updateLinks(relation
+				.getMembers());
+
+		List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
+		int i = primitiveList.indexOf(way1);
+		int j = primitiveList.indexOf(way2);
+
+		if (i == j) {
+			return true;
+		}
+
+		if (i > j) {
+			return false;
+		}
+
+		for (int k = i; k <= j; k++) {
+			if (k != i) {
+				if (!connections.get(k).linkPrev) {
+					return false;
+				}
+			}
+			if (k != j) {
+				if (!connections.get(k).linkNext) {
+					return false;
+				}
+			}
 		}
 		return true;
 	}
@@ -1047,132 +1117,37 @@ class NewConverter {
 		return links;
 	}
 
-	public static void convertTransitRouteOsm_2(Relation relation,
-			Scenario scenario, Map<Relation, TransitRoute> relation2Route) {
-		List<Id<Link>> links = new ArrayList<Id<Link>>();
-		Map<Node, WaySegment> node2WaySegment = new LinkedHashMap<Node, WaySegment>();
-		List<TransitStopFacility> stops = new ArrayList<TransitStopFacility>();
+	
+//				if (!node2WaySegment.containsKey(node)) {
+//					double distance = Double.MAX_VALUE;
+//					WaySegment segment = null;
+//					for (OsmPrimitive prim : relation.getMemberPrimitivesList()) {
+//						if (prim instanceof Way) {
+//							Way way = (Way) prim;
+//							for (int i = 0; i < way.getNodesCount() - 1; i++) {
+//
+//								Node node1 = way.getNode(i);
+//								Node node2 = way.getNode(i + 1);
+//
+//								EastNorth pointOnSegment = Geometry
+//										.closestPointToSegment(
+//												node1.getEastNorth(),
+//												node2.getEastNorth(),
+//												node.getEastNorth());
+//								double distanceTmp = node.getEastNorth()
+//										.distance(pointOnSegment);
+//
+//								if (distanceTmp < distance) {
+//									distance = distanceTmp;
+//									segment = new WaySegment(way, i);
+//								}
+//							}
+//						}
+//					}
+//					node2WaySegment.put(node, segment);
+//				}
 
-		// create stop facilities
-		for (RelationMember member : relation.getMembers()) {
-			if (member.isNode() && !member.getMember().isIncomplete()) {
+	
 
-				// für jeden stop zugehörigen way finden
-				Node node = member.getNode();
-				if (node.isReferredByWays(1)) {
-					for (OsmPrimitive prim : node.getReferrers()) {
-						if (prim instanceof Way) {
-							if (((Way) prim).containsNode(node)
-									&& relation.getMemberPrimitives().contains(
-											prim)) {
-								if (node2WaySegment.containsKey(node)) {
-									if (((Way) prim).getNodes().indexOf(node) < node2WaySegment
-											.get(node).lowerIndex) {
-										node2WaySegment
-												.put(node, new WaySegment(
-														((Way) prim),
-														((Way) prim).getNodes()
-																.indexOf(node)));
-									}
-								} else {
-									node2WaySegment.put(node, new WaySegment(
-											((Way) prim), ((Way) prim)
-													.getNodes().indexOf(node)));
-								}
-							}
-						}
-					}
-				}
-
-				if (!node2WaySegment.containsKey(node)) {
-					double distance = Double.MAX_VALUE;
-					WaySegment segment = null;
-					for (OsmPrimitive prim : relation.getMemberPrimitivesList()) {
-						if (prim instanceof Way) {
-							Way way = (Way) prim;
-							for (int i = 0; i < way.getNodesCount() - 1; i++) {
-
-								Node node1 = way.getNode(i);
-								Node node2 = way.getNode(i + 1);
-
-								EastNorth pointOnSegment = Geometry
-										.closestPointToSegment(
-												node1.getEastNorth(),
-												node2.getEastNorth(),
-												node.getEastNorth());
-								double distanceTmp = node.getEastNorth()
-										.distance(pointOnSegment);
-
-								if (distanceTmp < distance) {
-									distance = distanceTmp;
-									segment = new WaySegment(way, i);
-								}
-							}
-						}
-					}
-					node2WaySegment.put(node, segment);
-				}
-
-			}
-		}
-		for (Entry<Node, WaySegment> entry : node2WaySegment.entrySet()) {
-			System.out.println(entry.getKey().getUniqueId() + " "
-					+ entry.getKey().getName() + " belongs to Way "
-					+ entry.getValue().way.getName() + ", index: "
-					+ entry.getValue().lowerIndex);
-		}
-		Node previous = null;
-		for (Entry<Node, WaySegment> entry : node2WaySegment.entrySet()) {
-			// stop für node erstellen
-			// route zu vorherigen node erstellen
-			if (previous != null) {
-				Way way1 = node2WaySegment.get(previous).way;
-				Way way2 = entry.getValue().way;
-				if (waysConnected(way1, way2, relation)) {
-					System.out.println(way1.getName() + " " + way2.getName()
-							+ " connected!");
-
-				} else {
-					System.out.println(way1.getName() + " " + way2.getName()
-							+ " not connected!");
-					// luftlinie
-				}
-			}
-			previous = entry.getKey();
-		}
-
-	}
-
-	private static boolean waysConnected(Way way1, Way way2, Relation relation) {
-		// TODO Auto-generated method stub
-		WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-		List<WayConnectionType> connections = calc.updateLinks(relation
-				.getMembers());
-
-		List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
-		int i = primitiveList.indexOf(way1);
-		int j = primitiveList.indexOf(way2);
-
-		if (i == j) {
-			return true;
-		}
-
-		if (i > j) {
-			return false;
-		}
-
-		for (int k = i; k <= j; k++) {
-			if (k != i) {
-				if (!connections.get(k).linkPrev) {
-					return false;
-				}
-			}
-			if (k != j) {
-				if (!connections.get(k).linkNext) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+	
 }
