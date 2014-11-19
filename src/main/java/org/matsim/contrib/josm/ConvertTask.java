@@ -19,9 +19,12 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.geometry.CoordImpl;
+import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -117,7 +120,6 @@ class ConvertTask extends PleaseWaitRunnable {
 		HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
 		HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
-		HashMap<TransitStopFacility, TransitStopFacility> stop2Stop = new HashMap<>();
 		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
 
 		this.progressMonitor.setTicks(4);
@@ -209,59 +211,52 @@ class ConvertTask extends PleaseWaitRunnable {
 
 				for (TransitRouteStop tRStop : route.getStops()) {
 
-					TransitStopFacility stop = scenario
-							.getTransitSchedule()
-							.getFactory()
-							.createTransitStopFacility(
-									tRStop.getStopFacility().getId(),
-									tRStop.getStopFacility().getCoord(), true);
+					Link oldStopLink = tempScenario.getNetwork().getLinks()
+							.get(tRStop.getStopFacility().getLinkId());
+					org.openstreetmap.josm.data.osm.Node osmNode = node2OsmNode
+							.get(oldStopLink.getToNode());
+					relation.addMember(new RelationMember("stop", osmNode));
+
+					TransitStopFacility stop = NewConverter.createStopFacility(
+							osmNode, relation, scenario.getTransitSchedule());
 					stop.setName(tRStop.getStopFacility().getName());
-					Way stopLink2Way = linkId2Way.get(tRStop.getStopFacility()
-							.getLinkId());
-					stopLink2Way.put("stop_name", tRStop.getStopFacility()
-							.getName());
-					stopLink2Way.put("stop_id", tRStop.getStopFacility()
-							.getId().toString());
-					List<Link> newStopLinks = way2Links.get(stopLink2Way);
-					Id<Link> linkId = newStopLinks.get(newStopLinks.size() - 1)
-							.getId();
-					stop.setLinkId(linkId);
+					osmNode.put("name", tRStop.getStopFacility().getName());
+					Way newWay = linkId2Way.get(oldStopLink.getId());
+					List<Link> newWayLinks = way2Links.get(newWay);
+					Link singleLink = newWayLinks.get(0);
+					Id<Link> id = Id.createLinkId(singleLink.getId());
+					stop.setLinkId(id);
 
 					newTransitStops.add(scenario.getTransitSchedule()
 							.getFactory().createTransitRouteStop(stop, 0, 0));
-
 					scenario.getTransitSchedule().addStopFacility(stop);
 				}
 
-				List<Link> startWay2Links = way2Links.get(linkId2Way.get(route
-						.getRoute().getStartLinkId()));
-				Id<Link> firstLinkId = startWay2Links.get(
-						startWay2Links.size() - 1).getId();
-				RelationMember start = new RelationMember("stop_link",
-						linkId2Way.get(route.getRoute().getStartLinkId()));
-				relation.addMember(start);
-
 				List<Id<Link>> links = new ArrayList<>();
+				Id<Link> oldStartId = route.getRoute().getStartLinkId();
+				Link oldStartLink = tempScenario.getNetwork().getLinks().get(oldStartId);
+				Way newStartWay = linkId2Way.get(oldStartLink.getId());
+				List<Link> newStartLinks = way2Links.get(newStartWay);
+				Id<Link> startId = newStartLinks.get(0).getId();
+				
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getStartLinkId())));
 				for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-					RelationMember member = new RelationMember("stop_link",
-							linkId2Way.get(linkId));
-					relation.addMember(member);
-					for (Link link : way2Links.get(linkId2Way.get(linkId))) {
-						links.add(link.getId());
-					}
+					links.add(way2Links.get(linkId2Way.get(linkId)).get(0).getId());
+					relation.addMember(new RelationMember("", linkId2Way
+							.get(linkId)));
 				}
-				RelationMember end = new RelationMember("stop_link",
-						linkId2Way.get(route.getRoute().getEndLinkId()));
-				relation.addMember(end);
-				List<Link> endWay2Links = way2Links.get(linkId2Way.get(route
-						.getRoute().getEndLinkId()));
-				Id<Link> lastLinkId = endWay2Links.get(endWay2Links.size() - 1)
-						.getId();
+				Id<Link> oldEndId = route.getRoute().getEndLinkId();
+				Link oldEndLink = tempScenario.getNetwork().getLinks().get(oldEndId);
+				Way newEndWay = linkId2Way.get(oldEndLink.getId());
+				List<Link> newEndLinks = way2Links.get(newEndWay);
+				Id<Link> endId = newEndLinks.get(0).getId();
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getEndLinkId())));
 
-				NetworkRoute networkRoute = new LinkNetworkRouteImpl(
-						firstLinkId, lastLinkId);
-
-				networkRoute.setLinkIds(firstLinkId, links, lastLinkId);
+				NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
+						endId);
+				networkRoute.setLinkIds(startId, links, endId);
 
 				TransitRoute newRoute = scenario
 						.getTransitSchedule()
@@ -269,9 +264,9 @@ class ConvertTask extends PleaseWaitRunnable {
 						.createTransitRoute(route.getId(), networkRoute,
 								newTransitStops, "pt");
 				newLine.addRoute(newRoute);
-				relation.put("type", "matsimRoute");
-				relation.put("routeId", newRoute.getId().toString());
-				relation.put("name", newLine.getId().toString());
+				relation.put("type", "route");
+				relation.put("route", route.getTransportMode());
+				relation.put("ref", line.getId().toString());
 
 				dataSet.addPrimitive(relation);
 				relation2Route.put(relation, newRoute);
@@ -280,16 +275,14 @@ class ConvertTask extends PleaseWaitRunnable {
 		}
 
 		node2OsmNode.clear();
-		stop2Stop.clear();
 		linkId2Way.clear();
 
 		this.progressMonitor.setTicks(7);
 		this.progressMonitor.setCustomText("creating layer..");
 
 		// create layer
-		newLayer = new MATSimLayer(dataSet, null, null, scenario,
-                way2Links, link2Segment,
-				relation2Route);
+		newLayer = new MATSimLayer(dataSet, null, null, scenario, way2Links,
+				link2Segment, relation2Route);
 	}
 
 	/**

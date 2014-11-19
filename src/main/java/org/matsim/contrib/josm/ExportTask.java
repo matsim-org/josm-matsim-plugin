@@ -2,6 +2,9 @@ package org.matsim.contrib.josm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 
@@ -16,10 +19,15 @@ import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.population.routes.LinkNetworkRouteImpl;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.UncheckedIOException;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.layer.Layer;
@@ -142,6 +150,32 @@ class ExportTask extends PleaseWaitRunnable {
 			this.progressMonitor.setCustomText("writing out xml file(s)..");
 			new NetworkWriter(network).write(networkFile.getAbsolutePath());
 			if (schedule != null) {
+				for(TransitStopFacility stop: schedule.getFacilities().values()) {
+					Id<Link> oldId = stop.getLinkId();
+					Link oldLink = ((MATSimLayer) layer).getMatsimScenario()
+							.getNetwork().getLinks().get(oldId);
+					
+					Id<Link> newId = Id.createLinkId(((LinkImpl)oldLink).getOrigId());
+					stop.setLinkId(newId);
+				}
+				for(TransitLine line: schedule.getTransitLines().values()) {
+					for(TransitRoute route: line.getRoutes().values()) {
+						List<Id<Link>> links = new ArrayList<Id<Link>>();
+						Id<Link> startLinkId = Id.createLinkId(((LinkImpl)((MATSimLayer) layer).getMatsimScenario()
+								.getNetwork().getLinks().get(route.getRoute().getStartLinkId())).getOrigId());
+						for(Id<Link> id: route.getRoute().getLinkIds()) {
+							links.add(Id.createLinkId(((LinkImpl)((MATSimLayer) layer).getMatsimScenario()
+									.getNetwork().getLinks().get(id)).getOrigId()));
+						}
+						Id<Link> endLinkId = Id.createLinkId(((LinkImpl)((MATSimLayer) layer).getMatsimScenario()
+								.getNetwork().getLinks().get(route.getRoute().getEndLinkId())).getOrigId());
+						NetworkRoute networkRoute = new LinkNetworkRouteImpl(startLinkId,
+								endLinkId);
+						networkRoute.setLinkIds(startLinkId, links, endLinkId);
+						route.setRoute(networkRoute);
+					}
+					
+				}
 				new TransitScheduleWriter(schedule).writeFile(scheduleFile
 						.getAbsolutePath());
 			}

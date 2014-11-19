@@ -267,73 +267,59 @@ class NetworkListener implements DataSetListener, Visitor {
 	public void visit(Relation relation) {
 		// convert Relation, remove previous references in the MATSim data
 		if (!relation.isDeleted()
-				&& relation.hasTag("type", "route",
-                "matsimRoute")) {
-			if (relation.hasTag("route", "train", "track",
-                    "bus", "light_rail", "tram", "subway")
-					|| relation.hasTag("type", "matsimRoute")) {
+				&& relation.hasTag("type", "route")
+				&& relation.hasTag("route", "train", "track", "bus",
+						"light_rail", "tram", "subway")) {
 
-				if (relation2Route.containsKey(relation)) {
-					TransitRoute route = relation2Route.get(relation);
-					for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-						if (!link2Segments.containsKey(scenario.getNetwork()
-								.getLinks().get(linkId))) {
-							scenario.getNetwork().removeLink(linkId);
-						}
+			if (relation2Route.containsKey(relation)) {
+				TransitRoute route = relation2Route.get(relation);
+				for (Id<Link> linkId : route.getRoute().getLinkIds()) {
+					if (!link2Segments.containsKey(scenario.getNetwork()
+							.getLinks().get(linkId))) {
+						scenario.getNetwork().removeLink(linkId);
 					}
-
-					Id<TransitLine> lineId;
-					if (relation.hasKey("ref")) {
-						lineId = Id.create(relation.get("ref"),
-								TransitLine.class);
-					} else if (relation.hasKey("name")) {
-						lineId = Id.create(relation.get("name"),
-								TransitLine.class);
-					} else {
-						lineId = Id.create(relation.getUniqueId(),
-								TransitLine.class);
-					}
-
-					for (TransitRouteStop stop : route.getStops()) {
-						Id<Link> linkId = stop.getStopFacility().getLinkId();
-						Link link = scenario.getNetwork().getLinks()
-								.get(linkId);
-						if (!link2Segments.containsKey(link)) {
-							scenario.getNetwork().removeLink(linkId);
-						}
-						scenario.getTransitSchedule().removeStopFacility(
-								stop.getStopFacility());
-					}
-
-					if (scenario.getTransitSchedule().getTransitLines()
-							.containsKey(lineId)) {
-						log.debug("line found");
-						TransitLine line = scenario.getTransitSchedule()
-								.getTransitLines().get(lineId);
-						if (line.getRoutes().containsValue(route)) {
-							line.removeRoute(route);
-						}
-						if (line.getRoutes().isEmpty()) {
-							scenario.getTransitSchedule().removeTransitLine(
-									line);
-						}
-					}
-					relation2Route.remove(relation);
 				}
 
-				if (relation.hasTag("route", "train", "track",
-                        "bus", "light_rail", "tram", "subway")) {
-
-					NewConverter.convertTransitRouteOsm(relation, scenario,
-							relation2Route, way2Links, link2Segments);
-				} else if (relation.hasTag("type", "matsimRoute")) {
-					NewConverter.convertTransitRouteMatsim(relation, scenario,
-							way2Links, relation2Route);
+				Id<TransitLine> lineId;
+				if (relation.hasKey("ref")) {
+					lineId = Id.create(relation.get("ref"), TransitLine.class);
+				} else if (relation.hasKey("name")) {
+					lineId = Id.create(relation.get("name"), TransitLine.class);
+				} else {
+					lineId = Id.create(relation.getUniqueId(),
+							TransitLine.class);
 				}
-				MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
+
+				for (TransitRouteStop stop : route.getStops()) {
+					Id<Link> linkId = stop.getStopFacility().getLinkId();
+					Link link = scenario.getNetwork().getLinks().get(linkId);
+					if (!link2Segments.containsKey(link)) {
+						scenario.getNetwork().removeLink(linkId);
+					}
+					scenario.getTransitSchedule().removeStopFacility(
+							stop.getStopFacility());
+				}
+
+				if (scenario.getTransitSchedule().getTransitLines()
+						.containsKey(lineId)) {
+					log.debug("line found");
+					TransitLine line = scenario.getTransitSchedule()
+							.getTransitLines().get(lineId);
+					if (line.getRoutes().containsValue(route)) {
+						line.removeRoute(route);
+					}
+					if (line.getRoutes().isEmpty()) {
+						scenario.getTransitSchedule().removeTransitLine(line);
+					}
+				}
+				relation2Route.remove(relation);
 			}
-		}
 
+			NewConverter.convertTransitRouteOsm(relation, scenario,
+					relation2Route, way2Links, link2Segments);
+			
+			MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
+		}
 	}
 
 	@Override

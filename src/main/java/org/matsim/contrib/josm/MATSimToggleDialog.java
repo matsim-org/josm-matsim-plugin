@@ -485,7 +485,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			TransitRoute route = routes.get(rowIndex);
 			if (columnIndex == 0) {
-				return route.getId();
+				return route.getId().toString();
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {

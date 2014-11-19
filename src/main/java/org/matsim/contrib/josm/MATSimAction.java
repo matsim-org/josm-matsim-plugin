@@ -60,8 +60,8 @@ class MATSimAction {
 	public class ImportAction extends JosmAction {
 
 		public ImportAction() {
-			super(tr("Import MATSim network"), "open.png",
-					tr("Import MATSim network file"), Shortcut
+			super(tr("Import MATSim scenario"), "open.png",
+					tr("Import MATSim scenario"), Shortcut
 							.registerShortcut("menu:matsimImport",
 									tr("Menu: {0}", tr("MATSim Import")),
 									KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
