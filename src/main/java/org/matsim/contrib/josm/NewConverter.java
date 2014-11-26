@@ -18,7 +18,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.josm.OsmConvertDefaults.OsmHighwayDefaults;
+import org.matsim.contrib.josm.OsmConvertDefaults.OsmWayDefaults;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
@@ -49,6 +49,7 @@ class NewConverter {
 
 	private final static String TAG_LANES = "lanes";
 	private final static String TAG_HIGHWAY = "highway";
+	private final static String TAG_RAILWAY = "railway";
 	private final static String TAG_MAXSPEED = "maxspeed";
 	private final static String TAG_JUNCTION = "junction";
 	private final static String TAG_ONEWAY = "oneway";
@@ -60,7 +61,7 @@ class NewConverter {
 			TransportMode.pt, TransportMode.ride, TransportMode.transit_walk,
 			TransportMode.walk);
 
-	static Map<String, OsmHighwayDefaults> highwayDefaults;
+	static Map<String, OsmWayDefaults> wayDefaults;
 
 	// converts complete data layer and fills the given MATSim data structures
 	// as well as data mappings
@@ -69,7 +70,7 @@ class NewConverter {
 			Map<Link, List<WaySegment>> link2Segments,
 			Map<Relation, TransitRoute> relation2Route) {
 		log.info("=== Starting conversion of Osm data ===");
-		log.setLevel(Level.DEBUG);
+		log.setLevel(Level.OFF);
 
 		// could be used for area filtering in future releases
 		// List<JoinedPolygon> polygons = new ArrayList<JoinedPolygon>();
@@ -143,12 +144,15 @@ class NewConverter {
 		log.info("### Way " + way.getUniqueId() + " (" + way.getNodesCount()
 				+ " nodes) ###");
 		List<Link> links = new ArrayList<Link>();
-		highwayDefaults = OsmConvertDefaults.getDefaults();
+		wayDefaults = OsmConvertDefaults.getWayDefaults();
+
 		if (way.getNodesCount() > 1) {
-			if (way.hasTag(TAG_HIGHWAY, highwayDefaults.keySet())
-					|| meetsMatsimReq(way.getKeys())) {
+			if (way.hasTag(TAG_HIGHWAY, wayDefaults.keySet())
+					|| meetsMatsimReq(way.getKeys())
+					|| (way.hasTag(TAG_RAILWAY, wayDefaults.keySet()) && elementOfConnectedRoute(way))) {
 				List<Node> nodeOrder = new ArrayList<Node>();
 				StringBuilder nodeOrderLog = new StringBuilder();
+				log.setLevel(Level.OFF);
 				for (int l = 0; l < way.getNodesCount(); l++) {
 					Node current = way.getNode(l);
 					if (current.getDataSet() == null) {
@@ -192,9 +196,12 @@ class NewConverter {
 									&& prim.hasTag("route", new String[] {
 											"train", "track", "bus",
 											"light_rail", "tram", "subway" })
-									&& prim.hasTag("type", new String[] {
-											"route", "matsimRoute" })) {
+									&& prim.hasTag("type", "route") && !nodeOrder.contains(current)) {
 								nodeOrder.add(current);
+								log.debug("--- Way " + way.getUniqueId()
+										+ ": dumped node " + l + " ("
+										+ current.getUniqueId()
+										+ ") stop position "+current.getLocalName());
 							}
 						}
 
@@ -222,11 +229,20 @@ class NewConverter {
 				boolean onewayReverse = false;
 
 				Map<String, String> keys = way.getKeys();
-				if (keys.containsKey(TAG_HIGHWAY)) {
-					String highway = keys.get(TAG_HIGHWAY);
+				if (keys.containsKey(TAG_HIGHWAY)
+						|| keys.containsKey(TAG_RAILWAY)) {
+					
+					String wayType ;
+					if (keys.containsKey(TAG_HIGHWAY)) {
+						wayType = keys.get(TAG_HIGHWAY);
+					} else if (keys.containsKey(TAG_RAILWAY)) {
+						wayType = keys.get(TAG_RAILWAY);
+					} else {
+						return;
+					}
 
 					// load defaults
-					OsmHighwayDefaults defaults = highwayDefaults.get(highway);
+					OsmWayDefaults defaults = wayDefaults.get(wayType);
 					if (defaults != null) {
 
 						if (defaults.hierarchy > Main.pref.getInteger(
@@ -274,9 +290,9 @@ class NewConverter {
 						// oneway,
 						// the default number of lanes should be two instead
 						// of one.
-						if (highway.equalsIgnoreCase("trunk")
-								|| highway.equalsIgnoreCase("primary")
-								|| highway.equalsIgnoreCase("secondary")) {
+						if (wayType.equalsIgnoreCase("trunk")
+								|| wayType.equalsIgnoreCase("primary")
+								|| wayType.equalsIgnoreCase("secondary")) {
 							if (oneway && nofLanes == 1.0) {
 								nofLanes = 2.0;
 							}
@@ -371,7 +387,12 @@ class NewConverter {
 				}
 
 				if (modes.isEmpty()) {
-					modes.add(TransportMode.car);
+					if (keys.containsKey(TAG_RAILWAY)) {
+						modes.add(TransportMode.pt);
+					}
+					if (keys.containsKey(TAG_HIGHWAY)) {
+						modes.add(TransportMode.car);
+					}
 				}
 
 				long increment = 0;
@@ -429,6 +450,31 @@ class NewConverter {
 		}
 	}
 
+	private static boolean elementOfConnectedRoute(Way way) {
+		for (OsmPrimitive primitive: way.getReferrers()) {
+			if(primitive instanceof Relation && primitive.hasTag("type", "route")) {
+				List<Way> list = new ArrayList<Way>();
+				for(OsmPrimitive member: ((Relation)primitive).getMemberPrimitivesList()) {
+					if(member instanceof Way) {
+						list.add((Way)member);
+					}
+				}
+				if(list.size()<2) {
+					return false;
+				}
+				for(int i=1; i<list.size();i++) {
+					if(!waysConnected(list.get(i-1), list.get(i), (Relation) primitive)) {
+						return false;
+					}
+				}
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+
 	// create or update matsim node
 	private static void checkNode(Network network, Node node) {
 		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(
@@ -464,7 +510,7 @@ class NewConverter {
 			}
 		}
 	}
-	
+
 	// creates links between given nodes along the respective WaySegments.
 	// adapted from original OsmNetworkReader
 	private static List<Link> createLink(final Network network,
@@ -544,14 +590,12 @@ class NewConverter {
 		return links;
 	}
 
-	
 	public static void convertTransitRouteOsm(Relation relation,
 			Scenario scenario, Map<Relation, TransitRoute> relation2Route,
 			Map<Way, List<Link>> way2Links,
 			Map<Link, List<WaySegment>> link2Segments) {
 		NetworkRoute route;
 		Map<TransitStopFacility, WaySegment> stops2Segment = new LinkedHashMap<TransitStopFacility, WaySegment>();
-
 		log.debug("converting route relation" + relation.getUniqueId() + " "
 				+ relation.getName());
 		// filtere nodes heraus
@@ -664,8 +708,7 @@ class NewConverter {
 		schedule.addTransitLine(tLine);
 		relation2Route.put(relation, tRoute);
 	}
-	
-	
+
 	private static boolean nodesOnWay(Relation relation, Set<Node> set,
 			Map<Node, WaySegment> nodes2Segment) {
 		for (Node node : set) {
@@ -709,8 +752,7 @@ class NewConverter {
 		}
 		return true;
 	}
-	
-	
+
 	private static boolean nodesConnected(Relation relation,
 			Map<Node, WaySegment> nodes2Segment) {
 		Node previous = null;
@@ -763,8 +805,7 @@ class NewConverter {
 		}
 		return true;
 	}
-	
-	
+
 	// create stop facility at position of given node, if already used by
 	// another route, duplicate stop with incremental id
 	protected static TransitStopFacility createStopFacility(Node node,
@@ -793,8 +834,6 @@ class NewConverter {
 		return stop;
 	}
 
-	
-
 	private static NetworkRoute createConnectedWayRoute(Relation relation,
 			Scenario scenario,
 			Map<TransitStopFacility, WaySegment> stops2Segment,
@@ -806,7 +845,7 @@ class NewConverter {
 		Link previousLink = null;
 		Id<Link> firstLinkId = null;
 		Id<Link> lastLinkId = null;
-
+		log.setLevel(Level.OFF);
 		for (Entry<TransitStopFacility, WaySegment> entry : stops2Segment
 				.entrySet()) {
 			List<Link> wayLinks = null;
@@ -816,10 +855,7 @@ class NewConverter {
 			if (way2Links.containsKey(entry.getValue().way)) {
 				wayLinks = way2Links.get(entry.getValue().way);
 			} else {
-				throw new RuntimeException("Primitive "
-						+ entry.getValue().way.getUniqueId()
-						+ "of route relation " + relation.getUniqueId()
-						+ " defines no links");
+				return null;
 			}
 
 			if (previousStop != null) {
@@ -850,7 +886,6 @@ class NewConverter {
 								+ "of route relation " + relation.getUniqueId()
 								+ " defines no links");
 					}
-
 				}
 			}
 
@@ -911,7 +946,7 @@ class NewConverter {
 					}
 				}
 			}
-			log.debug("stop " + entry.getKey().getId() + " referenced by link "
+			log.debug("stop " + entry.getKey().getId() + " "+ entry.getKey().getName() +" referenced by link "
 					+ entry.getKey().getLinkId());
 
 			// links der route hinzufügen
@@ -953,8 +988,6 @@ class NewConverter {
 		}
 		return null;
 	}
-
-	
 
 	private static NetworkRoute createBeeLineRoute(Relation relation,
 			Scenario scenario,
@@ -1033,7 +1066,6 @@ class NewConverter {
 			return null;
 		}
 	}
-
 
 	// if (!node2WaySegment.containsKey(node)) {
 	// double distance = Double.MAX_VALUE;

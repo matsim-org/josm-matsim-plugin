@@ -11,17 +11,18 @@ import java.util.Map;
  * 
  */
 class OsmConvertDefaults {
-	private static final Map<String, OsmHighwayDefaults> defaults = new HashMap<>();
+	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
-	static final String[] types = { "motorway", "motorway_link", "trunk",
+	static final String[] wayTypes = { "motorway", "motorway_link", "trunk",
 			"trunk_link", "primary", "primary_link", "secondary", "tertiary",
-			"minor", "unclassified", "residential", "living_street" };
+			"minor", "unclassified", "residential", "living_street", "rail",
+			"light_rail", "tram", "subway" };
 
-	static final String[] attributes = { "hierarchy", "lanes", "freespeed",
+	static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed",
 			"freespeedFactor", "laneCapacity", "oneway" };
 
-	public static Map<String, OsmHighwayDefaults> getDefaults() {
-		return defaults;
+	public static Map<String, OsmWayDefaults> getWayDefaults() {
+		return wayDefaults;
 	}
 
 	static void load() {
@@ -72,20 +73,45 @@ class OsmConvertDefaults {
 				Main.pref.get("matsim_convertDefaults_living_street", "6;1;"
 						+ Double.toString(15. / 3.6) + ";1.0;300;false"));
 
-        for (String type : types) {
-            String temp = values.get(type);
-            String tempArray[] = temp.split(";");
+		values.put(
+				"rail",
+				Main.pref.get(
+						"matsim_convertDefaults_rail",
+						"1;1;" + Double.toString(100 / 3.6) + ";1.0;"
+								+ Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put(
+				"light_rail",
+				Main.pref.get(
+						"matsim_convertDefaults_light_rail",
+						"2;1;" + Double.toString(60 / 3.6) + ";1.0;"
+								+ Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put(
+				"tram",
+				Main.pref.get(
+						"matsim_convertDefaults_tram",
+						"4;1;" + Double.toString(50 / 3.6) + ";1.0;"
+								+ Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put(
+				"subway",
+				Main.pref.get(
+						"matsim_convertDefaults_subway",
+						"3;1;" + Double.toString(80 / 3.6) + ";1.0;"
+								+ Double.toString(Double.MAX_VALUE) + ";false"));
 
-            int hierarchy = Integer.parseInt(tempArray[0]);
-            double lanes = Double.parseDouble(tempArray[1]);
-            double freespeed = Double.parseDouble(tempArray[2]);
-            double freespeedFactor = Double.parseDouble(tempArray[3]);
-            double laneCapacity = Double.parseDouble(tempArray[4]);
-            boolean oneway = (Boolean.parseBoolean(tempArray[5]));
+		for (String type : wayTypes) {
+			String temp = values.get(type);
+			String tempArray[] = temp.split(";");
 
-            defaults.put(type, new OsmHighwayDefaults(hierarchy, lanes,
-                    freespeed, freespeedFactor, laneCapacity, oneway));
-        }
+			int hierarchy = Integer.parseInt(tempArray[0]);
+			double lanes = Double.parseDouble(tempArray[1]);
+			double freespeed = Double.parseDouble(tempArray[2]);
+			double freespeedFactor = Double.parseDouble(tempArray[3]);
+			double laneCapacity = Double.parseDouble(tempArray[4]);
+			boolean oneway = (Boolean.parseBoolean(tempArray[5]));
+
+			wayDefaults.put(type, new OsmWayDefaults(hierarchy, lanes,
+					freespeed, freespeedFactor, laneCapacity, oneway));
+		}
 	}
 
 	static void reset() {
@@ -116,7 +142,7 @@ class OsmConvertDefaults {
 				"6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false");
 	}
 
-	static class OsmHighwayDefaults {
+	static class OsmWayDefaults {
 
 		public final int hierarchy;
 		public final double lanes;
@@ -125,7 +151,7 @@ class OsmConvertDefaults {
 		public final double laneCapacity;
 		public final boolean oneway;
 
-		public OsmHighwayDefaults(final int hierarchy, final double lanes,
+		public OsmWayDefaults(final int hierarchy, final double lanes,
 				final double freespeed, final double freespeedFactor,
 				final double laneCapacity, final boolean oneway) {
 			this.hierarchy = hierarchy;

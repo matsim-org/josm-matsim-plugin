@@ -106,7 +106,7 @@ public class MapRenderer extends StyledMapRenderer {
 									trainDashes, Color.white,
 									Properties.wayOffset * -1, showOrientation,
 									showHeadArrowOnly, !way.hasTag("highway",
-											OsmConvertDefaults.getDefaults()
+											OsmConvertDefaults.getWayDefaults()
 													.keySet()), onewayReversed);
 						} else { // draw simple blue lines for other links, if
 									// way is not converted by highway tag, draw
@@ -115,7 +115,7 @@ public class MapRenderer extends StyledMapRenderer {
 									dashes, dashedColor, Properties.wayOffset
 											* -1, showOrientation,
 									showHeadArrowOnly, !way.hasTag("highway",
-											OsmConvertDefaults.getDefaults()
+											OsmConvertDefaults.getWayDefaults()
 													.keySet()), onewayReversed);
 						}
 						return;

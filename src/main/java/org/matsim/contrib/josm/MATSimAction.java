@@ -8,18 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -61,43 +60,36 @@ class MATSimAction {
 
 		public ImportAction() {
 			super(tr("Import MATSim scenario"), "open.png",
-					tr("Import MATSim scenario"), Shortcut
-							.registerShortcut("menu:matsimImport",
-									tr("Menu: {0}", tr("MATSim Import")),
-									KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
+					tr("Import MATSim scenario"), Shortcut.registerShortcut(
+							"menu:matsimImport",
+							tr("Menu: {0}", tr("MATSim Import")),
+							KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			JFileChooser chooser = new JFileChooser(
-					System.getProperty("user.home"));
-			chooser.setApproveButtonText("Import");
-			chooser.setDialogTitle("MATSim-Import");
-			FileFilter filter = new FileNameExtensionFilter("Network-XML",
-					"xml");
-			chooser.setFileFilter(filter);
-			int result = chooser.showOpenDialog(Main.parent);
-			if (result == JFileChooser.APPROVE_OPTION
-					&& chooser.getSelectedFile().getAbsolutePath() != null) {
-				String path = chooser.getSelectedFile().getAbsolutePath();
-				ImportDialog.path.setText(path);
-				ImportDialog dialog = new ImportDialog();
-				JOptionPane pane = new JOptionPane(dialog,
-						JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
-				dlg.setAlwaysOnTop(true);
-				dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			ImportDialog dialog = new ImportDialog();
+			JOptionPane pane = new JOptionPane(dialog,
+					JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+			JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
+			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-				dlg.setVisible(true);
-				if (pane.getValue() != null) {
-					if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-						ImportTask task = new ImportTask(path);
+			dlg.setVisible(true);
+			if (pane.getValue() != null) {
+				if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
+					if(!dialog.networkPathButton.getText().equals("choose")) {
+						if(dialog.schedulePathButton.getText().equals("choose")) {
+							dialog.schedulePathButton.setText(null);
+						}
+						ImportTask task = new ImportTask(
+								dialog.networkPathButton.getText(),
+								dialog.schedulePathButton.getText());
 						Main.worker.execute(task);
 					}
 				}
-				dlg.dispose();
 			}
+			dlg.dispose();
 		}
 	}
 
@@ -125,10 +117,9 @@ class MATSimAction {
 			Config config = ConfigUtils.createConfig();
 			Scenario scenario = ScenarioUtils.createScenario(config);
 			MATSimLayer layer = new MATSimLayer(dataSet, "new Layer", null,
-					scenario,
-                    new HashMap<Way, List<Link>>(),
+					scenario, new HashMap<Way, List<Link>>(),
 					new HashMap<Link, List<WaySegment>>(),
-					new HashMap<Relation, TransitRoute>());
+					new HashMap<Relation, TransitRoute>(), new HashMap<TransitStopFacility, Id<TransitStopFacility>>());
 			Main.main.addLayer(layer);
 		}
 	}
@@ -143,7 +134,7 @@ class MATSimAction {
 	@SuppressWarnings("serial")
 	public static class ConvertAction extends JosmAction {
 
-        public ConvertAction() {
+		public ConvertAction() {
 			super(tr("Convert to MATSim Layer"), null,
 					tr("Convert Osm layer to MATSim network layer"), Shortcut
 							.registerShortcut(

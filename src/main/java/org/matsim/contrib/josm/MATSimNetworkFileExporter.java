@@ -115,8 +115,17 @@ final class MATSimNetworkFileExporter extends FileExporter {
 
 		// start export task if not aborted
 		if (okToExport) {
-			file.mkdirs();
-			ExportTask task = new ExportTask(file);
+			ExportTask task;
+			if(file.getAbsolutePath().endsWith(".xml")) {
+				task = new ExportTask(file, false);
+			} else if(file.getAbsolutePath().endsWith(".")) {
+				file = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf(".")));
+				file.mkdir();
+				task = new ExportTask(file, true);
+			} else {
+				file.mkdir();
+				task = new ExportTask(file, true);
+			}
 			Main.worker.execute(task);
 		}
 

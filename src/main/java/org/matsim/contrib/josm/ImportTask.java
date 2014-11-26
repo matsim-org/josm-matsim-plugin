@@ -2,6 +2,7 @@ package org.matsim.contrib.josm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,16 +17,23 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.MatsimNetworkReader;
 import org.matsim.core.network.NodeImpl;
+import org.matsim.core.population.routes.LinkNetworkRouteImpl;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.io.UncheckedIOException;
+import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -48,12 +56,14 @@ class ImportTask extends PleaseWaitRunnable {
 	 * The String representing the id tagging-key for ways.
 	 */
 	public static final String WAY_TAG_ID = "id";
-    private final String path;
+	private final String networkPath;
+	private final String schedulePath;
 	private DataSet dataSet;
 	private Scenario scenario;
-    private HashMap<Way, List<Link>> way2Links;
+	private HashMap<Way, List<Link>> way2Links;
 	private HashMap<Link, List<WaySegment>> link2Segment;
-	private final HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
+	private HashMap<Relation, TransitRoute> relation2Route;
+	private HashMap<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId;
 
 	/**
 	 * Creates a new Import task with the given <code>path</code>.
@@ -61,9 +71,10 @@ class ImportTask extends PleaseWaitRunnable {
 	 * @param path
 	 *            The path to be imported from
 	 */
-	public ImportTask(String path) {
+	public ImportTask(String networkPath, String schedulePath) {
 		super("MATSim Import");
-		this.path = path;
+		this.networkPath = networkPath;
+		this.schedulePath = schedulePath;
 	}
 
 	/**
@@ -81,9 +92,8 @@ class ImportTask extends PleaseWaitRunnable {
 	protected void finish() {
 		// layer = null happens if Exception happens during import,
 		// as Exceptions are handled only after this method is called.
-        MATSimLayer layer = new MATSimLayer(dataSet, ImportDialog.path.getText(), new File(
-                path), scenario, way2Links, link2Segment,
-                relation2Route);
+		MATSimLayer layer = new MATSimLayer(dataSet, networkPath, new File(
+				networkPath), scenario, way2Links, link2Segment, relation2Route, facility2OrigId);
 		if (layer != null) {
 			Main.main.addLayer(layer);
 			Main.map.mapView.setActiveLayer(layer);
@@ -96,13 +106,14 @@ class ImportTask extends PleaseWaitRunnable {
 	@Override
 	protected void realRun() throws SAXException, IOException,
 			OsmTransferException, UncheckedIOException {
-		this.progressMonitor.setTicksCount(4);
+		this.progressMonitor.setTicksCount(6);
 		this.progressMonitor.setTicks(0);
 
 		// prepare empty data set
 		dataSet = new DataSet();
 
-        String importSystem = (String) ImportDialog.importSystem.getSelectedItem();
+		String importSystem = (String) ImportDialog.importSystem
+				.getSelectedItem();
 		CoordinateTransformation ct = TransformationFactory
 				.getCoordinateTransformation(importSystem,
 						TransformationFactory.WGS84);
@@ -111,15 +122,26 @@ class ImportTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("creating scenario..");
 		Config config = ConfigUtils.createConfig();
 		Scenario tempScenario = ScenarioUtils.createScenario(config);
+		scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		this.progressMonitor.setTicks(2);
 		this.progressMonitor.setCustomText("reading network xml..");
-		new MatsimNetworkReader(tempScenario).readFile(path);
-		scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+		scenario.getConfig().scenario().setUseTransit(true);
+		scenario.getConfig().scenario().setUseVehicles(true);
+		tempScenario.getConfig().scenario().setUseTransit(true);
+		tempScenario.getConfig().scenario().setUseVehicles(true);
+		MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);
+		reader.readFile(networkPath);
+		if (schedulePath != null) {
+			new TransitScheduleReader(tempScenario).readFile(schedulePath);
+		}
 
+		relation2Route = new HashMap<Relation, TransitRoute>();
+		facility2OrigId = new HashMap<TransitStopFacility, Id<TransitStopFacility>>();
 		way2Links = new HashMap<>();
 		link2Segment = new HashMap<>();
-
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
+		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
+
 		this.progressMonitor.setTicks(3);
 		this.progressMonitor.setCustomText("creating nodes..");
 		for (Node node : tempScenario.getNetwork().getNodes().values()) {
@@ -201,8 +223,97 @@ class ImportTask extends PleaseWaitRunnable {
 			((LinkImpl) newLink).setOrigId(link.getId().toString());
 			scenario.getNetwork().addLink(newLink);
 			way2Links.put(way, Collections.singletonList(newLink));
+			linkId2Way.put(link.getId(), way);
 			link2Segment.put(newLink,
 					Collections.singletonList(new WaySegment(way, 0)));
+		}
+
+		// create new relations, transit routes and lines as well as stop
+
+		this.progressMonitor.setTicks(4);
+		this.progressMonitor.setCustomText("creating relations and routes..");
+		for (TransitLine line : tempScenario.getTransitSchedule()
+				.getTransitLines().values()) {
+			TransitLine newLine = scenario.getTransitSchedule().getFactory()
+					.createTransitLine(line.getId());
+			for (TransitRoute route : line.getRoutes().values()) {
+
+				Relation relation = new Relation();
+
+				List<TransitRouteStop> newTransitStops = new ArrayList<>();
+
+				for (TransitRouteStop tRStop : route.getStops()) {
+
+					Link oldStopLink = tempScenario.getNetwork().getLinks()
+							.get(tRStop.getStopFacility().getLinkId());
+					org.openstreetmap.josm.data.osm.Node osmNode = node2OsmNode
+							.get(oldStopLink.getToNode());
+					relation.addMember(new RelationMember("stop", osmNode));
+
+					TransitStopFacility stop = NewConverter.createStopFacility(
+							osmNode, relation, scenario.getTransitSchedule());
+					facility2OrigId.put(stop, tRStop.getStopFacility().getId());
+
+					stop.setName(tRStop.getStopFacility().getName());
+					if(tRStop.getStopFacility().getName()!=null) {
+						osmNode.put("name", tRStop.getStopFacility().getName());
+					} else {
+						osmNode.put("name", "unknown stop");
+					}
+					Way newWay = linkId2Way.get(oldStopLink.getId());
+					List<Link> newWayLinks = way2Links.get(newWay);
+					Link singleLink = newWayLinks.get(0);
+					Id<Link> id = Id.createLinkId(singleLink.getId());
+					stop.setLinkId(id);
+
+					newTransitStops.add(scenario.getTransitSchedule()
+							.getFactory().createTransitRouteStop(stop, 0, 0));
+					scenario.getTransitSchedule().addStopFacility(stop);
+				}
+
+				List<Id<Link>> links = new ArrayList<>();
+				Id<Link> oldStartId = route.getRoute().getStartLinkId();
+				Link oldStartLink = tempScenario.getNetwork().getLinks()
+						.get(oldStartId);
+				Way newStartWay = linkId2Way.get(oldStartLink.getId());
+				List<Link> newStartLinks = way2Links.get(newStartWay);
+				Id<Link> startId = newStartLinks.get(0).getId();
+
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getStartLinkId())));
+				for (Id<Link> linkId : route.getRoute().getLinkIds()) {
+					links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
+							.getId());
+					relation.addMember(new RelationMember("", linkId2Way
+							.get(linkId)));
+				}
+				Id<Link> oldEndId = route.getRoute().getEndLinkId();
+				Link oldEndLink = tempScenario.getNetwork().getLinks()
+						.get(oldEndId);
+				Way newEndWay = linkId2Way.get(oldEndLink.getId());
+				List<Link> newEndLinks = way2Links.get(newEndWay);
+				Id<Link> endId = newEndLinks.get(0).getId();
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getEndLinkId())));
+
+				NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
+						endId);
+				networkRoute.setLinkIds(startId, links, endId);
+
+				TransitRoute newRoute = scenario
+						.getTransitSchedule()
+						.getFactory()
+						.createTransitRoute(route.getId(), networkRoute,
+								newTransitStops, "pt");
+				newLine.addRoute(newRoute);
+				relation.put("type", "route");
+				relation.put("route", route.getTransportMode());
+				relation.put("ref", line.getId().toString());
+
+				dataSet.addPrimitive(relation);
+				relation2Route.put(relation, newRoute);
+			}
+			scenario.getTransitSchedule().addTransitLine(newLine);
 		}
 
 		this.progressMonitor.setTicks(5);

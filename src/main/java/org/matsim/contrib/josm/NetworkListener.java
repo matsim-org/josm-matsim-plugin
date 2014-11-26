@@ -60,11 +60,11 @@ class NetworkListener implements DataSetListener, Visitor {
 	// convert whole layer from scratch
 	public void dataChanged(DataChangedEvent arg0) {
 		log.debug("Data changed. " + arg0.getType());
-		if (Main.main.getActiveLayer() != null) {
-			Main.main.getCurrentDataSet().clearSelection();
-			MATSimPlugin.toggleDialog.activeLayerChange(
-					Main.main.getActiveLayer(), Main.main.getActiveLayer());
-		}
+//		if (Main.main.getActiveLayer() != null) {
+//			Main.main.getCurrentDataSet().clearSelection();
+//			MATSimPlugin.toggleDialog.activeLayerChange(
+//					Main.main.getActiveLayer(), Main.main.getActiveLayer());
+//		}
 	}
 
 	@Override
