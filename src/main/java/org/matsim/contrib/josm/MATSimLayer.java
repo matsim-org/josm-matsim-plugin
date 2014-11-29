@@ -41,19 +41,17 @@ class MATSimLayer extends OsmDataLayer {
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
-	private Map<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId = new HashMap<>(); 
 
     public MATSimLayer(DataSet data, String name, File associatedFile,
                        Scenario scenario,
                        HashMap<Way, List<Link>> way2Links,
                        Map<Link, List<WaySegment>> link2Segment,
-                       Map<Relation, TransitRoute> relation2Route, Map<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId) {
+                       Map<Relation, TransitRoute> relation2Route) {
 		super(data, name, associatedFile);
 		this.matsimScenario = scenario;
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
-		this.facility2OrigId = facility2OrigId;
 
 		// attach listener to layer
 		NetworkListener listener;
@@ -90,10 +88,6 @@ class MATSimLayer extends OsmDataLayer {
 		return matsimScenario;
 	}
 	
-	public Map<TransitStopFacility, Id<TransitStopFacility>> getFacility2OrigId() {
-		return facility2OrigId;
-	}
-
 	@Override
 	public Action[] getMenuEntries() {
 //		if (Main.applet)

@@ -63,7 +63,6 @@ class ImportTask extends PleaseWaitRunnable {
 	private HashMap<Way, List<Link>> way2Links;
 	private HashMap<Link, List<WaySegment>> link2Segment;
 	private HashMap<Relation, TransitRoute> relation2Route;
-	private HashMap<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId;
 
 	/**
 	 * Creates a new Import task with the given <code>path</code>.
@@ -93,7 +92,7 @@ class ImportTask extends PleaseWaitRunnable {
 		// layer = null happens if Exception happens during import,
 		// as Exceptions are handled only after this method is called.
 		MATSimLayer layer = new MATSimLayer(dataSet, networkPath, new File(
-				networkPath), scenario, way2Links, link2Segment, relation2Route, facility2OrigId);
+				networkPath), scenario, way2Links, link2Segment, relation2Route);
 		if (layer != null) {
 			Main.main.addLayer(layer);
 			Main.map.mapView.setActiveLayer(layer);
@@ -136,7 +135,6 @@ class ImportTask extends PleaseWaitRunnable {
 		}
 
 		relation2Route = new HashMap<Relation, TransitRoute>();
-		facility2OrigId = new HashMap<TransitStopFacility, Id<TransitStopFacility>>();
 		way2Links = new HashMap<>();
 		link2Segment = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
@@ -252,7 +250,7 @@ class ImportTask extends PleaseWaitRunnable {
 
 					TransitStopFacility stop = NewConverter.createStopFacility(
 							osmNode, relation, scenario.getTransitSchedule());
-					facility2OrigId.put(stop, tRStop.getStopFacility().getId());
+					osmNode.put("stopId", tRStop.getStopFacility().getId().toString());
 
 					stop.setName(tRStop.getStopFacility().getName());
 					if(tRStop.getStopFacility().getName()!=null) {

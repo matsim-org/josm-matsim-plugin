@@ -811,16 +811,15 @@ class NewConverter {
 	protected static TransitStopFacility createStopFacility(Node node,
 			Relation relation, TransitSchedule schedule) {
 
-		Id<TransitStopFacility> stopId = Id.create(relation.getUniqueId() + "_"
-				+ node.getUniqueId(), TransitStopFacility.class);
-
+		Id<TransitStopFacility>	stopId = Id.create(relation.getUniqueId() + "_"
+					+ node.getUniqueId(), TransitStopFacility.class);
+		
 		int i = 0;
 		while (schedule.getFacilities().containsKey(stopId)) {
-			stopId = Id.create("(" + i + ")_" + stopId.toString(),
-					TransitStopFacility.class);
+			stopId = Id.create(i+"_"+stopId.toString(), TransitStopFacility.class);
 			i++;
 		}
-
+		
 		double lat = node.getCoor().lat();
 		double lon = node.getCoor().lon();
 		TransitScheduleFactory factory = new TransitScheduleFactoryImpl();
