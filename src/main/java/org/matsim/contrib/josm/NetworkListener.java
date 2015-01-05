@@ -13,7 +13,6 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.Changeset;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
@@ -61,11 +60,11 @@ class NetworkListener implements DataSetListener, Visitor {
 	// convert whole layer from scratch
 	public void dataChanged(DataChangedEvent arg0) {
 		log.debug("Data changed. " + arg0.getType());
-		if (Main.main.getActiveLayer() != null) {
-			Main.main.getCurrentDataSet().clearSelection();
-			MATSimPlugin.toggleDialog.activeLayerChange(
-					Main.main.getActiveLayer(), Main.main.getActiveLayer());
-		}
+//		if (Main.main.getActiveLayer() != null) {
+//			Main.main.getCurrentDataSet().clearSelection();
+//			MATSimPlugin.toggleDialog.activeLayerChange(
+//					Main.main.getActiveLayer(), Main.main.getActiveLayer());
+//		}
 	}
 
 	@Override
@@ -299,7 +298,6 @@ class NetworkListener implements DataSetListener, Visitor {
 					}
 					scenario.getTransitSchedule().removeStopFacility(
 							stop.getStopFacility());
-					
 				}
 
 				if (scenario.getTransitSchedule().getTransitLines()

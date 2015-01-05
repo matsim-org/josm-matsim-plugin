@@ -119,7 +119,7 @@ class MATSimAction {
 			MATSimLayer layer = new MATSimLayer(dataSet, "new Layer", null,
 					scenario, new HashMap<Way, List<Link>>(),
 					new HashMap<Link, List<WaySegment>>(),
-					new HashMap<Relation, TransitRoute>());
+					new HashMap<Relation, TransitRoute>(), new HashMap<TransitStopFacility, Id<TransitStopFacility>>());
 			Main.main.addLayer(layer);
 		}
 	}

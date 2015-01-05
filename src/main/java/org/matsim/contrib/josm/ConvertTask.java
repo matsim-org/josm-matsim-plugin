@@ -29,8 +29,6 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
@@ -123,6 +121,7 @@ class ConvertTask extends PleaseWaitRunnable {
 		HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
 		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
+		HashMap<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId = new HashMap<>();
 
 		this.progressMonitor.setTicks(4);
 		this.progressMonitor.setCustomText("loading nodes..");
@@ -215,29 +214,15 @@ class ConvertTask extends PleaseWaitRunnable {
 
 					Link oldStopLink = tempScenario.getNetwork().getLinks()
 							.get(tRStop.getStopFacility().getLinkId());
-					org.openstreetmap.josm.data.osm.Node newOsmNode = node2OsmNode
+					org.openstreetmap.josm.data.osm.Node osmNode = node2OsmNode
 							.get(oldStopLink.getToNode());
-					relation.addMember(new RelationMember("stop", newOsmNode));
+					relation.addMember(new RelationMember("stop", osmNode));
 
 					TransitStopFacility stop = NewConverter.createStopFacility(
-							newOsmNode, relation, scenario.getTransitSchedule());
+							osmNode, relation, scenario.getTransitSchedule());
 					stop.setName(tRStop.getStopFacility().getName());
-					
-					
-					
-					String[] internalId = tRStop.getStopFacility().getId().toString().split("_");
-					OsmPrimitive oldOsmNode = ((OsmDataLayer) layer).data.getPrimitiveById(Long.parseLong(internalId[internalId.length-1]), OsmPrimitiveType.NODE);
-					if(oldOsmNode.hasKey("stopId")) {
-						newOsmNode.put("stopId", oldOsmNode.get("stopId"));
-					} else {
-						newOsmNode.put("stopid", tRStop.getStopFacility().getId().toString());
-					}
-					
-					
-					
-					
-					
-					newOsmNode.put("name", tRStop.getStopFacility().getName());
+					facility2OrigId.put(stop, tRStop.getStopFacility().getId());
+					osmNode.put("name", tRStop.getStopFacility().getName());
 					Way newWay = linkId2Way.get(oldStopLink.getId());
 					List<Link> newWayLinks = way2Links.get(newWay);
 					Link singleLink = newWayLinks.get(0);
@@ -299,7 +284,7 @@ class ConvertTask extends PleaseWaitRunnable {
 
 		// create layer
 		newLayer = new MATSimLayer(dataSet, null, null, scenario, way2Links,
-				link2Segment, relation2Route);
+				link2Segment, relation2Route, facility2OrigId);
 	}
 
 	/**

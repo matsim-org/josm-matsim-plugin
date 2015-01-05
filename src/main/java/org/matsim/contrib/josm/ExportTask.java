@@ -32,8 +32,6 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -162,43 +160,25 @@ class ExportTask extends PleaseWaitRunnable {
 			this.progressMonitor.setCustomText("writing out xml file(s)..");
 			new NetworkWriter(network).write(networkFile.getAbsolutePath());
 			
-			Map<Id<TransitStopFacility>, Id<TransitStopFacility>> internal2OrigId = new HashMap<Id<TransitStopFacility>, Id<TransitStopFacility>>();
 			if (((MATSimLayer) layer).getMatsimScenario().getTransitSchedule() != null) {
 				TransitSchedule oldSchedule = ((MATSimLayer) layer)
 						.getMatsimScenario().getTransitSchedule();
 				
 				for (TransitStopFacility stop : oldSchedule.getFacilities()
 						.values()) {
+					
+					TransitStopFacility newStop = schedule.getFactory()
+							.createTransitStopFacility(
+									stop.getId(), stop.getCoord(),
+									stop.getIsBlockingLane());
+					
 					Id<Link> oldId = stop.getLinkId();
 					Link oldLink = ((MATSimLayer) layer).getMatsimScenario()
 							.getNetwork().getLinks().get(oldId);
-					
-					String[] internalId = stop.getId().toString().split("_");
-					Long osmNodeId = Long.parseLong(internalId[internalId.length-1]);
-					OsmPrimitive osmNode = ((OsmDataLayer) layer).data.getPrimitiveById(osmNodeId, OsmPrimitiveType.NODE);
-					
-					Id<TransitStopFacility> stopId;
-					
-					if(osmNode.hasKey("stopId")) {
-						if(internalId.length>2) {
-							stopId = Id.create(internalId[0] + osmNode.get("stopId"), TransitStopFacility.class);
-						} else {
-							stopId = Id.create(osmNode.get("stopId"), TransitStopFacility.class);
-						}
-					} else {
-						stopId = stop.getId();
-					}
-					internal2OrigId.put(stop.getId(), stopId);
-					TransitStopFacility newStop = schedule.getFactory()
-							.createTransitStopFacility(
-									stopId, stop.getCoord(),
-									stop.getIsBlockingLane());
 					Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink)
 							.getOrigId());
 					newStop.setLinkId(newLinkId);
-					if (!schedule.getFacilities().containsKey(newStop.getId())) {
-						schedule.addStopFacility(newStop);
-					}
+					schedule.addStopFacility(newStop);
 				}
 				
 				for (TransitLine line : ((MATSimLayer) layer)
@@ -241,7 +221,8 @@ class ExportTask extends PleaseWaitRunnable {
 						List<TransitRouteStop> newTRStops = new ArrayList<TransitRouteStop>();
 						for (TransitRouteStop tRStop : route.getStops()) {
 							newTRStops.add(schedule.getFactory()
-									.createTransitRouteStop(schedule.getFacilities().get(internal2OrigId.get(tRStop.getStopFacility().getId())), 0, 0));
+									.createTransitRouteStop(
+											schedule.getFacilities().get(tRStop.getStopFacility().getId()), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
 						}
 
 						TransitRoute newTRoute = schedule.getFactory()
