@@ -120,23 +120,14 @@ class ImportTask extends PleaseWaitRunnable {
 
 		this.progressMonitor.setTicks(1);
 		this.progressMonitor.setCustomText("creating scenario..");
-		Config config = ConfigUtils.createConfig();
-		Scenario tempScenario = ScenarioUtils.createScenario(config);
-		scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+
+        Scenario tempScenario = readScenario();
+
 		this.progressMonitor.setTicks(2);
 		this.progressMonitor.setCustomText("reading network xml..");
-		scenario.getConfig().scenario().setUseTransit(true);
-		scenario.getConfig().scenario().setUseVehicles(true);
-		tempScenario.getConfig().scenario().setUseTransit(true);
-		tempScenario.getConfig().scenario().setUseVehicles(true);
-		MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);
-		reader.readFile(networkPath);
-		if (schedulePath != null) {
-			new TransitScheduleReader(tempScenario).readFile(schedulePath);
-		}
 
-		relation2Route = new HashMap<Relation, TransitRoute>();
-		facility2OrigId = new HashMap<TransitStopFacility, Id<TransitStopFacility>>();
+		relation2Route = new HashMap<>();
+		facility2OrigId = new HashMap<>();
 		way2Links = new HashMap<>();
 		link2Segment = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
@@ -144,6 +135,8 @@ class ImportTask extends PleaseWaitRunnable {
 
 		this.progressMonitor.setTicks(3);
 		this.progressMonitor.setCustomText("creating nodes..");
+
+        scenario = ScenarioUtils.createScenario(tempScenario.getConfig());
 		for (Node node : tempScenario.getNetwork().getNodes().values()) {
 			Coord tmpCoor = node.getCoord();
 			LatLon coor;
@@ -350,4 +343,19 @@ class ImportTask extends PleaseWaitRunnable {
 		this.progressMonitor.setTicks(5);
 		this.progressMonitor.setCustomText("creating layer..");
 	}
+
+    private Scenario readScenario() {
+        Config config = ConfigUtils.createConfig();
+        if (schedulePath != null) {
+            config.scenario().setUseTransit(true);
+            config.scenario().setUseVehicles(true);
+        }
+        Scenario tempScenario = ScenarioUtils.createScenario(config);
+        MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);
+        reader.readFile(networkPath);
+        if (schedulePath != null) {
+            new TransitScheduleReader(tempScenario).readFile(schedulePath);
+        }
+        return tempScenario;
+    }
 }
