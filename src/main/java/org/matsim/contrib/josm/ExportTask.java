@@ -109,44 +109,42 @@ class ExportTask extends PleaseWaitRunnable {
 		Layer layer = Main.main.getActiveLayer();
 
 		if (layer instanceof OsmDataLayer) {
-			if (layer instanceof MATSimLayer) {
-				this.progressMonitor.setTicks(1);
-				this.progressMonitor.setCustomText("rearranging data..");
+            this.progressMonitor.setTicks(1);
+            this.progressMonitor.setCustomText("rearranging data..");
 
-				// copy nodes with switched id fields
-				for (Node node : ((MATSimLayer) layer).getMatsimScenario()
-						.getNetwork().getNodes().values()) {
-					Node newNode = network.getFactory()
-							.createNode(
-									Id.create(((NodeImpl) node).getOrigId(),
-											Node.class), node.getCoord());
-					network.addNode(newNode);
-				}
-				// copy links with switched id fields
-				for (Link link : ((MATSimLayer) layer).getMatsimScenario()
-						.getNetwork().getLinks().values()) {
-					Link newLink = network.getFactory()
-							.createLink(
-									Id.create(((LinkImpl) link).getOrigId(),
-											Link.class),
-									network.getNodes().get(
-											Id.create(
-													((NodeImpl) link
-															.getFromNode())
-															.getOrigId(),
-													Link.class)),
-									network.getNodes().get(
-											Id.create(((NodeImpl) link
-													.getToNode()).getOrigId(),
-													Node.class)));
-					newLink.setFreespeed(link.getFreespeed());
-					newLink.setCapacity(link.getCapacity());
-					newLink.setLength(link.getLength());
-					newLink.setNumberOfLanes(link.getNumberOfLanes());
-					newLink.setAllowedModes(link.getAllowedModes());
-					network.addLink(newLink);
-				}
-			}
+            // copy nodes with switched id fields
+            for (Node node : ((MATSimLayer) layer).getMatsimScenario()
+                    .getNetwork().getNodes().values()) {
+                Node newNode = network.getFactory()
+                        .createNode(
+                                Id.create(((NodeImpl) node).getOrigId(),
+                                        Node.class), node.getCoord());
+                network.addNode(newNode);
+            }
+            // copy links with switched id fields
+            for (Link link : ((MATSimLayer) layer).getMatsimScenario()
+                    .getNetwork().getLinks().values()) {
+                Link newLink = network.getFactory()
+                        .createLink(
+                                Id.create(((LinkImpl) link).getOrigId(),
+                                        Link.class),
+                                network.getNodes().get(
+                                        Id.create(
+                                                ((NodeImpl) link
+                                                        .getFromNode())
+                                                        .getOrigId(),
+                                                Link.class)),
+                                network.getNodes().get(
+                                        Id.create(((NodeImpl) link
+                                                        .getToNode()).getOrigId(),
+                                                Node.class)));
+                newLink.setFreespeed(link.getFreespeed());
+                newLink.setCapacity(link.getCapacity());
+                newLink.setLength(link.getLength());
+                newLink.setNumberOfLanes(link.getNumberOfLanes());
+                newLink.setAllowedModes(link.getAllowedModes());
+                network.addLink(newLink);
+            }
 
 			// check for network cleaner
 			if (Main.pref.getBoolean("matsim_cleanNetwork")) {
