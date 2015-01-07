@@ -52,8 +52,8 @@ jar {
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": "v0.3.0",
-                "Plugin-Mainversion": 7643,
+                "Plugin-Version": "v0.3.1",
+                "Plugin-Mainversion": 7889,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
                 "Author" : "Nico Kuehnel",
@@ -127,7 +127,7 @@ task installLocalJosm {
             josmPluginDir = appDataDir + "/JOSM/plugins"
         } else {
             def homePath = System.properties['user.home']
-            josmPluginDir = homePath + "/.josm/plugins"
+            josmPluginDir = homePath + "/Library/JOSM/plugins"
         }
         ant.copy(todir: josmPluginDir) {
             fileset(dir: "build/libs") {

@@ -1,16 +1,5 @@
 package org.matsim.contrib.josm;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
@@ -28,6 +17,12 @@ import org.openstreetmap.josm.plugins.Plugin;
 import org.openstreetmap.josm.plugins.PluginInformation;
 import org.xml.sax.SAXException;
 
+import javax.swing.*;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Collection;
+import java.util.HashMap;
+
 /**
  * This is the main class for the MATSim plugin.
  * 
@@ -43,8 +38,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
     private static final boolean matsimRenderer = Main.pref.getBoolean(
 			"matsim_renderer", false);
 
-	public MATSimPlugin(PluginInformation info) throws IOException,
-			SAXException {
+	public MATSimPlugin(PluginInformation info) {
 		super(info);
 
 		// add xml exporter for matsim data
@@ -63,8 +57,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		try {
 			tps = TaggingPresetReader.readAll(reader, true);
 		} catch (SAXException e) {
-			e.printStackTrace();
-			tps = Collections.emptyList();
+			throw new RuntimeException(e);
 		}
 		for (TaggingPreset tp : tps) {
 			if (!(tp instanceof TaggingPresetSeparator)) {
