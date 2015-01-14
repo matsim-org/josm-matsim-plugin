@@ -39,6 +39,7 @@ import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkImpl;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.AutoScaleAction;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
@@ -84,7 +85,9 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
+	private Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
 	private NetworkListener osmNetworkListener;
+	
 
 	public MATSimToggleDialog() {
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true,
@@ -600,7 +603,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		protected void realRun() throws SAXException, IOException,
 				OsmTransferException {
 			NewConverter.convertOsmLayer(newLayer, currentScenario, way2Links,
-					link2Segments, relation2Route);
+					link2Segments, relation2Route, stops);
 		}
 	}
 }

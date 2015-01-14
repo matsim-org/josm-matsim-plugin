@@ -1,6 +1,8 @@
 package org.matsim.contrib.josm;
 
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.osm.Node;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -160,6 +162,19 @@ class OsmConvertDefaults {
 			this.freespeedFactor = freespeedFactor;
 			this.laneCapacity = laneCapacity;
 			this.oneway = oneway;
+		}
+	}
+	
+	static class Stop {
+		
+		public TransitStopFacility facility;
+		public Node position;
+		public Node platform;
+		
+		public Stop (TransitStopFacility facility, Node position, Node platform) {
+			this.facility = facility;
+			this.position = position;
+			this.platform = platform;
 		}
 	}
 

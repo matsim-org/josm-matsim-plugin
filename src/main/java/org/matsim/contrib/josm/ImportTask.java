@@ -32,6 +32,7 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
@@ -63,7 +64,7 @@ class ImportTask extends PleaseWaitRunnable {
 	private HashMap<Way, List<Link>> way2Links;
 	private HashMap<Link, List<WaySegment>> link2Segment;
 	private HashMap<Relation, TransitRoute> relation2Route;
-	private HashMap<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId;
+	private HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops;
 
 	/**
 	 * Creates a new Import task with the given <code>path</code>.
@@ -93,7 +94,7 @@ class ImportTask extends PleaseWaitRunnable {
 		// layer = null happens if Exception happens during import,
 		// as Exceptions are handled only after this method is called.
 		MATSimLayer layer = new MATSimLayer(dataSet, networkPath, new File(
-				networkPath), scenario, way2Links, link2Segment, relation2Route, facility2OrigId);
+				networkPath), scenario, way2Links, link2Segment, relation2Route, stops);
 		if (layer != null) {
 			Main.main.addLayer(layer);
 			Main.map.mapView.setActiveLayer(layer);
@@ -127,7 +128,7 @@ class ImportTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("reading network xml..");
 
 		relation2Route = new HashMap<>();
-		facility2OrigId = new HashMap<>();
+		stops = new HashMap<>();
 		way2Links = new HashMap<>();
 		link2Segment = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
@@ -262,17 +263,16 @@ class ImportTask extends PleaseWaitRunnable {
 			Relation relation = new Relation();
 			relation.put("matsim", "stop_relation");
 			relation.put("id", stop.getId().toString());
-			relation.addMember(new RelationMember("link", newWay));
-			relation.addMember(new RelationMember("stop", platform));
 			relation.put("name", stop.getName());
+			relation.addMember(new RelationMember("link", newWay));
+			relation.addMember(new RelationMember("stop", stopPosition));
+			relation.addMember(new RelationMember("platform", platform));
 			dataSet.addPrimitive(relation);
+			
+			stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop, stopPosition, platform));
 			
 		}
 		
-		
-		
-		
-
 		// create new relations, transit routes and lines as well as stop
 
 		this.progressMonitor.setTicks(4);
@@ -292,7 +292,9 @@ class ImportTask extends PleaseWaitRunnable {
 					TransitStopFacility stop = scenario.getTransitSchedule().getFacilities().get(tRStop.getStopFacility().getId());
 					newTransitStops.add(scenario.getTransitSchedule()
 							.getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-				
+					
+					relation.addMember(new RelationMember("stop", stops.get(stop.getId()).position));
+					relation.addMember(new RelationMember("platform", stops.get(stop.getId()).platform));
 				}
 
 				List<Id<Link>> links = new ArrayList<>();

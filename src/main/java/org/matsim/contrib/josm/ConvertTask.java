@@ -100,7 +100,7 @@ class ConvertTask extends PleaseWaitRunnable {
 		NewConverter.convertOsmLayer(((OsmDataLayer) layer), tempScenario,
 				new HashMap<Way, List<Link>>(),
 				new HashMap<Link, List<WaySegment>>(),
-				new HashMap<Relation, TransitRoute>());
+				new HashMap<Relation, TransitRoute>(), new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
 
 		// check if network should be cleaned
 		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
@@ -121,7 +121,7 @@ class ConvertTask extends PleaseWaitRunnable {
 		HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
 		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
-		HashMap<TransitStopFacility, Id<TransitStopFacility>> facility2OrigId = new HashMap<>();
+		HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
 
 		this.progressMonitor.setTicks(4);
 		this.progressMonitor.setCustomText("loading nodes..");
@@ -221,7 +221,6 @@ class ConvertTask extends PleaseWaitRunnable {
 					TransitStopFacility stop = NewConverter.createStopFacility(
 							osmNode, relation, scenario.getTransitSchedule());
 					stop.setName(tRStop.getStopFacility().getName());
-					facility2OrigId.put(stop, tRStop.getStopFacility().getId());
 					osmNode.put("name", tRStop.getStopFacility().getName());
 					Way newWay = linkId2Way.get(oldStopLink.getId());
 					List<Link> newWayLinks = way2Links.get(newWay);
@@ -284,7 +283,7 @@ class ConvertTask extends PleaseWaitRunnable {
 
 		// create layer
 		newLayer = new MATSimLayer(dataSet, null, null, scenario, way2Links,
-				link2Segment, relation2Route, facility2OrigId);
+				link2Segment, relation2Route, stops);
 	}
 
 	/**
