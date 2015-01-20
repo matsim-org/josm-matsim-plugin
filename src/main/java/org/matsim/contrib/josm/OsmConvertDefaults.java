@@ -177,5 +177,4 @@ class OsmConvertDefaults {
 			this.platform = platform;
 		}
 	}
-
 }

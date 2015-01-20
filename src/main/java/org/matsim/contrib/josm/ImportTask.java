@@ -227,21 +227,6 @@ class ImportTask extends PleaseWaitRunnable {
 			TransitStopFacility newStop = scenario.getTransitSchedule().getFactory().createTransitStopFacility(stop.getId(), stop.getCoord(), stop.getIsBlockingLane());
 			newStop.setName(stop.getName());
 			
-			Way newWay = linkId2Way.get(stop.getLinkId());
-			List<Link> newWayLinks = way2Links.get(newWay);
-			Link singleLink = newWayLinks.get(0);
-			Id<Link> linkId = Id.createLinkId(singleLink.getId());
-			
-			newStop.setLinkId(linkId);
-			scenario.getTransitSchedule().addStopFacility(newStop);
-			
-			org.openstreetmap.josm.data.osm.Node stopPosition = newWay.lastNode();
-			stopPosition.put("public_transport", "stop_position");
-			if(!stopPosition.hasKey("name")) {
-				stopPosition.put("name", stop.getName());
-			} else {
-				stopPosition.put("name", stopPosition.get("name")+";"+stop.getName());
-			}
 			
 			Coord tmpCoor = stop.getCoord();
 			LatLon coor;
@@ -259,6 +244,31 @@ class ImportTask extends PleaseWaitRunnable {
 			platform.put("name", stop.getName());
 		
 			dataSet.addPrimitive(platform);
+			
+			
+			org.openstreetmap.josm.data.osm.Node stopPosition = null;
+			Way newWay = null;
+			
+			if(stop.getLinkId()!=null) {
+				
+				newWay = linkId2Way.get(stop.getLinkId());
+				List<Link> newWayLinks = way2Links.get(newWay);
+				Link singleLink = newWayLinks.get(0);
+				Id<Link> linkId = Id.createLinkId(singleLink.getId());
+				newStop.setLinkId(linkId);
+				
+				stopPosition = newWay.lastNode();
+				stopPosition.put("public_transport", "stop_position");
+				
+				if(!stopPosition.hasKey("name")) {
+					stopPosition.put("name", stop.getName());
+				} else {
+					stopPosition.put("name", stopPosition.get("name")+";"+stop.getName());
+				}
+			}
+			
+			scenario.getTransitSchedule().addStopFacility(newStop);
+			
 			
 			Relation relation = new Relation();
 			relation.put("matsim", "stop_relation");

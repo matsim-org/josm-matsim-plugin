@@ -59,7 +59,7 @@ class MATSimLayer extends OsmDataLayer {
 		NetworkListener listener;
 		try {
 			listener = new NetworkListener(scenario, way2Links, link2Segment,
-					relation2Route);
+					relation2Route, stops);
 		} catch (IllegalArgumentException e) { // create layer even if no
 												// listener can be attached
 			JOptionPane

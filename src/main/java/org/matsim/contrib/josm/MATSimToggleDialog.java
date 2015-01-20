@@ -156,6 +156,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 					way2Links = new HashMap<>();
 					link2Segments = new HashMap<>();
 					relation2Route = new HashMap<>();
+					stops = new HashMap<>();
 					LayerChangeTask task = new LayerChangeTask(
 							(OsmDataLayer) tmpLayer);
 					task.run();
@@ -217,6 +218,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				way2Links = ((MATSimLayer) newLayer).getWay2Links();
 				link2Segments = ((MATSimLayer) newLayer).getLink2Segments();
 				relation2Route = ((MATSimLayer) newLayer).getRelation2Route();
+				stops = ((MATSimLayer) newLayer).getStops();
 				ExtensionFileFilter.exporters.clear();
 				ExtensionFileFilter.exporters.add(0,
 						new MATSimNetworkFileExporter());
@@ -230,6 +232,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				way2Links = new HashMap<>();
 				link2Segments = new HashMap<>();
 				relation2Route = new HashMap<>();
+				stops = new HashMap<>();
 				LayerChangeTask task = new LayerChangeTask(
 						(OsmDataLayer) newLayer);
 				task.run();
@@ -264,6 +267,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			way2Links = null;
 			link2Segments = null;
 			relation2Route = null;
+			stops = null;
 		}
 
 		// set converted links that are to be drawn blue by map renderer
@@ -594,7 +598,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		protected void finish() {
 			notifyDataChanged(currentScenario);
 			osmNetworkListener = new NetworkListener(currentScenario,
-					way2Links, link2Segments, relation2Route);
+					way2Links, link2Segments, relation2Route, stops);
 			newLayer.data.addDataSetListener(osmNetworkListener);
 
 		}
