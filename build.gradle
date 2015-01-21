@@ -19,10 +19,11 @@ apply plugin: "java"
 apply plugin: 'download-task'
 apply plugin: "eclipse"
 
-// For the dependencies of our project (not of this build script itself), we only need the
+// For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
     mavenLocal()
+    mavenCentral()
 }
 
 // Declare a configuration for our external dependency (MATSim) so we can later take its classes and zip them into our jar.
@@ -38,6 +39,7 @@ dependencies {
     // We add it to compile, so that it becomes a dependency of our project.
     compile configurations.zipIntoJar.dependencies
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
+    // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
     compile files("libs/josm-latest.jar")
 }
 
