@@ -41,6 +41,8 @@ dependencies {
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
     compile files("libs/josm-latest.jar")
+
+    testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
 jar.baseName = "matsim"
@@ -94,24 +96,6 @@ task getJosm {
     }
 }
 compileJava.dependsOn "getJosm"
-
-sourceSets {
-    rootDirectoryShit {
-        resources {
-            srcDir "."
-            include "images/**/*.png"
-        }
-    }
-    // Main is the designated source set name for the Java plug-in (just like in Maven).
-    // It has designated sub-sets named Java and Resources (just like in Maven).
-    // We leave Java at the default, but to Resources we add the images from the project root.
-    main {
-        resources {
-            srcDir "src/main/resources"
-            source rootDirectoryShit.resources
-        }
-    }
-}
 
 // Install the plug-in into the local JOSM plug-in directory.
 // You can start JOSM from your IDE and debug the plug-in, but the JOSM
