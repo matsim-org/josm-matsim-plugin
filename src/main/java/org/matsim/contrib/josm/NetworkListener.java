@@ -281,7 +281,7 @@ class NetworkListener implements DataSetListener, Visitor {
 	@Override
 	public void visit(org.openstreetmap.josm.data.osm.Node node) {
 
-		
+		log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
 		if (node.hasTag("public_transport", "platform")) {
 			
 			Id<TransitStopFacility> stopId = Id.create(
@@ -300,8 +300,10 @@ class NetworkListener implements DataSetListener, Visitor {
 				scenario.getTransitSchedule().removeStopFacility(
 						stop);
 				stops.remove(stopId);
+				log.debug("removing stop"+ node.getUniqueId() + " " + node.getName());
 			}
 			
+			log.debug("converting stop"+ node.getUniqueId() + " " + node.getName());
 			NewConverter.createStop(node, scenario, way2Links, link2Segments,
 					stops);
 		}

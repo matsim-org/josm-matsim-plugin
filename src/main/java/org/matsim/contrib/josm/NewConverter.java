@@ -173,13 +173,13 @@ class NewConverter {
 						stopPosition = member.getNode();
 					}
 				}
-
+				if (stopPosition != null) {
 				for (RelationMember member : ((Relation) primitive)
 						.getMembers()) {
 					if (member.isWay() && member.hasRole("link")) {
 						if (way2Links.containsKey(member.getWay())) {
 							int index = member.getWay().getNodes()
-									.indexOf(node);
+									.indexOf(stopPosition);
 							WaySegment segment;
 							if (index == 0) {
 								segment = new WaySegment(member.getWay(), index);
@@ -195,6 +195,7 @@ class NewConverter {
 							}
 						}
 					}
+				}
 				}
 			}
 		}
