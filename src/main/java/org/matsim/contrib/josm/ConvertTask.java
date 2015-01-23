@@ -323,7 +323,7 @@ class ConvertTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("creating layer..");
 
 		// create layer
-		newLayer = new MATSimLayer(dataSet, null, null, targetScenario, way2Links,
+		newLayer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null, targetScenario, way2Links,
 				link2Segment, relation2Route, stops);
 	}
 

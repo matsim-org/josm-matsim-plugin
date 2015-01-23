@@ -80,7 +80,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			"dialogs", "edit").setWidth(16).get());
 	private final JButton manualConvert = new JButton(new ImageProvider("restart")
 			.setWidth(16).get());
-	private final List<FileExporter> exporterCopy = new ArrayList<>();
 	private Scenario currentScenario;
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
@@ -93,8 +92,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true,
 				Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
-
-		exporterCopy.addAll(ExtensionFileFilter.exporters);
 
 		// table for link data
 		table_links = new JTable();
@@ -219,9 +216,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				link2Segments = ((MATSimLayer) newLayer).getLink2Segments();
 				relation2Route = ((MATSimLayer) newLayer).getRelation2Route();
 				stops = ((MATSimLayer) newLayer).getStops();
-				ExtensionFileFilter.exporters.clear();
-				ExtensionFileFilter.exporters.add(0,
-						new MATSimNetworkFileExporter());
 				this.manualConvert.setEnabled(false);
 			} else {
 				this.manualConvert.setEnabled(true);
@@ -236,11 +230,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				LayerChangeTask task = new LayerChangeTask(
 						(OsmDataLayer) newLayer);
 				task.run();
-
-				if (oldLayer instanceof MATSimLayer || oldLayer == null) {
-					ExtensionFileFilter.exporters.clear();
-					ExtensionFileFilter.exporters.addAll(this.exporterCopy);
-				}
 			}
 			if (currentScenario != null) {
 				tableModel_links = new MATSimTableModel_links(

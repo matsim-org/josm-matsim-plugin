@@ -49,6 +49,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		Main.main.menu.toolsMenu.add(matsimAction.getImportAction());
 		Main.main.menu.toolsMenu.add(matsimAction.getNewNetworkAction());
 		Main.main.menu.toolsMenu.add(matsimAction.getConvertAction());
+        Main.main.menu.toolsMenu.add(matsimAction.getExportTransitScheduleAction());
 
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream(

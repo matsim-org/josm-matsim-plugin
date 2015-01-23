@@ -19,6 +19,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.RenameLayerAction;
+import org.openstreetmap.josm.actions.SaveActionBase;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
@@ -96,16 +97,6 @@ class MATSimLayer extends OsmDataLayer {
 
 	@Override
 	public Action[] getMenuEntries() {
-//		if (Main.applet)
-//			return new Action[] {
-//					LayerListDialog.getInstance().createActivateLayerAction(
-//							this),
-//					LayerListDialog.getInstance().createShowHideLayerAction(),
-//					LayerListDialog.getInstance().createDeleteLayerAction(),
-//					SeparatorLayerAction.INSTANCE,
-//					new RenameLayerAction(getAssociatedFile(), this),
-//					SeparatorLayerAction.INSTANCE,
-//					new LayerListPopup.InfoAction(this) };
 		List<Action> actions = new ArrayList<>();
 		actions.addAll(Arrays.asList(LayerListDialog.getInstance().createActivateLayerAction(this),
                 LayerListDialog.getInstance().createShowHideLayerAction(),
@@ -126,4 +117,10 @@ class MATSimLayer extends OsmDataLayer {
 	public boolean requiresUploadToServer() {
 		return false;
 	}
+
+    @Override
+    public File createAndOpenSaveFileChooser() {
+        return SaveActionBase.createAndOpenSaveFileChooser(tr("Save MATSim network file"), "xml");
+    }
+
 }

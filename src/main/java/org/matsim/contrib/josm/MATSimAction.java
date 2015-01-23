@@ -1,16 +1,5 @@
 package org.matsim.contrib.josm;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.WindowConstants;
-
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -25,9 +14,16 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
-import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.tools.Shortcut;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Adds the MATSim buttons and their functionality to the tools bar.
@@ -48,6 +44,10 @@ class MATSimAction {
 	public JosmAction getConvertAction() {
 		return new ConvertAction();
 	}
+
+    public JosmAction getExportTransitScheduleAction() {
+        return new TransitScheduleExportAction();
+    }
 
 	/**
 	 * The ImportAction that handles network imports.
@@ -116,7 +116,7 @@ class MATSimAction {
 			DataSet dataSet = new DataSet();
 			Config config = ConfigUtils.createConfig();
 			Scenario scenario = ScenarioUtils.createScenario(config);
-			MATSimLayer layer = new MATSimLayer(dataSet, "new Layer", null,
+			MATSimLayer layer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
 					scenario, new HashMap<Way, List<Link>>(),
 					new HashMap<Link, List<WaySegment>>(),
 					new HashMap<Relation, TransitRoute>(), new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
@@ -146,12 +146,16 @@ class MATSimAction {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Layer activeLayer = Main.main.getActiveLayer();
-			if (activeLayer instanceof OsmDataLayer
-					&& !(activeLayer instanceof MATSimLayer)) {
-				ConvertTask task = new ConvertTask();
-				task.run();
-			}
+            if (isEnabled()) {
+                ConvertTask task = new ConvertTask();
+                task.run();
+            }
 		}
-	}
+
+        @Override
+        protected void updateEnabledState() {
+            setEnabled(getEditLayer() instanceof OsmDataLayer
+                    && !(getEditLayer() instanceof MATSimLayer));
+        }
+    }
 }
