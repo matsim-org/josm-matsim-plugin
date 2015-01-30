@@ -1,11 +1,12 @@
 package org.matsim.contrib.josm;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.Node;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.openstreetmap.josm.data.osm.Way;
 
 /**
  * Holds the default converting values
@@ -164,17 +165,20 @@ class OsmConvertDefaults {
 			this.oneway = oneway;
 		}
 	}
-	
+
 	static class Stop {
-		
+
 		public TransitStopFacility facility;
 		public Node position;
 		public Node platform;
-		
-		public Stop (TransitStopFacility facility, Node position, Node platform) {
+		public Way way;
+
+		public Stop(TransitStopFacility facility, Node position, Node platform,
+				Way way) {
 			this.facility = facility;
 			this.position = position;
 			this.platform = platform;
+			this.way = way;
 		}
 	}
 }

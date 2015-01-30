@@ -19,7 +19,6 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.geometry.CoordImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -95,10 +94,14 @@ class ConvertTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("converting osm data..");
 
 		// convert layer data
-		NewConverter.convertOsmLayer(((OsmDataLayer) layer), sourceScenario,
-				new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(),
-				new HashMap<Relation, TransitRoute>(), new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
+		NewConverter
+				.convertOsmLayer(
+						((OsmDataLayer) layer),
+						sourceScenario,
+						new HashMap<Way, List<Link>>(),
+						new HashMap<Link, List<WaySegment>>(),
+						new HashMap<Relation, TransitRoute>(),
+						new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
 
 		// check if network should be cleaned
 		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
@@ -191,131 +194,144 @@ class ConvertTask extends PleaseWaitRunnable {
 			link2Segment.put(newLink,
 					Collections.singletonList(new WaySegment(way, 0)));
 		}
-		
+
 		this.progressMonitor.setTicks(6);
-		this.progressMonitor
-				.setCustomText("loading stops..");
-		for (TransitStopFacility stop: sourceScenario.getTransitSchedule().getFacilities().values()) {
-			TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(stop.getId(), stop.getCoord(), stop.getIsBlockingLane());
+		this.progressMonitor.setCustomText("loading stops..");
+		for (TransitStopFacility stop : sourceScenario.getTransitSchedule()
+				.getFacilities().values()) {
+			TransitStopFacility newStop = targetScenario
+					.getTransitSchedule()
+					.getFactory()
+					.createTransitStopFacility(stop.getId(), stop.getCoord(),
+							stop.getIsBlockingLane());
 			newStop.setName(stop.getName());
-			
-			
+
 			Coord tmpCoor = stop.getCoord();
 			LatLon coor;
-		
+
 			coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-			
+
 			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(
 					coor);
 			platform.put("public_transport", "platform");
 			platform.put("name", stop.getName());
-		
+
 			dataSet.addPrimitive(platform);
-			
+
 			org.openstreetmap.josm.data.osm.Node stopPosition = null;
 			Way newWay = null;
-			if(stop.getLinkId()!=null) {
-			
+			if (stop.getLinkId() != null) {
+
 				newWay = linkId2Way.get(stop.getLinkId());
 				List<Link> newWayLinks = way2Links.get(newWay);
 				Link singleLink = newWayLinks.get(0);
-				Id<Link> linkId = Id.createLinkId(singleLink.getId());
-				newStop.setLinkId(linkId);
-				
+
+				newStop.setLinkId(singleLink.getId());
+
 				stopPosition = newWay.lastNode();
 				stopPosition.put("public_transport", "stop_position");
-				
-				if(!stopPosition.hasKey("name")) {
+
+				if (!stopPosition.hasKey("name")) {
 					stopPosition.put("name", stop.getName());
 				} else {
-					stopPosition.put("name", stopPosition.get("name")+";"+stop.getName());
+					stopPosition.put("name", stopPosition.get("name") + ";"
+							+ stop.getName());
 				}
 			}
-			
+
 			targetScenario.getTransitSchedule().addStopFacility(newStop);
-			
-			
+
 			Relation relation = new Relation();
 			relation.put("matsim", "stop_relation");
 			relation.put("id", stop.getId().toString());
 			relation.put("name", stop.getName());
-			if (newWay!=null) {
+			if (newWay != null) {
 				relation.addMember(new RelationMember("link", newWay));
 			}
-			if (stopPosition!= null) {
+			if (stopPosition != null) {
 				relation.addMember(new RelationMember("stop", stopPosition));
 			}
 			relation.addMember(new RelationMember("platform", platform));
 			dataSet.addPrimitive(relation);
-			
-			stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop, stopPosition, platform));
-			
+
+			stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop,
+					stopPosition, platform, newWay));
+
 		}
-		
-		 for (TransitLine line : sourceScenario.getTransitSchedule().getTransitLines().values()) {
-	            TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(line.getId());
-	            for (TransitRoute route : line.getRoutes().values()) {
 
-	                Relation relation = new Relation();
+		for (TransitLine line : sourceScenario.getTransitSchedule()
+				.getTransitLines().values()) {
+			TransitLine newLine = targetScenario.getTransitSchedule()
+					.getFactory().createTransitLine(line.getId());
+			for (TransitRoute route : line.getRoutes().values()) {
 
-	                List<TransitRouteStop> newTransitStops = new ArrayList<>();
+				Relation relation = new Relation();
 
-	                for (TransitRouteStop tRStop : route.getStops()) {
+				List<TransitRouteStop> newTransitStops = new ArrayList<>();
 
-	                    TransitStopFacility stop = targetScenario.getTransitSchedule().getFacilities().get(tRStop.getStopFacility().getId());
-	                    newTransitStops.add(targetScenario.getTransitSchedule()
-	                            .getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+				for (TransitRouteStop tRStop : route.getStops()) {
 
-	                    relation.addMember(new RelationMember("stop", stops.get(stop.getId()).position));
-	                    relation.addMember(new RelationMember("platform", stops.get(stop.getId()).platform));
-	                }
+					TransitStopFacility stop = targetScenario
+							.getTransitSchedule().getFacilities()
+							.get(tRStop.getStopFacility().getId());
+					newTransitStops.add(targetScenario
+							.getTransitSchedule()
+							.getFactory()
+							.createTransitRouteStop(stop,
+									tRStop.getArrivalOffset(),
+									tRStop.getDepartureOffset()));
 
-	                List<Id<Link>> links = new ArrayList<>();
-	                Id<Link> oldStartId = route.getRoute().getStartLinkId();
-	                Link oldStartLink = sourceScenario.getNetwork().getLinks()
-	                        .get(oldStartId);
-	                Way newStartWay = linkId2Way.get(oldStartLink.getId());
-	                List<Link> newStartLinks = way2Links.get(newStartWay);
-	                Id<Link> startId = newStartLinks.get(0).getId();
+					relation.addMember(new RelationMember("stop", stops
+							.get(stop.getId()).position));
+					relation.addMember(new RelationMember("platform", stops
+							.get(stop.getId()).platform));
+				}
 
-	                relation.addMember(new RelationMember("", linkId2Way.get(route
-	                        .getRoute().getStartLinkId())));
-	                for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-	                    links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
-	                            .getId());
-	                    relation.addMember(new RelationMember("", linkId2Way
-	                            .get(linkId)));
-	                }
-	                Id<Link> oldEndId = route.getRoute().getEndLinkId();
-	                Link oldEndLink = sourceScenario.getNetwork().getLinks()
-	                        .get(oldEndId);
-	                Way newEndWay = linkId2Way.get(oldEndLink.getId());
-	                List<Link> newEndLinks = way2Links.get(newEndWay);
-	                Id<Link> endId = newEndLinks.get(0).getId();
-	                relation.addMember(new RelationMember("", linkId2Way.get(route
-	                        .getRoute().getEndLinkId())));
+				List<Id<Link>> links = new ArrayList<>();
+				Id<Link> oldStartId = route.getRoute().getStartLinkId();
+				Link oldStartLink = sourceScenario.getNetwork().getLinks()
+						.get(oldStartId);
+				Way newStartWay = linkId2Way.get(oldStartLink.getId());
+				List<Link> newStartLinks = way2Links.get(newStartWay);
+				Id<Link> startId = newStartLinks.get(0).getId();
 
-	                NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
-	                        endId);
-	                networkRoute.setLinkIds(startId, links, endId);
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getStartLinkId())));
+				for (Id<Link> linkId : route.getRoute().getLinkIds()) {
+					links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
+							.getId());
+					relation.addMember(new RelationMember("", linkId2Way
+							.get(linkId)));
+				}
+				Id<Link> oldEndId = route.getRoute().getEndLinkId();
+				Link oldEndLink = sourceScenario.getNetwork().getLinks()
+						.get(oldEndId);
+				Way newEndWay = linkId2Way.get(oldEndLink.getId());
+				List<Link> newEndLinks = way2Links.get(newEndWay);
+				Id<Link> endId = newEndLinks.get(0).getId();
+				relation.addMember(new RelationMember("", linkId2Way.get(route
+						.getRoute().getEndLinkId())));
 
-	                TransitRoute newRoute = targetScenario
-	                        .getTransitSchedule()
-	                        .getFactory()
-	                        .createTransitRoute(route.getId(), networkRoute,
-	                                newTransitStops, route.getTransportMode());
-	                newLine.addRoute(newRoute);
-	                relation.put("type", "route");
-	                relation.put("route", route.getTransportMode());
-	                relation.put("ref", line.getId().toString());
+				NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
+						endId);
+				networkRoute.setLinkIds(startId, links, endId);
 
-	                dataSet.addPrimitive(relation);
-	                relation2Route.put(relation, newRoute);
-	            }
-	            targetScenario.getTransitSchedule().addTransitLine(newLine);
-	        }
-		
-		
+				TransitRoute newRoute = targetScenario
+						.getTransitSchedule()
+						.getFactory()
+						.createTransitRoute(route.getId(), networkRoute,
+								newTransitStops, route.getTransportMode());
+				newLine.addRoute(newRoute);
+				relation.put("type", "route");
+				relation.put("route", route.getTransportMode());
+				relation.put("ref", line.getId().toString());
+
+				dataSet.addPrimitive(relation);
+				relation2Route.put(relation, newRoute);
+			}
+			targetScenario.getTransitSchedule().addTransitLine(newLine);
+		}
+
 		node2OsmNode.clear();
 		linkId2Way.clear();
 
@@ -323,8 +339,8 @@ class ConvertTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("creating layer..");
 
 		// create layer
-		newLayer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null, targetScenario, way2Links,
-				link2Segment, relation2Route, stops);
+		newLayer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
+				targetScenario, way2Links, link2Segment, relation2Route, stops);
 	}
 
 	/**

@@ -173,7 +173,6 @@ public class MapRenderer extends StyledMapRenderer {
 		static float wayOffset = ((float) Main.pref.getDouble(
 				"matsim_wayOffset", 0));
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		// listen for changes in preferences that concern renderer adjustments
 		public void preferenceChanged(PreferenceChangeEvent e) {

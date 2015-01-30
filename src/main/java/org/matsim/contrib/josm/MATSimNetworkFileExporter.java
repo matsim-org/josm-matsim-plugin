@@ -115,7 +115,7 @@ final class MATSimNetworkFileExporter extends FileExporter {
 
 		// start export task if not aborted
 		if (okToExport) {
-			ExportTask task = new ExportTask(file);
+			ExportTask task = new ExportTask(file, (OsmDataLayer) layer );
 			task.realRun();
 		}
 

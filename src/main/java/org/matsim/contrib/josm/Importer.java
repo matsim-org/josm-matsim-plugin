@@ -219,7 +219,7 @@ class Importer {
             relation.addMember(new RelationMember("platform", platform));
             dataSet.addPrimitive(relation);
 
-            stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop, stopPosition, platform));
+            stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop, stopPosition, platform, newWay));
 
         }
     }

@@ -124,7 +124,6 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		return new Preferences.Factory().createPreferenceSetting();
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		if (e.getKey().equalsIgnoreCase("matsim_renderer")) {

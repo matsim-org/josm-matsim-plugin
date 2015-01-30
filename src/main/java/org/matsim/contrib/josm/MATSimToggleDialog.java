@@ -42,7 +42,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.AutoScaleAction;
-import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.SelectionChangedListener;
@@ -56,7 +55,6 @@ import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.io.FileExporter;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.xml.sax.SAXException;
@@ -78,19 +76,18 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private MATSimTableModel_pt tableModel_pt;
 	private final JButton networkAttributes = new JButton(new ImageProvider(
 			"dialogs", "edit").setWidth(16).get());
-	private final JButton manualConvert = new JButton(new ImageProvider("restart")
-			.setWidth(16).get());
+	private final JButton manualConvert = new JButton(new ImageProvider(
+			"restart").setWidth(16).get());
 	private Scenario currentScenario;
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
 	private Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
 	private NetworkListener osmNetworkListener;
-	
 
 	public MATSimToggleDialog() {
-		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true,
-				Preferences.class);
+		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150,
+				true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 
 		// table for link data
@@ -263,7 +260,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		MapRenderer.setWay2Links(way2Links);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		if (e.getKey().equalsIgnoreCase("matsim_showInternalIds")) {
@@ -290,7 +286,8 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
 			setBackground(null);
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			return super.getTableCellRendererComponent(table, value,
+					isSelected, hasFocus, row, column);
 		}
 	}
 
@@ -428,8 +425,8 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private class MATSimTableModel_pt extends AbstractTableModel implements
 			SelectionChangedListener, ListSelectionListener {
 
-		private final String[] columnNames = { "route id", "mode", "#stops", "#links" };
-
+		private final String[] columnNames = { "route id", "mode", "#stops",
+				"#links" };
 
 		private Map<Integer, TransitRoute> routes;
 
@@ -541,7 +538,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			add(capacityPeriodValue);
 		}
 
-        void apply() {
+		void apply() {
 			Layer layer = Main.main.getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 				String lW = laneWidthValue.getText();
