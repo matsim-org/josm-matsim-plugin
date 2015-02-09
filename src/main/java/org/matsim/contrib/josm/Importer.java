@@ -32,7 +32,7 @@ class Importer {
     private MATSimLayer layer;
 
     HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
-    HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
+    HashMap<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
     HashMap<Way, List<Link>> way2Links = new HashMap<>();
     HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
     HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
@@ -126,7 +126,7 @@ class Importer {
                     .getNetwork()
                     .getFactory()
                     .createLink(
-                            Id.create(way.getUniqueId(), Link.class),
+                            Id.create(way.getUniqueId()+"_0", Link.class),
                             targetScenario.getNetwork()
                                     .getNodes()
                                     .get(Id.create(fromNode.getUniqueId(),
@@ -196,7 +196,7 @@ class Importer {
             relation.addMember(new RelationMember("platform", platform));
             dataSet.addPrimitive(relation);
 
-            stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop, stopPosition, platform, newWay));
+            stops.put(newStop.getId(), new Stop(newStop, stopPosition, platform, newWay));
 
         }
     }

@@ -166,19 +166,4 @@ class OsmConvertDefaults {
 		}
 	}
 
-	static class Stop {
-
-		public TransitStopFacility facility;
-		public Node position;
-		public Node platform;
-		public Way way;
-
-		public Stop(TransitStopFacility facility, Node position, Node platform,
-				Way way) {
-			this.facility = facility;
-			this.position = position;
-			this.platform = platform;
-			this.way = way;
-		}
-	}
 }

@@ -46,12 +46,12 @@ class NetworkListener implements DataSetListener, Visitor {
 	private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private final Map<Relation, TransitRoute> relation2Route;
-	private final Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops;
+	private final Map<Id<TransitStopFacility>, Stop> stops;
 
 	public NetworkListener(Scenario scenario, Map<Way, List<Link>> way2Links,
 			Map<Link, List<WaySegment>> link2Segments,
 			Map<Relation, TransitRoute> relation2Route,
-			Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops)
+			Map<Id<TransitStopFacility>, Stop> stops)
 			throws IllegalArgumentException {
 		this.scenario = scenario;
 		this.way2Links = way2Links;
@@ -391,7 +391,7 @@ class NetworkListener implements DataSetListener, Visitor {
 				}
 
 				NewConverter.convertTransitRouteOsm(relation, scenario,
-						relation2Route, way2Links, link2Segments, stops, null);
+						relation2Route, way2Links, link2Segments, stops);
 
 			} else if (relation.hasTag("matsim", "stop_relation") && relation.hasKey("id")) {
 				

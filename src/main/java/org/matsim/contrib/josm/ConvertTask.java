@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -25,7 +24,6 @@ import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
-import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
@@ -102,7 +100,7 @@ class ConvertTask extends PleaseWaitRunnable {
                         new HashMap<Way, List<Link>>(),
                         new HashMap<Link, List<WaySegment>>(),
                         new HashMap<Relation, TransitRoute>(),
-                        new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
+                        new HashMap<Id<TransitStopFacility>, Stop>());
 
 		// check if network should be cleaned
 		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
@@ -123,7 +121,7 @@ class ConvertTask extends PleaseWaitRunnable {
 		HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
 		HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
 		HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
-		HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
+		HashMap<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
 
 		this.progressMonitor.setTicks(4);
 		this.progressMonitor.setCustomText("loading nodes..");
@@ -247,7 +245,7 @@ class ConvertTask extends PleaseWaitRunnable {
 			relation.addMember(new RelationMember("platform", platform));
 			dataSet.addPrimitive(relation);
 
-			stops.put(newStop.getId(), new OsmConvertDefaults.Stop(newStop,
+			stops.put(newStop.getId(), new Stop(newStop,
 					stopPosition, platform, newWay));
 
 		}

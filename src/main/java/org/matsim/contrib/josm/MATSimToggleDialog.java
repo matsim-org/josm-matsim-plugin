@@ -82,7 +82,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
-	private Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>();
+	private Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
 	private NetworkListener osmNetworkListener;
 
 	public MATSimToggleDialog() {

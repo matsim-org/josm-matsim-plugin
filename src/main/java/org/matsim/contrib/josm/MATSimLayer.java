@@ -10,21 +10,18 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
-import javax.swing.JOptionPane;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
-import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.dialogs.LayerListDialog;
 import org.openstreetmap.josm.gui.dialogs.LayerListPopup;
 import org.openstreetmap.josm.gui.layer.Layer;
@@ -43,13 +40,13 @@ class MATSimLayer extends OsmDataLayer {
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
-	private Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops = new HashMap<>(); 
+	private Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
 
     public MATSimLayer(DataSet data, String name, File associatedFile,
                        Scenario scenario,
                        HashMap<Way, List<Link>> way2Links,
                        Map<Link, List<WaySegment>> link2Segment,
-                       Map<Relation, TransitRoute> relation2Route, Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops) {
+                       Map<Relation, TransitRoute> relation2Route, Map<Id<TransitStopFacility>, Stop> stops) {
 		super(data, name, associatedFile);
         this.matsimScenario = scenario;
         this.way2Links = way2Links;
@@ -76,7 +73,7 @@ class MATSimLayer extends OsmDataLayer {
 		return matsimScenario;
 	}
 	
-	public Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> getStops() {
+	public Map<Id<TransitStopFacility>, Stop> getStops() {
 		return stops;
 	}
 
