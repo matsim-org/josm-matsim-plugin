@@ -38,7 +38,8 @@ class ExportTask {
 	 */
 	public ExportTask(File file, OsmDataLayer layer) {
 		this.networkFile = file;
-	}
+        this.layer = layer;
+    }
 
 	protected void realRun() {
 
