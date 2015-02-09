@@ -59,11 +59,6 @@ class NewConverter {
 
 	static boolean keepPaths = Main.pref.getBoolean("matsim_keepPaths", false);
 
-	private static final List<String> TRANSPORT_MODES = Arrays.asList(
-			TransportMode.bike, TransportMode.car, TransportMode.other,
-			TransportMode.pt, TransportMode.ride, TransportMode.transit_walk,
-			TransportMode.walk);
-
 	static Map<String, OsmWayDefaults> wayDefaults;
 
 	// converts complete data layer and fills the given MATSim data structures
@@ -307,23 +302,20 @@ class NewConverter {
 							+ node.getUniqueId());
 				}
 
-				Double length = 0.;
 				Double capacity = 0.;
 				Double freespeed = 0.;
 				Double nofLanes = 0.;
 				boolean oneway = true;
-				Set<String> modes = new HashSet<String>();
 				boolean onewayReverse = false;
 
-				Map<String, String> keys = way.getKeys();
-				if (keys.containsKey(TAG_HIGHWAY)
-						|| keys.containsKey(TAG_RAILWAY)) {
+                if (way.getKeys().containsKey(TAG_HIGHWAY)
+						|| way.getKeys().containsKey(TAG_RAILWAY)) {
 
 					String wayType;
-					if (keys.containsKey(TAG_HIGHWAY)) {
-						wayType = keys.get(TAG_HIGHWAY);
-					} else if (keys.containsKey(TAG_RAILWAY)) {
-						wayType = keys.get(TAG_RAILWAY);
+					if (way.getKeys().containsKey(TAG_HIGHWAY)) {
+						wayType = way.getKeys().get(TAG_HIGHWAY);
+					} else if (way.getKeys().containsKey(TAG_RAILWAY)) {
+						wayType = way.getKeys().get(TAG_RAILWAY);
 					} else {
 						return;
 					}
@@ -343,7 +335,7 @@ class NewConverter {
 
 						// check if there are tags that overwrite defaults
 						// - check tag "junction"
-						if ("roundabout".equals(keys.get(TAG_JUNCTION))) {
+						if ("roundabout".equals(way.getKeys().get(TAG_JUNCTION))) {
 							// if "junction" is not set in tags, get()
 							// returns null and
 							// equals()
@@ -352,7 +344,7 @@ class NewConverter {
 						}
 
 						// check tag "oneway"
-						String onewayTag = keys.get(TAG_ONEWAY);
+						String onewayTag = way.getKeys().get(TAG_ONEWAY);
 						if (onewayTag != null) {
 							if ("yes".equals(onewayTag)) {
 								oneway = true;
@@ -385,7 +377,7 @@ class NewConverter {
 							}
 						}
 
-						String maxspeedTag = keys.get(TAG_MAXSPEED);
+						String maxspeedTag = way.getKeys().get(TAG_MAXSPEED);
 						if (maxspeedTag != null) {
 							try {
 								freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert
@@ -398,7 +390,7 @@ class NewConverter {
 						}
 
 						// check tag "lanes"
-						String lanesTag = keys.get(TAG_LANES);
+						String lanesTag = way.getKeys().get(TAG_LANES);
 						if (lanesTag != null) {
 							try {
 								double tmp = Double.parseDouble(lanesTag);
@@ -414,8 +406,8 @@ class NewConverter {
 						capacity = nofLanes * laneCapacity;
 					}
 				}
-				if (keys.containsKey("capacity")) {
-					Double capacityTag = parseDoubleIfPossible(keys
+				if (way.getKeys().containsKey("capacity")) {
+					Double capacityTag = parseDoubleIfPossible(way.getKeys()
 							.get("capacity"));
 					if (capacityTag != null) {
 						capacity = capacityTag;
@@ -424,8 +416,8 @@ class NewConverter {
 								+ ": could not parse MATSim capacity tag");
 					}
 				}
-				if (keys.containsKey("freespeed")) {
-					Double freespeedTag = parseDoubleIfPossible(keys
+				if (way.getKeys().containsKey("freespeed")) {
+					Double freespeedTag = parseDoubleIfPossible(way.getKeys()
 							.get("freespeed"));
 					if (freespeedTag != null) {
 						freespeed = freespeedTag;
@@ -434,8 +426,8 @@ class NewConverter {
 								+ ": could not parse MATSim freespeed tag");
 					}
 				}
-				if (keys.containsKey("permlanes")) {
-					Double permlanesTag = parseDoubleIfPossible(keys
+				if (way.getKeys().containsKey("permlanes")) {
+					Double permlanesTag = parseDoubleIfPossible(way.getKeys()
 							.get("permlanes"));
 					if (permlanesTag != null) {
 						nofLanes = permlanesTag;
@@ -444,28 +436,14 @@ class NewConverter {
 								+ ": could not parse MATSim permlanes tag");
 					}
 				}
-				if (keys.containsKey("modes")) {
-					Set<String> tempModes = new HashSet<String>();
-					String tempArray[] = keys.get("modes").split(";");
-					for (String mode : tempArray) {
-						if (TRANSPORT_MODES.contains(mode)) {
-							tempModes.add(mode);
-						}
-					}
-					if (tempModes.size() != 0) {
-						modes.clear();
-						modes.addAll(tempModes);
-					} else {
-						log.warn("--- Way " + way.getUniqueId()
-								+ ": could not parse MATSim modes tag");
-					}
-				}
 
-				Double tempLength = null;
-				if (keys.containsKey("length")) {
-					Double temp = parseDoubleIfPossible(keys.get("length"));
+                Set<String> modes = determineModes(way);
+
+				Double taggedLength = null;
+				if (way.getKeys().containsKey("length")) {
+					Double temp = parseDoubleIfPossible(way.getKeys().get("length"));
 					if (temp != null) {
-						tempLength = temp;
+						taggedLength = temp;
 
 					} else {
 						log.warn("--- Way " + way.getUniqueId()
@@ -473,18 +451,10 @@ class NewConverter {
 					}
 				}
 
-				if (modes.isEmpty()) {
-					if (keys.containsKey(TAG_RAILWAY)) {
-						modes.add(TransportMode.pt);
-					}
-					if (keys.containsKey(TAG_HIGHWAY)) {
-						modes.add(TransportMode.car);
-					}
-				}
 
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
-					List<WaySegment> segs = new ArrayList<WaySegment>();
+					List<WaySegment> segs = new ArrayList<>();
 					Node nodeFrom = nodeOrder.get(k - 1);
 					Node nodeTo = nodeOrder.get(k);
 
@@ -500,8 +470,7 @@ class NewConverter {
 					if (fromIdx > toIdx) { // loop, take latter occurrence
 						toIdx = way.getNodes().lastIndexOf(nodeTo);
 					}
-
-					length = 0.;
+                    Double length = 0.;
 					for (int m = fromIdx; m < toIdx; m++) {
 						segs.add(new WaySegment(way, m));
 						length += way
@@ -513,8 +482,12 @@ class NewConverter {
 					log.debug("--- Way " + way.getUniqueId()
 							+ ": length between " + fromIdx + " and " + toIdx
 							+ ": " + length);
-					if (tempLength != null) {
-						length = tempLength * length / way.getLength();
+					if (taggedLength != null) {
+                        if (length != 0.0) {
+                            length = taggedLength * length / way.getLength();
+                        } else {
+                            length = taggedLength;
+                        }
 					}
 					List<Link> tempLinks = createLink(network, way, nodeFrom,
 							nodeTo, length, increment, oneway, onewayReverse,
@@ -530,14 +503,35 @@ class NewConverter {
 		}
 		log.debug("### Finished Way " + way.getUniqueId() + ". " + links.size()
 				+ " links resulted. ###");
-		if (way == null || links.isEmpty() || links == null) {
-			return;
-		} else {
-			way2Links.put(way, links);
-		}
+        way2Links.put(way, links);
 	}
 
-	private static boolean elementOfConnectedRoute(Way way) {
+    private static Set<String> determineModes(Way way) {
+        Set<String> modes = new HashSet<>();
+        if (way.getKeys().containsKey("modes")) {
+            Set<String> tempModes = new HashSet<>();
+            String tempArray[] = way.getKeys().get("modes").split(";");
+            Collections.addAll(tempModes, tempArray);
+            if (tempModes.size() != 0) {
+                modes.clear();
+                modes.addAll(tempModes);
+            } else {
+                log.warn("--- Way " + way.getUniqueId()
+                        + ": could not parse MATSim modes tag");
+            }
+        }
+        if (modes.isEmpty()) {
+            if (way.getKeys().containsKey(TAG_RAILWAY)) {
+                modes.add(TransportMode.pt);
+            }
+            if (way.getKeys().containsKey(TAG_HIGHWAY)) {
+                modes.add(TransportMode.car);
+            }
+        }
+        return modes;
+    }
+
+    private static boolean elementOfConnectedRoute(Way way) {
 		for (OsmPrimitive primitive : way.getReferrers()) {
 			if (primitive instanceof Relation
 					&& primitive.hasTag("type", "route")) {
