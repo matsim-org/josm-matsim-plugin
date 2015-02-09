@@ -257,7 +257,7 @@ class Importer {
                 newLine.addRoute(newRoute);
                 relation.put("type", "route");
                 relation.put("route", route.getTransportMode());
-                relation.put("ref", line.getId().toString());
+                relation.put("ref", route.getId().toString());
 
                 dataSet.addPrimitive(relation);
                 relation2Route.put(relation, newRoute);
