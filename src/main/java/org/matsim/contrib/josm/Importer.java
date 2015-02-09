@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -13,12 +12,11 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.geometry.CoordImpl;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.pt.transitSchedule.api.*;
+import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.*;
+import org.openstreetmap.josm.data.projection.Projection;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ class Importer {
 
     private final String networkPath;
     private final String schedulePath;
+    private Projection projection;
     private MATSimLayer layer;
 
     HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
@@ -39,20 +38,17 @@ class Importer {
     HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
     HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
     private DataSet dataSet;
-    private String importSystem;
-    private CoordinateTransformation ct;
     private Scenario sourceScenario;
     private Scenario targetScenario;
 
-    public Importer(String networkPath, String schedulePath) {
+    public Importer(String networkPath, String schedulePath, Projection projection) {
         this.networkPath = networkPath;
         this.schedulePath = schedulePath;
+        this.projection = projection;
     }
 
     void run() {
         dataSet = new DataSet();
-        importSystem = (String) ImportDialog.importSystem.getSelectedItem();
-        ct = TransformationFactory.getCoordinateTransformation(importSystem, TransformationFactory.WGS84);
         sourceScenario = readScenario();
         targetScenario = ScenarioUtils.createScenario(sourceScenario.getConfig());
         convertNetwork();
@@ -80,19 +76,9 @@ class Importer {
 
     private void convertNetwork() {
         for (Node node : sourceScenario.getNetwork().getNodes().values()) {
-            Coord tmpCoor = node.getCoord();
-            LatLon coor;
-
-            // convert coordinates into wgs84
-            if (importSystem.equals("WGS84")) {
-                coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-            } else {
-                tmpCoor = ct.transform(new CoordImpl(tmpCoor.getX(), tmpCoor
-                        .getY()));
-                coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-            }
-            org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(
-                    coor);
+            EastNorth eastNorth = new EastNorth(node.getCoord().getX(), node.getCoord().getY());
+            LatLon latLon = projection.eastNorth2latlon(eastNorth);
+            org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(latLon);
 
             // set id of MATSim node as tag, as actual id of new MATSim node is
             // set as corresponding OSM node id
@@ -168,18 +154,9 @@ class Importer {
             newStop.setName(stop.getName());
 
 
-            Coord tmpCoor = stop.getCoord();
-            LatLon coor;
-            // convert coordinates into wgs84
-            if (importSystem.equals("WGS84")) {
-                coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-            } else {
-                tmpCoor = ct.transform(new CoordImpl(tmpCoor.getX(), tmpCoor
-                        .getY()));
-                coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-            }
-            org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(
-                    coor);
+            EastNorth eastNorth = new EastNorth(stop.getCoord().getX(), stop.getCoord().getY());
+            LatLon latLon = projection.eastNorth2latlon(eastNorth);
+            org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
             platform.put("name", stop.getName());
 

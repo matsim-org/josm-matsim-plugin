@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.openstreetmap.josm.Main;
 
 import java.net.URL;
 
@@ -20,14 +21,14 @@ public class ImportTaskTest {
     @Test
     public void readNetworkWithoutTransit() {
         URL network = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
-        new Importer(network.getFile(), null).run();
+        new Importer(network.getFile(), null, Main.getProjection()).run();
     }
 
     @Test
     public void readNetworkWithTransit() {
         URL network = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
         URL transitSchedule = getClass().getResource("/test-input/pt-tutorial/transitschedule.xml");
-        new Importer(network.getFile(), transitSchedule.getFile()).run();
+        new Importer(network.getFile(), transitSchedule.getFile(), Main.getProjection()).run();
     }
 
 }

@@ -122,7 +122,7 @@ class NetworkListener implements DataSetListener, Visitor {
 				
 				if (primitive.hasTag("public_transport", "platform")) {
 					Id<TransitStopFacility> stopId = Id.create(
-							primitive.getUniqueId(), TransitStopFacility.class);
+                            primitive.getUniqueId(), TransitStopFacility.class);
 					for (OsmPrimitive referrer : primitive.getReferrers()) {
 						if (referrer instanceof Relation
 								&& referrer.hasTag("matsim", "stop_relation")
@@ -202,7 +202,7 @@ class NetworkListener implements DataSetListener, Visitor {
 				}
 				if (primitive.hasTag("matsim", "stop_relation")) {
 					Id<TransitStopFacility> id = Id.create(primitive.get("id"),
-							TransitStopFacility.class);
+                            TransitStopFacility.class);
 					if (stops.containsKey(id)) {
 						scenario.getTransitSchedule().removeStopFacility(
 								stops.get(id).facility);
@@ -391,7 +391,7 @@ class NetworkListener implements DataSetListener, Visitor {
 				}
 
 				NewConverter.convertTransitRouteOsm(relation, scenario,
-						relation2Route, way2Links, link2Segments, stops);
+						relation2Route, way2Links, link2Segments, stops, null);
 
 			} else if (relation.hasTag("matsim", "stop_relation") && relation.hasKey("id")) {
 				

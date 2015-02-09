@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
@@ -34,21 +33,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
 	private final static JCheckBox cleanNetwork = new JCheckBox("Clean Network");
 	private final static JCheckBox keepPaths = new JCheckBox("Keep Paths");
 
-	static final String[] coordSystems = { TransformationFactory.WGS84,
-			TransformationFactory.ATLANTIS, TransformationFactory.CH1903_LV03,
-			TransformationFactory.GK4, TransformationFactory.WGS84_UTM47S,
-			TransformationFactory.WGS84_UTM48N,
-			TransformationFactory.WGS84_UTM35S,
-			TransformationFactory.WGS84_UTM36S,
-			TransformationFactory.WGS84_Albers,
-			TransformationFactory.WGS84_SA_Albers,
-			TransformationFactory.WGS84_UTM33N, TransformationFactory.DHDN_GK4,
-			TransformationFactory.WGS84_UTM29N,
-			TransformationFactory.CH1903_LV03_GT,
-			TransformationFactory.WGS84_SVY21,
-			TransformationFactory.NAD83_UTM17N, TransformationFactory.WGS84_TM };
-
-	private final JButton convertingDefaults = new JButton("Set converting defaults");
+    private final JButton convertingDefaults = new JButton("Set converting defaults");
 
 	private final static JCheckBox filterActive = new JCheckBox(
 			"Activate hierarchy filter");

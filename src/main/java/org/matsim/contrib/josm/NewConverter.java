@@ -33,6 +33,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
@@ -40,6 +41,7 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
@@ -110,8 +112,8 @@ class NewConverter {
 				if (!relation.isDeleted()
 						&& relation.hasTag("type", "route")
 						&& relation.hasTag("route",
-								new String[] { "train", "track", "bus",
-										"light_rail", "tram", "subway" })) {
+                        "train", "track", "bus",
+                        "light_rail", "tram", "subway")) {
 					// if (relation.hasIncompleteMembers()) {
 					// DownloadRelationMemberTask task = new
 					// DownloadRelationMemberTask(
@@ -130,7 +132,7 @@ class NewConverter {
 			for (Relation relation : publicTransportRoutesOsm) {
 				sorter.sortMembers(relation.getMembers());
 				convertTransitRouteOsm(relation, scenario, relation2Route,
-						way2Links, link2Segments, stops);
+						way2Links, link2Segments, stops, null);
 			}
 
 		}
@@ -224,8 +226,8 @@ class NewConverter {
 	}
 
 	public static void convertWay(Way way, Network network,
-			Map<Way, List<Link>> way2Links,
-			Map<Link, List<WaySegment>> link2Segments) {
+                                  Map<Way, List<Link>> way2Links,
+                                  Map<Link, List<WaySegment>> link2Segments) {
 		log.info("### Way " + way.getUniqueId() + " (" + way.getNodesCount()
 				+ " nodes) ###");
 		List<Link> links = new ArrayList<Link>();
@@ -259,7 +261,7 @@ class NewConverter {
 								+ ": dumped node " + l + " ("
 								+ current.getUniqueId()
 								+ ") beginning of loop / closed area ");
-						nodeOrderLog.append("(" + l + ") ");
+						nodeOrderLog.append("(").append(l).append(") ");
 					} else if (current.isConnectionNode()) {
 						for (OsmPrimitive prim : current.getReferrers()) {
 							if (prim instanceof Way && !prim.equals(way)) {
@@ -270,7 +272,7 @@ class NewConverter {
 											+ ": dumped node " + l + " ("
 											+ current.getUniqueId()
 											+ ") way intersection");
-									nodeOrderLog.append("(" + l + ") ");
+									nodeOrderLog.append("(").append(l).append(") ");
 									break;
 								}
 							}
@@ -278,9 +280,8 @@ class NewConverter {
 					} else {
 						for (OsmPrimitive prim : current.getReferrers()) {
 							if (prim instanceof Relation
-									&& prim.hasTag("route", new String[] {
-											"train", "track", "bus",
-											"light_rail", "tram", "subway" })
+									&& prim.hasTag("route", "train", "track", "bus",
+                                    "light_rail", "tram", "subway")
 									&& prim.hasTag("type", "route")
 									&& !nodeOrder.contains(current)) {
 								nodeOrder.add(current);
@@ -569,16 +570,15 @@ class NewConverter {
 		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(
 				node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
 		if (!node.isIncomplete()) {
-			if (!network.getNodes().containsKey(nodeId)) {
-				double lat = node.getCoor().lat();
-				double lon = node.getCoor().lon();
+            EastNorth eastNorth = node.getEastNorth();
+            if (!network.getNodes().containsKey(nodeId)) {
 				org.matsim.api.core.v01.network.Node nn = network
 						.getFactory()
 						.createNode(
 								Id.create(
 										node.getUniqueId(),
 										org.matsim.api.core.v01.network.Node.class),
-								new CoordImpl(lon, lat));
+								new CoordImpl(eastNorth.getX(), eastNorth.getY()));
 				if (node.hasKey(ImportTask.NODE_TAG_ID)) {
 					((NodeImpl) nn).setOrigId(node.get(ImportTask.NODE_TAG_ID));
 				} else {
@@ -593,8 +593,7 @@ class NewConverter {
 					((NodeImpl) network.getNodes().get(nodeId))
 							.setOrigId(String.valueOf(node.getUniqueId()));
 				}
-				Coord coord = new CoordImpl(node.getCoor().getX(), node
-						.getCoor().getY());
+				Coord coord = new CoordImpl(eastNorth.getX(), eastNorth.getY());
 				((NodeImpl) network.getNodes().get(nodeId)).setCoord(coord);
 			}
 		}
@@ -680,10 +679,10 @@ class NewConverter {
 	}
 
 	public static void convertTransitRouteOsm(Relation relation,
-			Scenario scenario, Map<Relation, TransitRoute> relation2Route,
-			Map<Way, List<Link>> way2Links,
-			Map<Link, List<WaySegment>> link2Segments,
-			Map<Id<TransitStopFacility>, Stop> stops) {
+                                              Scenario scenario, Map<Relation, TransitRoute> relation2Route,
+                                              Map<Way, List<Link>> way2Links,
+                                              Map<Link, List<WaySegment>> link2Segments,
+                                              Map<Id<TransitStopFacility>, Stop> stops, Projection projection) {
 		NetworkRoute route;
 		Map<OsmConvertDefaults.Stop, WaySegment> stops2Segment = new LinkedHashMap<OsmConvertDefaults.Stop, WaySegment>();
 		log.debug("converting route relation" + relation.getUniqueId() + " "

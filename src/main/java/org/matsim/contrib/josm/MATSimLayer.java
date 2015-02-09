@@ -24,6 +24,7 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.dialogs.LayerListDialog;
 import org.openstreetmap.josm.gui.dialogs.LayerListPopup;
 import org.openstreetmap.josm.gui.layer.Layer;
@@ -36,7 +37,7 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
  * 
  */
 class MATSimLayer extends OsmDataLayer {
-	private final Scenario matsimScenario;
+    private final Scenario matsimScenario;
 
     // data mappings
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
@@ -50,30 +51,14 @@ class MATSimLayer extends OsmDataLayer {
                        Map<Link, List<WaySegment>> link2Segment,
                        Map<Relation, TransitRoute> relation2Route, Map<Id<TransitStopFacility>, OsmConvertDefaults.Stop> stops) {
 		super(data, name, associatedFile);
-		this.matsimScenario = scenario;
+        this.matsimScenario = scenario;
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
 		this.stops = stops;
-
-		// attach listener to layer
-		NetworkListener listener;
-		try {
-			listener = new NetworkListener(scenario, way2Links, link2Segment,
-					relation2Route, stops);
-		} catch (IllegalArgumentException e) { // create layer even if no
-												// listener can be attached
-			JOptionPane
-					.showMessageDialog(
-							Main.parent,
-							"Could not initialize network listener with the given coordinate system.\nChanges on layer data will NOT affect the network.",
-							tr("Error"), JOptionPane.ERROR_MESSAGE);
-			listener = null;
-		}
-		if (listener != null) {
-			data.addDataSetListener(listener);
-		}
-	}
+		NetworkListener listener = new NetworkListener(scenario, way2Links, link2Segment, relation2Route, stops);
+        data.addDataSetListener(listener);
+    }
 
 	public Map<Way, List<Link>> getWay2Links() {
 		return way2Links;

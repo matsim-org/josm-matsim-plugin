@@ -24,6 +24,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -96,12 +97,12 @@ class ConvertTask extends PleaseWaitRunnable {
 		// convert layer data
 		NewConverter
 				.convertOsmLayer(
-						((OsmDataLayer) layer),
-						sourceScenario,
-						new HashMap<Way, List<Link>>(),
-						new HashMap<Link, List<WaySegment>>(),
-						new HashMap<Relation, TransitRoute>(),
-						new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
+                        ((OsmDataLayer) layer),
+                        sourceScenario,
+                        new HashMap<Way, List<Link>>(),
+                        new HashMap<Link, List<WaySegment>>(),
+                        new HashMap<Relation, TransitRoute>(),
+                        new HashMap<Id<TransitStopFacility>, OsmConvertDefaults.Stop>());
 
 		// check if network should be cleaned
 		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
@@ -129,11 +130,8 @@ class ConvertTask extends PleaseWaitRunnable {
 
 		// create new OSM and MATSim nodes out of converted network nodes
 		for (Node node : sourceScenario.getNetwork().getNodes().values()) {
-
-			Coord tmpCoor = node.getCoord();
-			LatLon coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-			org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(
-					coor);
+			EastNorth coor = new EastNorth(node.getCoord().getX(), node.getCoord().getY());
+			org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(coor);
 			nodeOsm.put(ImportTask.NODE_TAG_ID, ((NodeImpl) node).getOrigId());
 			node2OsmNode.put(node, nodeOsm);
 			dataSet.addPrimitive(nodeOsm);
@@ -206,13 +204,8 @@ class ConvertTask extends PleaseWaitRunnable {
 							stop.getIsBlockingLane());
 			newStop.setName(stop.getName());
 
-			Coord tmpCoor = stop.getCoord();
-			LatLon coor;
-
-			coor = new LatLon(tmpCoor.getY(), tmpCoor.getX());
-
-			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(
-					coor);
+            EastNorth eastNorth = new EastNorth(stop.getCoord().getX(), stop.getCoord().getY());
+			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(eastNorth);
 			platform.put("public_transport", "platform");
 			platform.put("name", stop.getName());
 

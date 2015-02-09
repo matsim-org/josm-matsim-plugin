@@ -14,6 +14,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 
 /**
  * the import dialog
@@ -34,17 +36,11 @@ class ImportDialog extends JPanel {
 	final JLabel schedulePath = new JLabel("transit schedule");
 	final JButton schedulePathButton = new JButton("choose");
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    final static JComboBox importSystem = new JComboBox(
-			Preferences.coordSystems);
+    final JComboBox<ProjectionChoice> importSystem = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[]{}));
 
 	public ImportDialog() {
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(new GridBagLayout());
-
-		importSystem.setSelectedItem(Main.pref.get("matsim_importSystem",
-				"WGS84"));
-		
 		c.gridwidth = 1;
 		c.weightx = 1;
 		c.fill = GridBagConstraints.HORIZONTAL;

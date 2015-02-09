@@ -15,6 +15,7 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import javax.swing.*;
@@ -61,9 +62,9 @@ class MATSimAction {
 		public ImportAction() {
 			super(tr("Import MATSim scenario"), "open.png",
 					tr("Import MATSim scenario"), Shortcut.registerShortcut(
-							"menu:matsimImport",
-							tr("Menu: {0}", tr("MATSim Import")),
-							KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
+                            "menu:matsimImport",
+                            tr("Menu: {0}", tr("MATSim Import")),
+                            KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
 		}
 
 		@Override
@@ -84,7 +85,8 @@ class MATSimAction {
 						}
 						ImportTask task = new ImportTask(
 								dialog.networkPathButton.getText(),
-								dialog.schedulePathButton.getText());
+								dialog.schedulePathButton.getText(),
+                                ((ProjectionChoice) dialog.importSystem.getSelectedItem()).getProjection());
 						Main.worker.execute(task);
 					}
 				}
