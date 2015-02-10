@@ -176,19 +176,8 @@ class NetworkListener implements DataSetListener, Visitor {
 					relation2Route.remove(primitive);
 				}
 				if (primitive.hasTag("matsim", "stop_relation")) {
-					Id<TransitStopFacility> id = Id.create(primitive.get("id"),
-                            TransitStopFacility.class);
-					if (stops.containsKey(id)) {
-						scenario.getTransitSchedule().removeStopFacility(
-								stops.get(id).facility);
-						stops.remove(id);
-					}
-					for (RelationMember member : ((Relation) primitive)
-							.getMembers()) {
-						if (member.getRole().equals("platform")
-								&& member.isNode()) {
-							visit(member.getNode());
-						}
+					for (org.openstreetmap.josm.data.osm.Node member : ((Relation) primitive).getMemberPrimitives(org.openstreetmap.josm.data.osm.Node.class)) {
+					    visit(member);
 					}
 				}
 			}
@@ -255,10 +244,8 @@ class NetworkListener implements DataSetListener, Visitor {
 
 	@Override
 	public void visit(org.openstreetmap.josm.data.osm.Node node) {
-
 		log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
 		if (node.hasTag("public_transport", "platform")) {
-			
 			Id<TransitStopFacility> stopId = Id.create(node.getUniqueId(), TransitStopFacility.class);
 			for (OsmPrimitive referrer : node.getReferrers()) {
 				if (referrer instanceof Relation
@@ -267,16 +254,16 @@ class NetworkListener implements DataSetListener, Visitor {
 					stopId = Id.create(referrer.get("id"), TransitStopFacility.class);
 				}
 			}
-
 			if (stops.containsKey(stopId)) {
 				TransitStopFacility stop = stops.get(stopId).facility;
 				scenario.getTransitSchedule().removeStopFacility(stop);
 				stops.remove(stopId);
 				log.debug("removing stop"+ node.getUniqueId() + " " + node.getName());
 			}
-			
-			log.debug("converting stop"+ node.getUniqueId() + " " + node.getName());
-			NewConverter.createStopIfItIsOne(node, scenario, way2Links, stops);
+            if (!node.isDeleted()) {
+                log.debug("converting stop"+ node.getUniqueId() + " " + node.getName());
+                NewConverter.createStopIfItIsOne(node, scenario, way2Links, stops);
+            }
 		}
 		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}
