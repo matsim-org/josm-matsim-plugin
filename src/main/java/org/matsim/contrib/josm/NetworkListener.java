@@ -162,18 +162,6 @@ class NetworkListener implements DataSetListener, Visitor {
 							scenario.getNetwork().removeLink(linkId);
 						}
 					}
-					Id<TransitLine> lineId;
-					if (primitive.hasKey("ref")) {
-						lineId = Id.create(primitive.get("ref"),
-								TransitLine.class);
-					} else if (primitive.hasKey("name")) {
-						lineId = Id.create(primitive.get("name"),
-								TransitLine.class);
-					} else {
-						lineId = Id.create(primitive.getUniqueId(),
-								TransitLine.class);
-					}
-
 					for (TransitRouteStop stop : route.getStops()) {
 						Id<Link> linkId = stop.getStopFacility().getLinkId();
 						Link link = scenario.getNetwork().getLinks()
@@ -184,20 +172,7 @@ class NetworkListener implements DataSetListener, Visitor {
 						scenario.getTransitSchedule().removeStopFacility(
 								stop.getStopFacility());
 					}
-
-					if (scenario.getTransitSchedule().getTransitLines()
-							.containsKey(lineId)) {
-						log.debug("line found");
-						TransitLine line = scenario.getTransitSchedule()
-								.getTransitLines().get(lineId);
-						if (line.getRoutes().containsValue(route)) {
-							line.removeRoute(route);
-						}
-						if (line.getRoutes().isEmpty()) {
-							scenario.getTransitSchedule().removeTransitLine(
-									line);
-						}
-					}
+					searchAndRemoveRoute(route);
 					relation2Route.remove(primitive);
 				}
 				if (primitive.hasTag("matsim", "stop_relation")) {
@@ -336,10 +311,7 @@ class NetworkListener implements DataSetListener, Visitor {
 		if (!relation.isDeleted()) {
             if (relation2Route.containsKey(relation)) {
                 TransitRoute route = relation2Route.get(relation);
-                // We do not know what line the route is in, so we have to search for it.
-                for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-                    line.removeRoute(route);
-                }
+                searchAndRemoveRoute(route);
                 for (Id<Link> linkId : route.getRoute().getLinkIds()) {
                     if (!link2Segments.containsKey(scenario.getNetwork()
                             .getLinks().get(linkId))) {
@@ -360,7 +332,14 @@ class NetworkListener implements DataSetListener, Visitor {
 		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}
 
-	@Override
+    private void searchAndRemoveRoute(TransitRoute route) {
+        // We do not know what line the route is in, so we have to search for it.
+        for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+            line.removeRoute(route);
+        }
+    }
+
+    @Override
 	public void visit(Changeset arg0) {
 		// TODO Auto-generated method stub
 
