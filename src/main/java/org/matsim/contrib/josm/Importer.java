@@ -203,21 +203,19 @@ class Importer {
 
     private void convertLines() {
         for (TransitLine line : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+            Relation lineRelation = new Relation();
+            lineRelation.put("type", "route_master");
+            lineRelation.put("ref", line.getId().toString());
             TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(line.getId());
             for (TransitRoute route : line.getRoutes().values()) {
-
-                Relation relation = new Relation();
-
+                Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
-
                 for (TransitRouteStop tRStop : route.getStops()) {
-
                     TransitStopFacility stop = targetScenario.getTransitSchedule().getFacilities().get(tRStop.getStopFacility().getId());
                     newTransitStops.add(targetScenario.getTransitSchedule()
                             .getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-
-                    relation.addMember(new RelationMember("stop", stops.get(stop.getId()).position));
-                    relation.addMember(new RelationMember("platform", stops.get(stop.getId()).platform));
+                    routeRelation.addMember(new RelationMember("stop", stops.get(stop.getId()).position));
+                    routeRelation.addMember(new RelationMember("platform", stops.get(stop.getId()).platform));
                 }
 
                 List<Id<Link>> links = new ArrayList<>();
@@ -228,12 +226,12 @@ class Importer {
                 List<Link> newStartLinks = way2Links.get(newStartWay);
                 Id<Link> startId = newStartLinks.get(0).getId();
 
-                relation.addMember(new RelationMember("", linkId2Way.get(route
+                routeRelation.addMember(new RelationMember("", linkId2Way.get(route
                         .getRoute().getStartLinkId())));
                 for (Id<Link> linkId : route.getRoute().getLinkIds()) {
                     links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
                             .getId());
-                    relation.addMember(new RelationMember("", linkId2Way
+                    routeRelation.addMember(new RelationMember("", linkId2Way
                             .get(linkId)));
                 }
                 Id<Link> oldEndId = route.getRoute().getEndLinkId();
@@ -242,7 +240,7 @@ class Importer {
                 Way newEndWay = linkId2Way.get(oldEndLink.getId());
                 List<Link> newEndLinks = way2Links.get(newEndWay);
                 Id<Link> endId = newEndLinks.get(0).getId();
-                relation.addMember(new RelationMember("", linkId2Way.get(route
+                routeRelation.addMember(new RelationMember("", linkId2Way.get(route
                         .getRoute().getEndLinkId())));
 
                 NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
@@ -255,13 +253,14 @@ class Importer {
                         .createTransitRoute(route.getId(), networkRoute,
                                 newTransitStops, route.getTransportMode());
                 newLine.addRoute(newRoute);
-                relation.put("type", "route");
-                relation.put("route", route.getTransportMode());
-                relation.put("ref", route.getId().toString());
-
-                dataSet.addPrimitive(relation);
-                relation2Route.put(relation, newRoute);
+                routeRelation.put("type", "route");
+                routeRelation.put("route", route.getTransportMode());
+                routeRelation.put("ref", route.getId().toString());
+                dataSet.addPrimitive(routeRelation);
+                lineRelation.addMember(new RelationMember(null, routeRelation));
+                relation2Route.put(routeRelation, newRoute);
             }
+            dataSet.addPrimitive(lineRelation);
             targetScenario.getTransitSchedule().addTransitLine(newLine);
         }
     }
