@@ -42,10 +42,8 @@ public class TransitScheduleExporter {
                                 stop.getIsBlockingLane());
 
                 Id<Link> oldId = stop.getLinkId();
-                Link oldLink = layer.getMatsimScenario()
-                        .getNetwork().getLinks().get(oldId);
-                Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink)
-                        .getOrigId());
+                Link oldLink = layer.getMatsimScenario().getNetwork().getLinks().get(oldId);
+                Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
                 newStop.setLinkId(newLinkId);
                 schedule.addStopFacility(newStop);
             }
