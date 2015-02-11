@@ -15,12 +15,7 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.osm.Changeset;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListener;
@@ -31,6 +26,7 @@ import org.openstreetmap.josm.data.osm.event.RelationMembersChangedEvent;
 import org.openstreetmap.josm.data.osm.event.TagsChangedEvent;
 import org.openstreetmap.josm.data.osm.event.WayNodesChangedEvent;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
+import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
@@ -58,15 +54,29 @@ class NetworkListener implements DataSetListener, Visitor {
 		log.debug("Listener initialized");
 	}
 
-	@Override
-	// convert whole layer from scratch
+    void visitAll(DataSet data) {
+        for (Way way : data.getWays()) {
+            if (!way.isDeleted()) {
+                visit(way);
+            }
+        }
+
+        for (org.openstreetmap.josm.data.osm.Node node : data.getNodes()) {
+            if (!node.isDeleted()) {
+                visit(node);
+            }
+        }
+
+        for (Relation relation : data.getRelations()) {
+            if (!relation.isDeleted()) {
+                visit(relation);
+            }
+        }
+    }
+
+    @Override
 	public void dataChanged(DataChangedEvent arg0) {
 		log.debug("Data changed. " + arg0.getType());
-		// if (Main.main.getActiveLayer() != null) {
-		// Main.main.getCurrentDataSet().clearSelection();
-		// MATSimPlugin.toggleDialog.activeLayerChange(
-		// Main.main.getActiveLayer(), Main.main.getActiveLayer());
-		// }
 	}
 
 	@Override
