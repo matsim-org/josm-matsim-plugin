@@ -228,23 +228,14 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 						(OsmDataLayer) newLayer);
 				task.run();
 			}
-			if (currentScenario != null) {
-				tableModel_links = new MATSimTableModel_links(
-						currentScenario.getNetwork());
-				table_links.setModel(tableModel_links);
-				tableModel_pt = new MATSimTableModel_pt();
-				table_pt.setModel(tableModel_pt);
-				notifyDataChanged(currentScenario);
-				this.networkAttributes.setEnabled(true);
-				this.layer = (OsmDataLayer) newLayer;
-				checkInternalIdColumn();
-			} else { // empty data mappings if no MATSim scenario is set
-				table_links.setModel(new DefaultTableModel());
-				table_pt.setModel(new DefaultTableModel());
-				setTitle(tr("Links/Nodes"));
-				networkAttributes.setEnabled(false);
-				this.layer = null;
-			}
+            tableModel_links = new MATSimTableModel_links(currentScenario.getNetwork());
+            table_links.setModel(tableModel_links);
+            tableModel_pt = new MATSimTableModel_pt();
+            table_pt.setModel(tableModel_pt);
+            notifyDataChanged(currentScenario);
+            this.networkAttributes.setEnabled(true);
+            this.layer = (OsmDataLayer) newLayer;
+            checkInternalIdColumn();
 		} else { // empty data mappings if no data layer is active
 			table_links.setModel(new DefaultTableModel());
 			table_pt.setModel(new DefaultTableModel());
