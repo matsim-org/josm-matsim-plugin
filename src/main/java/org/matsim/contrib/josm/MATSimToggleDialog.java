@@ -5,12 +5,10 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,20 +48,16 @@ import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.MapView.LayerChangeListener;
-import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.ImageProvider;
-import org.xml.sax.SAXException;
 
 /**
  * The ToggleDialog that shows link information of selected ways and route
