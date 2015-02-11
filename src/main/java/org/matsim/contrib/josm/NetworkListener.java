@@ -46,18 +46,15 @@ class NetworkListener implements DataSetListener, Visitor {
 	private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private final Map<Relation, TransitRoute> relation2Route;
-	private final Map<Id<TransitStopFacility>, Stop> stops;
 
 	public NetworkListener(Scenario scenario, Map<Way, List<Link>> way2Links,
-			Map<Link, List<WaySegment>> link2Segments,
-			Map<Relation, TransitRoute> relation2Route,
-			Map<Id<TransitStopFacility>, Stop> stops)
+                           Map<Link, List<WaySegment>> link2Segments,
+                           Map<Relation, TransitRoute> relation2Route)
 			throws IllegalArgumentException {
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
 		this.relation2Route = relation2Route;
-		this.stops = stops;
 		log.debug("Listener initialized");
 	}
 
@@ -121,22 +118,7 @@ class NetworkListener implements DataSetListener, Visitor {
 				}
 				
 				if (primitive.hasTag("public_transport", "platform")) {
-					Id<TransitStopFacility> stopId = Id.create(
-                            primitive.getUniqueId(), TransitStopFacility.class);
-					for (OsmPrimitive referrer : primitive.getReferrers()) {
-						if (referrer instanceof Relation
-								&& referrer.hasTag("matsim", "stop_relation")
-								&& referrer.hasKey("id")) {
-							stopId = Id.create(referrer.get("id"),
-									TransitStopFacility.class);
-						}
-					}
-
-					if (stops.containsKey(stopId)) {
-						scenario.getTransitSchedule().removeStopFacility(
-								stops.get(stopId).facility);
-						stops.remove(stopId);
-					}
+					visit(((org.openstreetmap.josm.data.osm.Node) primitive));
 				}
 				primitive.visitReferrers(this);
 			} else if (primitive instanceof Way) {
@@ -247,15 +229,12 @@ class NetworkListener implements DataSetListener, Visitor {
 		log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
 		if (node.hasTag("public_transport", "platform")) {
 			Id<TransitStopFacility> stopId = Id.create(node.getUniqueId(), TransitStopFacility.class);
-			if (stops.containsKey(stopId)) {
-				TransitStopFacility stop = stops.get(stopId).facility;
+				TransitStopFacility stop = scenario.getTransitSchedule().getFacilities().get(stopId);
 				scenario.getTransitSchedule().removeStopFacility(stop);
-				stops.remove(stopId);
 				log.debug("removing stop"+ node.getUniqueId() + " " + node.getName());
-			}
             if (!node.isDeleted()) {
                 log.debug("converting stop"+ node.getUniqueId() + " " + node.getName());
-                NewConverter.createStopIfItIsOne(node, scenario, way2Links, stops);
+                NewConverter.createStopIfItIsOne(node, scenario, way2Links);
             }
 		}
 		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
@@ -307,7 +286,7 @@ class NetworkListener implements DataSetListener, Visitor {
             }
         }
 		if (!relation.isDeleted()) {
-            NewConverter.convertTransitRouteIfItIsOne(relation, scenario, relation2Route, way2Links, stops);
+            NewConverter.convertTransitRouteIfItIsOne(relation, scenario, relation2Route, way2Links);
         }
 		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}

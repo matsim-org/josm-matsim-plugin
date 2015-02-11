@@ -72,8 +72,8 @@ class Importer {
                 targetScenario,
                 way2Links,
                 link2Segment,
-                relation2Route,
-                stops);
+                relation2Route
+        );
     }
 
     private Scenario readScenario() {
@@ -214,11 +214,10 @@ class Importer {
                 Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
                 for (TransitRouteStop tRStop : route.getStops()) {
-                    TransitStopFacility stop = targetScenario.getTransitSchedule().getFacilities().get(tRStop.getStopFacility().getId());
-                    newTransitStops.add(targetScenario.getTransitSchedule()
-                            .getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-                    routeRelation.addMember(new RelationMember("stop", stops.get(stop.getId()).position));
-                    routeRelation.addMember(new RelationMember("platform", stops.get(stop.getId()).platform));
+                    Stop stop = stops.get(tRStop.getStopFacility().getId());
+                    newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop.facility, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                    routeRelation.addMember(new RelationMember("stop", stop.position));
+                    routeRelation.addMember(new RelationMember("platform", stop.platform));
                 }
 
                 List<Id<Link>> links = new ArrayList<>();

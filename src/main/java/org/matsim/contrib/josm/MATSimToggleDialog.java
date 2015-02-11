@@ -210,7 +210,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				way2Links = ((MATSimLayer) newLayer).getWay2Links();
 				link2Segments = ((MATSimLayer) newLayer).getLink2Segments();
 				relation2Route = ((MATSimLayer) newLayer).getRelation2Route();
-				stops = ((MATSimLayer) newLayer).getStops();
 				this.manualConvert.setEnabled(false);
 			} else {
 				this.manualConvert.setEnabled(true);
@@ -220,7 +219,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				way2Links = new HashMap<>();
 				link2Segments = new HashMap<>();
 				relation2Route = new HashMap<>();
-				stops = new HashMap<>();
 				LayerChangeTask task = new LayerChangeTask((OsmDataLayer) newLayer);
 				task.run();
 			}
@@ -571,7 +569,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		protected void finish() {
 			notifyDataChanged(currentScenario);
 			osmNetworkListener = new NetworkListener(currentScenario,
-					way2Links, link2Segments, relation2Route, stops);
+					way2Links, link2Segments, relation2Route);
 			newLayer.data.addDataSetListener(osmNetworkListener);
 
 		}

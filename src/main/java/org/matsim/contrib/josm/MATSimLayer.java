@@ -40,20 +40,18 @@ class MATSimLayer extends OsmDataLayer {
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
-	private Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
 
     public MATSimLayer(DataSet data, String name, File associatedFile,
                        Scenario scenario,
                        HashMap<Way, List<Link>> way2Links,
                        Map<Link, List<WaySegment>> link2Segment,
-                       Map<Relation, TransitRoute> relation2Route, Map<Id<TransitStopFacility>, Stop> stops) {
+                       Map<Relation, TransitRoute> relation2Route) {
 		super(data, name, associatedFile);
         this.matsimScenario = scenario;
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
-		this.stops = stops;
-		NetworkListener listener = new NetworkListener(scenario, way2Links, link2Segment, relation2Route, stops);
+		NetworkListener listener = new NetworkListener(scenario, way2Links, link2Segment, relation2Route);
         data.addDataSetListener(listener);
     }
 
@@ -71,10 +69,6 @@ class MATSimLayer extends OsmDataLayer {
 
 	public Scenario getMatsimScenario() {
 		return matsimScenario;
-	}
-	
-	public Map<Id<TransitStopFacility>, Stop> getStops() {
-		return stops;
 	}
 
 	@Override
