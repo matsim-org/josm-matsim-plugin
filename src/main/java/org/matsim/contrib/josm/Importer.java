@@ -150,54 +150,40 @@ class Importer {
 
     private void convertStops() {
         for (TransitStopFacility stop: sourceScenario.getTransitSchedule().getFacilities().values()) {
-            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(stop.getId(), stop.getCoord(), stop.getIsBlockingLane());
-            newStop.setName(stop.getName());
-
-
             EastNorth eastNorth = new EastNorth(stop.getCoord().getX(), stop.getCoord().getY());
             LatLon latLon = projection.eastNorth2latlon(eastNorth);
             org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
             platform.put("name", stop.getName());
-
+            platform.put("id", stop.getId().toString());
             dataSet.addPrimitive(platform);
-
-
             org.openstreetmap.josm.data.osm.Node stopPosition = null;
             Way newWay = null;
-
-            if(stop.getLinkId()!=null) {
-
+            Id<Link> linkId = null;
+            if(stop.getLinkId() != null) {
                 newWay = linkId2Way.get(stop.getLinkId());
                 List<Link> newWayLinks = way2Links.get(newWay);
                 Link singleLink = newWayLinks.get(0);
-                Id<Link> linkId = Id.createLinkId(singleLink.getId());
-                newStop.setLinkId(linkId);
-
+                linkId = Id.createLinkId(singleLink.getId());
                 stopPosition = newWay.lastNode();
                 stopPosition.put("public_transport", "stop_position");
-
                 if(!stopPosition.hasKey("name")) {
                     stopPosition.put("name", stop.getName());
                 } else {
                     stopPosition.put("name", stopPosition.get("name")+";"+stop.getName());
                 }
+                Relation relation = new Relation();
+                relation.put("matsim", "stop_relation");
+                relation.addMember(new RelationMember("link", newWay));
+                relation.addMember(new RelationMember("stop", stopPosition));
+                relation.addMember(new RelationMember("platform", platform));
+                dataSet.addPrimitive(relation);
             }
-
+            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(platform.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
+            newStop.setName(stop.getName());
+            newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
-
-
-            Relation relation = new Relation();
-            relation.put("matsim", "stop_relation");
-            relation.put("id", stop.getId().toString());
-            relation.put("name", stop.getName());
-            relation.addMember(new RelationMember("link", newWay));
-            relation.addMember(new RelationMember("stop", stopPosition));
-            relation.addMember(new RelationMember("platform", platform));
-            dataSet.addPrimitive(relation);
-
-            stops.put(newStop.getId(), new Stop(newStop, stopPosition, platform, newWay));
-
+            stops.put(stop.getId(), new Stop(newStop, stopPosition, platform, newWay));
         }
     }
 
