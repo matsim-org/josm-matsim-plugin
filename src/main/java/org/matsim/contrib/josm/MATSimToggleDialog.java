@@ -207,8 +207,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		if (newLayer instanceof OsmDataLayer) {
 			if (newLayer instanceof MATSimLayer) {
 				currentScenario = ((MATSimLayer) newLayer).getMatsimScenario();
-				currentScenario.getConfig().scenario().setUseTransit(true);
-				currentScenario.getConfig().scenario().setUseVehicles(true);
 				way2Links = ((MATSimLayer) newLayer).getWay2Links();
 				link2Segments = ((MATSimLayer) newLayer).getLink2Segments();
 				relation2Route = ((MATSimLayer) newLayer).getRelation2Route();
@@ -216,16 +214,14 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				this.manualConvert.setEnabled(false);
 			} else {
 				this.manualConvert.setEnabled(true);
-				currentScenario = ScenarioUtils.createScenario(ConfigUtils
-						.createConfig());
+				currentScenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 				currentScenario.getConfig().scenario().setUseTransit(true);
 				currentScenario.getConfig().scenario().setUseVehicles(true);
 				way2Links = new HashMap<>();
 				link2Segments = new HashMap<>();
 				relation2Route = new HashMap<>();
 				stops = new HashMap<>();
-				LayerChangeTask task = new LayerChangeTask(
-						(OsmDataLayer) newLayer);
+				LayerChangeTask task = new LayerChangeTask((OsmDataLayer) newLayer);
 				task.run();
 			}
             tableModel_links = new MATSimTableModel_links(currentScenario.getNetwork());

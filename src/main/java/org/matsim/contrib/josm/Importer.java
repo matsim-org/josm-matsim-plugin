@@ -47,16 +47,33 @@ class Importer {
         this.projection = projection;
     }
 
+    public Importer(Scenario scenario, Projection projection) {
+        this.sourceScenario = scenario;
+        this.projection = projection;
+        this.networkPath = null;
+        this.schedulePath = null;
+    }
+
     void run() {
         dataSet = new DataSet();
-        sourceScenario = readScenario();
+        if (sourceScenario == null) {
+            sourceScenario = readScenario();
+        }
         targetScenario = ScenarioUtils.createScenario(sourceScenario.getConfig());
         convertNetwork();
         if (sourceScenario.getConfig().scenario().isUseTransit()) {
             convertStops();
             convertLines();
         }
-        layer = new MATSimLayer(dataSet, networkPath, new File(networkPath), targetScenario, way2Links, link2Segment, relation2Route, stops);
+        layer = new MATSimLayer(
+                dataSet,
+                networkPath==null ? MATSimLayer.createNewName() : networkPath,
+                networkPath==null ? null : new File(networkPath),
+                targetScenario,
+                way2Links,
+                link2Segment,
+                relation2Route,
+                stops);
     }
 
     private Scenario readScenario() {
