@@ -37,39 +37,7 @@ class NewConverter {
 
 	static Map<String, OsmWayDefaults> wayDefaults;
 
-	// converts complete data layer and fills the given MATSim data structures
-	// as well as data mappings
-	public static void convertOsmLayer(OsmDataLayer layer, Scenario scenario,
-			Map<Way, List<Link>> way2Links,
-			Map<Link, List<WaySegment>> link2Segments,
-			Map<Relation, TransitRoute> relation2Route,
-			Map<Id<TransitStopFacility>, Stop> stops) {
-		log.info("=== Starting conversion of Osm data ===");
-
-        for (Way way : layer.data.getWays()) {
-            if (!way.isDeleted()) {
-                convertWay(way, scenario.getNetwork(), way2Links, link2Segments);
-            }
-        }
-
-        for (Node node : layer.data.getNodes()) {
-            if (!node.isDeleted()) {
-                createStopIfItIsOne(node, scenario, way2Links);
-            }
-        }
-
-        for (Relation relation : layer.data.getRelations()) {
-            if (!relation.isDeleted()) {
-                convertTransitRouteIfItIsOne(relation, scenario, relation2Route, way2Links);
-            }
-        }
-
-		log.info("=== End of Conversion. #Links: "
-				+ scenario.getNetwork().getLinks().size() + " | #Nodes: "
-				+ scenario.getNetwork().getNodes().size() + " ===");
-	}
-
-	public static void createStopIfItIsOne(Node node, Scenario scenario, Map<Way, List<Link>> way2Links) {
+    public static void createStopIfItIsOne(Node node, Scenario scenario, Map<Way, List<Link>> way2Links) {
         if (node.hasTag("public_transport", "platform")) {
             Node stopPosition = null;
             Way way = null;
@@ -526,12 +494,8 @@ class NewConverter {
 
         NetworkRoute route = createConnectedWayRoute(relation, scenario, way2Links);
 
-		Id<TransitRoute> routeId;
-		if (relation.hasKey("ref")) {
-			routeId = Id.create(relation.get("ref"), TransitRoute.class);
-		} else {
-			routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
-		}
+		Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
+		
 
         Id<TransitLine> transitLineId = getTransitLineId(relation);
 		TransitLine tLine;

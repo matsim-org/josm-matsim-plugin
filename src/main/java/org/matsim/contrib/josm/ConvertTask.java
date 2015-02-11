@@ -72,16 +72,10 @@ class ConvertTask extends PleaseWaitRunnable {
 		this.progressMonitor.setCustomText("converting osm data..");
 
 		// convert layer data
-        NewConverter
-				.convertOsmLayer(
-                        ((OsmDataLayer) layer),
-                        sourceScenario,
-                        new HashMap<Way, List<Link>>(),
-                        new HashMap<Link, List<WaySegment>>(),
-                        new HashMap<Relation, TransitRoute>(),
-                        new HashMap<Id<TransitStopFacility>, Stop>());
+        NetworkListener networkListener = new NetworkListener(sourceScenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+        networkListener.visitAll(((OsmDataLayer) layer).data);
 
-		// check if network should be cleaned
+        // check if network should be cleaned
 		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
 			this.progressMonitor.setTicks(2);
 			this.progressMonitor.setCustomText("cleaning network..");

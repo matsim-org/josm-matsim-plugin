@@ -8,9 +8,13 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,7 +50,9 @@ import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
@@ -78,12 +84,10 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			"dialogs", "edit").setWidth(16).get());
 	private final JButton manualConvert = new JButton(new ImageProvider(
 			"restart").setWidth(16).get());
-	private Scenario currentScenario;
-	private Map<Way, List<Link>> way2Links = new HashMap<>();
+    private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
-	private Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
-	private NetworkListener osmNetworkListener;
+    private NetworkListener osmNetworkListener;
 
 	public MATSimToggleDialog() {
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150,
@@ -132,41 +136,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				dlg.dispose();
 			}
 		});
-		this.titleBar.add(networkAttributes,
-				this.titleBar.getComponentCount() - 3);
-
-		// invoke conversion of whole layer
-		manualConvert.setToolTipText(tr("convert layer from scratch"));
-		manualConvert.setBorder(BorderFactory.createEmptyBorder());
-		manualConvert.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Layer tmpLayer = Main.main.getActiveLayer();
-				if (tmpLayer instanceof OsmDataLayer) {
-					currentScenario = ScenarioUtils.createScenario(ConfigUtils
-							.createConfig());
-					currentScenario.getConfig().scenario().setUseTransit(true);
-					currentScenario.getConfig().scenario().setUseVehicles(true);
-					way2Links = new HashMap<>();
-					link2Segments = new HashMap<>();
-					relation2Route = new HashMap<>();
-					stops = new HashMap<>();
-					LayerChangeTask task = new LayerChangeTask(
-							(OsmDataLayer) tmpLayer);
-					task.run();
-
-					tableModel_links = new MATSimTableModel_links(
-							currentScenario.getNetwork());
-					table_links.setModel(tableModel_links);
-					tableModel_pt = new MATSimTableModel_pt();
-					table_pt.setModel(tableModel_pt);
-					notifyDataChanged(currentScenario);
-					networkAttributes.setEnabled(true);
-					layer = (OsmDataLayer) tmpLayer;
-					checkInternalIdColumn();
-				}
-			}
-		});
+		this.titleBar.add(networkAttributes, this.titleBar.getComponentCount() - 3);
 		this.titleBar.add(manualConvert, this.titleBar.getComponentCount() - 3);
 	}
 
@@ -204,8 +174,9 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		table_links.getSelectionModel().removeListSelectionListener(
 				tableModel_pt);
 
-		if (newLayer instanceof OsmDataLayer) {
-			if (newLayer instanceof MATSimLayer) {
+        if (newLayer instanceof OsmDataLayer) {
+            Scenario currentScenario;
+            if (newLayer instanceof MATSimLayer) {
 				currentScenario = ((MATSimLayer) newLayer).getMatsimScenario();
 				way2Links = ((MATSimLayer) newLayer).getWay2Links();
 				link2Segments = ((MATSimLayer) newLayer).getLink2Segments();
@@ -219,8 +190,11 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 				way2Links = new HashMap<>();
 				link2Segments = new HashMap<>();
 				relation2Route = new HashMap<>();
-				LayerChangeTask task = new LayerChangeTask((OsmDataLayer) newLayer);
-				task.run();
+                Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
+                osmNetworkListener = new NetworkListener(currentScenario, way2Links, link2Segments, relation2Route);
+                osmNetworkListener.visitAll(((OsmDataLayer) newLayer).data);
+                notifyDataChanged(currentScenario);
+                ((OsmDataLayer) newLayer).data.addDataSetListener(osmNetworkListener);
 			}
             tableModel_links = new MATSimTableModel_links(currentScenario.getNetwork());
             table_links.setModel(tableModel_links);
@@ -238,8 +212,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 			way2Links = null;
 			link2Segments = null;
 			relation2Route = null;
-			stops = null;
-		}
+        }
 
 		// set converted links that are to be drawn blue by map renderer
 		MapRenderer.setWay2Links(way2Links);
@@ -403,6 +376,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 					}
 				}
 			}
+			Main.map.mapView.repaint();
 		}
 	}
 
@@ -480,22 +454,50 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		public void selectionChanged(
 				Collection<? extends OsmPrimitive> newSelection) {
 			layer.data.clearHighlightedWaySegments();
+			layer.data.clearHighlightedVirtualNodes();
 			this.routes = new HashMap<>();
-			int i = 0;
+			Set<TransitRoute> uniqueRoutes = new LinkedHashSet<TransitRoute>();
+			Main.map.mapView.repaint();
+			
 			for (OsmPrimitive primitive : newSelection) {
 				for (OsmPrimitive primitive_2 : primitive.getReferrers()) {
 					if (relation2Route.containsKey(primitive_2)) {
-						routes.put(i, relation2Route.get(primitive_2));
-						i++;
+						uniqueRoutes.add(relation2Route.get(primitive_2));
 					}
 				}
 			}
+			
+			int i = 0;
+			for (TransitRoute uniqueRoute: uniqueRoutes) {
+				routes.put(i, uniqueRoute);
+				i++;
+			}
+			Main.map.mapView.repaint();
+
 			fireTableDataChanged();
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-
+			
+			layer.data.clearHighlightedWaySegments();
+			if (!layer.data.selectionEmpty() && !e.getValueIsAdjusting()
+					&& !((ListSelectionModel) e.getSource()).isSelectionEmpty()) {
+				int row = table_pt.getRowSorter().convertRowIndexToModel(
+						table_pt.getSelectedRow());
+				Long tempId = Long.parseLong((String) this.getValueAt(row, 0));
+				Relation route = (Relation) layer.data.getPrimitiveById(tempId, OsmPrimitiveType.RELATION);
+				
+				for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
+					primitive.setHighlighted(true);
+				}
+				
+				
+				AutoScaleAction.zoomTo(Collections.singleton((OsmPrimitive)route));
+			
+				
+			}
+			Main.map.mapView.repaint();
 		}
 	}
 
@@ -551,34 +553,4 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 
 	}
 
-	private class LayerChangeTask extends PleaseWaitRunnable {
-
-		private final OsmDataLayer newLayer;
-
-		public LayerChangeTask(OsmDataLayer newLayer) {
-			super("Converting to MATSim Network");
-			this.newLayer = newLayer;
-		}
-
-		@Override
-		protected void cancel() {
-
-		}
-
-		@Override
-		protected void finish() {
-			notifyDataChanged(currentScenario);
-			osmNetworkListener = new NetworkListener(currentScenario,
-					way2Links, link2Segments, relation2Route);
-			newLayer.data.addDataSetListener(osmNetworkListener);
-
-		}
-
-		@Override
-		protected void realRun() throws SAXException, IOException,
-				OsmTransferException {
-			NewConverter.convertOsmLayer(newLayer, currentScenario, way2Links,
-					link2Segments, relation2Route, stops);
-		}
-	}
 }

@@ -252,7 +252,7 @@ class Importer {
                 TransitRoute newRoute = targetScenario
                         .getTransitSchedule()
                         .getFactory()
-                        .createTransitRoute(route.getId(), networkRoute,
+                        .createTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class), networkRoute,
                                 newTransitStops, route.getTransportMode());
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");
