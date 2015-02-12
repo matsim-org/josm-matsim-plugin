@@ -37,35 +37,6 @@ class NewConverter {
 
 	static Map<String, OsmWayDefaults> wayDefaults;
 
-    public static void createStopIfItIsOne(Node node, Scenario scenario, Map<Way, List<Link>> way2Links) {
-        if (node.hasTag("public_transport", "platform")) {
-            Node stopPosition = null;
-            Way way = null;
-            Link link = null;
-            Id<TransitStopFacility> id = Id.create(node.getUniqueId(), TransitStopFacility.class);
-            for (OsmPrimitive primitive : node.getReferrers()) {
-                if (primitive instanceof Relation && primitive.hasTag("matsim", "stop_relation")) {
-                    for (RelationMember member : ((Relation) primitive).getMembers()) {
-                        if (member.isNode() && member.hasRole("stop")) {
-                            stopPosition = member.getNode();
-                        }
-                        if (member.isWay() && member.hasRole("link")) {
-                            way = member.getWay();
-                            List<Link> links = way2Links.get(way);
-                            link = links.get(links.size() - 1);
-                        }
-                    }
-                }
-            }
-            TransitStopFacility stop = scenario.getTransitSchedule().getFactory().createTransitStopFacility(id, new CoordImpl(node.getEastNorth().getX(), node.getEastNorth().getY()), true);
-            stop.setName(node.getName());
-            if (link != null) {
-                stop.setLinkId(link.getId());
-            }
-            scenario.getTransitSchedule().addStopFacility(stop);
-        }
-	}
-
 	public static void convertWay(Way way, Network network, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments) {
 		log.info("### Way " + way.getUniqueId() + " (" + way.getNodesCount()
 				+ " nodes) ###");

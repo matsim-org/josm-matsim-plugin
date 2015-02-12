@@ -174,9 +174,13 @@ class Importer {
             platform.put("name", stop.getName());
             platform.put("id", stop.getId().toString());
             dataSet.addPrimitive(platform);
-            org.openstreetmap.josm.data.osm.Node stopPosition = null;
             Way newWay = null;
             Id<Link> linkId = null;
+            org.openstreetmap.josm.data.osm.Node stopPosition = null;
+            Relation relation = new Relation();
+            relation.put("matsim", "stop_relation");
+            relation.addMember(new RelationMember("platform", platform));
+            dataSet.addPrimitive(relation);
             if(stop.getLinkId() != null) {
                 newWay = linkId2Way.get(stop.getLinkId());
                 List<Link> newWayLinks = way2Links.get(newWay);
@@ -189,14 +193,10 @@ class Importer {
                 } else {
                     stopPosition.put("name", stopPosition.get("name")+";"+stop.getName());
                 }
-                Relation relation = new Relation();
-                relation.put("matsim", "stop_relation");
                 relation.addMember(new RelationMember("link", newWay));
                 relation.addMember(new RelationMember("stop", stopPosition));
-                relation.addMember(new RelationMember("platform", platform));
-                dataSet.addPrimitive(relation);
             }
-            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(platform.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
+            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
             newStop.setName(stop.getName());
             newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
