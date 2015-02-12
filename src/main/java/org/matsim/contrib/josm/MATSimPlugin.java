@@ -115,7 +115,6 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		if (oldFrame == null && newFrame != null) { // map frame added
 			toggleDialog = new MATSimToggleDialog();
 			Main.map.addToggleDialog(toggleDialog);
-			MapView.addLayerChangeListener(toggleDialog);
 		}
 	}
 

@@ -189,7 +189,6 @@ class NetworkListener implements DataSetListener, Visitor {
                 NewConverter.createStopIfItIsOne(node, scenario, way2Links);
             }
 		}
-		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}
 
 	@Override
@@ -199,7 +198,6 @@ class NetworkListener implements DataSetListener, Visitor {
 			Main.main.getCurrentDataSet().clearHighlightedWaySegments();
 		}
 		List<Link> oldLinks = way2Links.remove(way);
-		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 		if (oldLinks != null) {
 			for (Link link : oldLinks) {
 				Link removedLink = scenario.getNetwork().removeLink(
@@ -210,7 +208,6 @@ class NetworkListener implements DataSetListener, Visitor {
 		if (!way.isDeleted()) {
 			NewConverter.convertWay(way, scenario.getNetwork(), way2Links,
 					link2Segments);
-			MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 		}
 		log.info("Number of links: " + scenario.getNetwork().getLinks().size());
 
@@ -234,7 +231,6 @@ class NetworkListener implements DataSetListener, Visitor {
 		if (!relation.isDeleted()) {
             NewConverter.convertTransitRouteIfItIsOne(relation, scenario, relation2Route, way2Links);
         }
-		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}
 
     private void searchAndRemoveRoute(TransitRoute route) {
