@@ -374,7 +374,7 @@ class NewConverter {
     }
 
 	// create or update matsim node
-	private static void checkNode(Network network, Node node) {
+	static void checkNode(Network network, Node node) {
 		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(
 				node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
 		if (!node.isIncomplete()) {
