@@ -10,11 +10,9 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
-import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -238,7 +236,6 @@ class NetworkListener implements DataSetListener, Visitor {
 	}
 
     private void searchAndRemoveRoute(TransitRoute route) {
-        Iterator<TransitLine> i = scenario.getTransitSchedule().getTransitLines().values().iterator();
         // We do not know what line the route is in, so we have to search for it.
         for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
             boolean removed = line.removeRoute(route);

@@ -1,13 +1,11 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
