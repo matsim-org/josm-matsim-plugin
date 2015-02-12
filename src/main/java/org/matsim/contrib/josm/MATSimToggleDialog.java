@@ -40,6 +40,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkImpl;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
@@ -139,14 +140,38 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		setTitle(tr(
 				"Links: {0} / Nodes: {1} / Stops: {2} / Lines: {3} / Routes: {4}",
 				scenario.getNetwork().getLinks().size(), scenario.getNetwork()
-						.getNodes().size(), scenario.getTransitSchedule()
-						.getFacilities().size(), scenario.getTransitSchedule()
-						.getTransitLines().size(), relation2Route.size()));
+						.getNodes().size(), countStopFacilities(scenario), countTransitLines(scenario), countTransitRoutes(scenario)));
 		tableModel_links.networkChanged();
 		tableModel_pt.scheduleChanged();
 	}
 
-	@Override
+    private int countStopFacilities(Scenario scenario) {
+        if (scenario.getConfig().scenario().isUseTransit()) {
+            return scenario.getTransitSchedule().getFacilities().size();
+        } else {
+            return 0;
+        }
+    }
+
+    private int countTransitRoutes(Scenario scenario) {
+        int nRoutes = 0;
+        if (scenario.getConfig().scenario().isUseTransit()) {
+            for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+                nRoutes += line.getRoutes().size();
+            }
+        }
+        return nRoutes;
+    }
+
+    private int countTransitLines(Scenario scenario) {
+        if (scenario.getConfig().scenario().isUseTransit()) {
+            return scenario.getTransitSchedule().getTransitLines().size();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
 	// react to active layer (active data set) changes by setting the current
 	// data mappings
 	// MATSim layers contain data mappings while OsmDataLayers must first be
@@ -157,8 +182,7 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
 		DataSet.removeSelectionListener(tableModel_pt);
 
 		// clear old data set listeners
-		if (osmNetworkListener != null && oldLayer != null
-				&& oldLayer instanceof OsmDataLayer) {
+		if (osmNetworkListener != null && oldLayer instanceof OsmDataLayer) {
 			((OsmDataLayer) oldLayer).data.clearSelection();
 			((OsmDataLayer) oldLayer).data
 					.removeDataSetListener(osmNetworkListener);

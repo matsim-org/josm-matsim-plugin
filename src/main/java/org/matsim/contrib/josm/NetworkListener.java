@@ -148,12 +148,6 @@ class NetworkListener implements DataSetListener, Visitor {
 				log.debug("Relation deleted " + primitive.getUniqueId());
 				if (relation2Route.containsKey(primitive)) {
 					TransitRoute route = relation2Route.get(primitive);
-					for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-						if (!link2Segments.containsKey(scenario.getNetwork()
-								.getLinks().get(linkId))) {
-							scenario.getNetwork().removeLink(linkId);
-						}
-					}
 					for (TransitRouteStop stop : route.getStops()) {
 						Id<Link> linkId = stop.getStopFacility().getLinkId();
 						Link link = scenario.getNetwork().getLinks()
@@ -280,12 +274,6 @@ class NetworkListener implements DataSetListener, Visitor {
         if (relation2Route.containsKey(relation)) {
             TransitRoute route = relation2Route.get(relation);
             searchAndRemoveRoute(route);
-            for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-                if (!link2Segments.containsKey(scenario.getNetwork()
-                        .getLinks().get(linkId))) {
-                    scenario.getNetwork().removeLink(linkId);
-                }
-            }
             relation2Route.remove(relation);
         }
         if (relation.hasTag("matsim", "stop_relation")) {

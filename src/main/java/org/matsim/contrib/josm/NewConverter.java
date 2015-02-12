@@ -527,7 +527,11 @@ class NewConverter {
                 links.add(link.getId());
             }
         }
-        return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
+        if (links.isEmpty()) {
+            return null;
+        } else {
+            return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
+        }
 	}
 
 	// checks for used MATSim tag scheme
