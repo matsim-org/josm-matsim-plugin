@@ -1,32 +1,22 @@
 package org.matsim.contrib.josm;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.network.LinkImpl;
+import org.matsim.api.core.v01.network.*;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
-import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
-import org.openstreetmap.josm.data.osm.event.DataChangedEvent;
-import org.openstreetmap.josm.data.osm.event.DataSetListener;
-import org.openstreetmap.josm.data.osm.event.NodeMovedEvent;
-import org.openstreetmap.josm.data.osm.event.PrimitivesAddedEvent;
-import org.openstreetmap.josm.data.osm.event.PrimitivesRemovedEvent;
-import org.openstreetmap.josm.data.osm.event.RelationMembersChangedEvent;
-import org.openstreetmap.josm.data.osm.event.TagsChangedEvent;
-import org.openstreetmap.josm.data.osm.event.WayNodesChangedEvent;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
@@ -114,62 +104,14 @@ class NetworkListener implements DataSetListener, Visitor {
 	// conversion of referring elements
 	public void primitivesRemoved(PrimitivesRemovedEvent primitivesRemoved) {
 		for (OsmPrimitive primitive : primitivesRemoved.getPrimitives()) {
-			log.info("Primitive removed. " + primitive.getType() + " "
-					+ primitive.getUniqueId());
 			if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-				String id = String.valueOf(primitive.getUniqueId());
-				if (scenario.getNetwork().getNodes()
-						.containsKey(Id.create(id, Node.class))) {
-					Node node = scenario.getNetwork().getNodes()
-							.get(Id.create(id, Node.class));
-					log.debug("MATSim Node removed. "
-							+ ((NodeImpl) node).getOrigId());
-					scenario.getNetwork().removeNode(node.getId());
-				}
-				
-				if (primitive.hasTag("public_transport", "platform")) {
-					visit(((org.openstreetmap.josm.data.osm.Node) primitive));
-				}
-				primitive.visitReferrers(this);
+                visit(((org.openstreetmap.josm.data.osm.Node) primitive));
 			} else if (primitive instanceof Way) {
-				if (way2Links.containsKey(primitive)) {
-					List<Link> links = way2Links.remove(primitive);
-					for (Link link : links) {
-						System.out.println(link.getFromNode().getId());
-						link2Segments.remove(link);
-						log.debug("MATSim Link removed. "
-								+ ((LinkImpl) link).getOrigId());
-						scenario.getNetwork().removeLink(link.getId());
-					}
-					way2Links.remove(primitive);
-				}
-				primitive.visitReferrers(this);
+				visit((Way) primitive);
 			} else if (primitive instanceof Relation) {
-				log.debug("Relation deleted " + primitive.getUniqueId());
-				if (relation2Route.containsKey(primitive)) {
-					TransitRoute route = relation2Route.get(primitive);
-					for (TransitRouteStop stop : route.getStops()) {
-						Id<Link> linkId = stop.getStopFacility().getLinkId();
-						Link link = scenario.getNetwork().getLinks()
-								.get(linkId);
-						if (link2Segments.containsKey(link)) {
-							scenario.getNetwork().removeLink(linkId);
-						}
-						scenario.getTransitSchedule().removeStopFacility(
-								stop.getStopFacility());
-					}
-					searchAndRemoveRoute(route);
-					relation2Route.remove(primitive);
-				}
-				if (primitive.hasTag("matsim", "stop_relation")) {
-					for (org.openstreetmap.josm.data.osm.Node member : ((Relation) primitive).getMemberPrimitives(org.openstreetmap.josm.data.osm.Node.class)) {
-					    visit(member);
-					}
-				}
+				visit((Relation) primitive);
 			}
 		}
-		log.info("Number of links: " + scenario.getNetwork().getLinks().size());
-		MATSimPlugin.toggleDialog.notifyDataChanged(scenario);
 	}
 
 	@Override
@@ -231,6 +173,12 @@ class NetworkListener implements DataSetListener, Visitor {
 	@Override
 	public void visit(org.openstreetmap.josm.data.osm.Node node) {
 		log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
+        Id<org.matsim.api.core.v01.network.Node> id = Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
+        if (scenario.getNetwork().getNodes().containsKey(id)) {
+            NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getNodes().get(id);
+            log.debug("MATSim Node removed. " + matsimNode.getOrigId());
+            scenario.getNetwork().removeNode(matsimNode.getId());
+        }
 		if (node.hasTag("public_transport", "platform")) {
 			Id<TransitStopFacility> stopId = Id.create(node.getUniqueId(), TransitStopFacility.class);
 				TransitStopFacility stop = scenario.getTransitSchedule().getFacilities().get(stopId);
@@ -290,9 +238,17 @@ class NetworkListener implements DataSetListener, Visitor {
 	}
 
     private void searchAndRemoveRoute(TransitRoute route) {
+        Iterator<TransitLine> i = scenario.getTransitSchedule().getTransitLines().values().iterator();
         // We do not know what line the route is in, so we have to search for it.
         for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-            line.removeRoute(route);
+            boolean removed = line.removeRoute(route);
+            if (removed) {
+                if (line.getRoutes().isEmpty()) {
+                    // We do not create lines independently for now so we have to remove empty lines
+                    scenario.getTransitSchedule().removeTransitLine(line);
+                    return;
+                }
+            }
         }
     }
 
