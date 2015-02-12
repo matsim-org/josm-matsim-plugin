@@ -211,7 +211,6 @@ class MATSimToggleDialog extends ToggleDialog implements LayerChangeListener,
                 Map<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
                 osmNetworkListener = new NetworkListener(currentScenario, way2Links, link2Segments, relation2Route);
                 osmNetworkListener.visitAll(((OsmDataLayer) newLayer).data);
-                notifyDataChanged(currentScenario);
                 ((OsmDataLayer) newLayer).data.addDataSetListener(osmNetworkListener);
 			}
             tableModel_links = new MATSimTableModel_links(currentScenario.getNetwork());
