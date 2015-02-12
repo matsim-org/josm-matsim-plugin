@@ -122,10 +122,6 @@ final class Preferences extends DefaultTabPreferenceSetting {
 				if (pane.getValue() != null) {
 					if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
 						dialog.handleInput();
-						if (Main.main.getActiveLayer() != null) {
-							Main.main.getCurrentDataSet().clearSelection();
-							MATSimPlugin.toggleDialog.activeLayerChange(Main.main.getActiveLayer(), Main.main.getActiveLayer());
-						}
 					}
 				}
 				dlg.dispose();
@@ -211,18 +207,10 @@ final class Preferences extends DefaultTabPreferenceSetting {
 		if (!keepPaths.isSelected()) {
 			if (Main.pref.put("matsim_keepPaths", false)) {
 				NewConverter.keepPaths = false;
-				if (Main.main.getActiveLayer() != null) {
-					Main.main.getCurrentDataSet().clearSelection();
-					MATSimPlugin.toggleDialog.activeLayerChange(Main.main.getActiveLayer(), Main.main.getActiveLayer());
-				}
 			}
 		} else {
 			if (Main.pref.put("matsim_keepPaths", true)) {
 				NewConverter.keepPaths = true;
-				if (Main.main.getActiveLayer() != null) {
-					Main.main.getCurrentDataSet().clearSelection();
-					MATSimPlugin.toggleDialog.activeLayerChange(Main.main.getActiveLayer(), Main.main.getActiveLayer());
-				}
 			}
 		}
 		if (showInternalIds.isSelected()) {
