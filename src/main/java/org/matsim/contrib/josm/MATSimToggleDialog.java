@@ -456,7 +456,7 @@ class MATSimToggleDialog extends ToggleDialog implements MapView.EditLayerChange
 			} else if (columnIndex == 2) {
 				return route.getStops().size();
 			} else if (columnIndex == 3) {
-				return route.getRoute().getLinkIds().size() + 2;
+				return route.getRoute() != null ? route.getRoute().getLinkIds().size() + 2 : 0;
 			}
 			throw new RuntimeException();
 		}
@@ -492,13 +492,15 @@ class MATSimToggleDialog extends ToggleDialog implements MapView.EditLayerChange
             DataSet currentDataSet = Main.main.getCurrentDataSet();
             if (currentDataSet != null && !e.getValueIsAdjusting()) {
                 currentDataSet.clearHighlightedWaySegments();
-                int row = table_pt.getRowSorter().convertRowIndexToModel(table_pt.getSelectedRow());
-                Long tempId = Long.parseLong((String) this.getValueAt(row, 0));
-                Relation route = (Relation) currentDataSet.getPrimitiveById(tempId, OsmPrimitiveType.RELATION);
-                for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
-                    primitive.setHighlighted(true);
+                int selectedRow = table_pt.getSelectedRow();
+                if (selectedRow != -1) {
+                    Long tempId = Long.parseLong((String) table_pt.getValueAt(selectedRow, 0));
+                    Relation route = (Relation) currentDataSet.getPrimitiveById(tempId, OsmPrimitiveType.RELATION);
+                    for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
+                        primitive.setHighlighted(true);
+                    }
+                    AutoScaleAction.zoomTo(Collections.singleton((OsmPrimitive)route));
                 }
-                AutoScaleAction.zoomTo(Collections.singleton((OsmPrimitive)route));
                 Main.map.mapView.repaint();
             }
 		}

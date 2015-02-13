@@ -502,7 +502,13 @@ class NewConverter {
             }
         }
         // no enclosing transit line; use route id as line id;
-        return Id.create(relation.get("ref"), TransitLine.class);
+        String refTag = relation.get("ref");
+        if (refTag != null) {
+            return Id.create(refTag, TransitLine.class);
+        } else {
+            // not even a route id; use relation id;
+            return Id.create(relation.getUniqueId(), TransitLine.class);
+        }
     }
 
     private static NetworkRoute createConnectedWayRoute(Relation relation, Scenario scenario, Map<Way, List<Link>> way2Links) {
