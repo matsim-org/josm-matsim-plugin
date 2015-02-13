@@ -32,7 +32,7 @@ class Importer {
     private MATSimLayer layer;
 
     HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
-    HashMap<Id<TransitStopFacility>, Stop> stops = new HashMap<>();
+    HashMap<Id<TransitStopFacility>, TransitStopFacility> stops = new HashMap<>();
     HashMap<Way, List<Link>> way2Links = new HashMap<>();
     HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
     HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
@@ -200,7 +200,7 @@ class Importer {
             newStop.setName(stop.getName());
             newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
-            stops.put(stop.getId(), new Stop(newStop, stopPosition, platform, newWay));
+            stops.put(stop.getId(), newStop);
         }
     }
 
@@ -214,10 +214,14 @@ class Importer {
                 Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
                 for (TransitRouteStop tRStop : route.getStops()) {
-                    Stop stop = stops.get(tRStop.getStopFacility().getId());
-                    newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop.facility, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-                    routeRelation.addMember(new RelationMember("stop", stop.position));
-                    routeRelation.addMember(new RelationMember("platform", stop.platform));
+                    TransitStopFacility stop = stops.get(tRStop.getStopFacility().getId());
+                    Relation stopRelation = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
+                   ;
+                    newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                    routeRelation.addMember(stopRelation.firstMember());
+                    if (stopRelation.getMembersCount()>1) {
+                    	routeRelation.addMember(stopRelation.lastMember());
+                    }
                 }
 
                 List<Id<Link>> links = new ArrayList<>();

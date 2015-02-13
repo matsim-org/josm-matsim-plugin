@@ -195,6 +195,7 @@ class NetworkListener implements DataSetListener, Visitor {
 		if (oldLinks != null) {
 			for (Link link : oldLinks) {
 				Link removedLink = scenario.getNetwork().removeLink(link.getId());
+				link2Segments.remove(removedLink);
 				log.debug(removedLink + " removed.");
 			}
 		}
