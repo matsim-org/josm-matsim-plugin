@@ -10,6 +10,8 @@ import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.*;
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
+import org.openstreetmap.josm.data.osm.Relation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,10 +37,16 @@ public class TransitScheduleExporter {
 
             for (TransitStopFacility stop : oldSchedule.getFacilities()
                     .values()) {
-
+            	Id<TransitStopFacility> id;
+            	Relation stopRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
+            	if (stopRelation.hasKey("id")) {
+            		id = Id.create(stopRelation.get("id"), TransitStopFacility.class);
+            	} else {
+            		id = stop.getId();
+            	}
                 TransitStopFacility newStop = schedule.getFactory()
                         .createTransitStopFacility(
-                                stop.getId(), stop.getCoord(),
+                                id, stop.getCoord(),
                                 stop.getIsBlockingLane());
 
                 Id<Link> oldId = stop.getLinkId();

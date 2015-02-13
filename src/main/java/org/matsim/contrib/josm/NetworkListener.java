@@ -227,7 +227,12 @@ class NetworkListener implements DataSetListener, Visitor {
 
     private void convertTransitStopFacilityIfItIsOne(Relation relation) {
         if (relation.hasTag("matsim", "stop_relation")) {
-            Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
+        	Id<TransitStopFacility> transitStopFacilityId;
+        	if (relation.hasKey("id")) {
+        		transitStopFacilityId = Id.create(relation.get("id"), TransitStopFacility.class);
+        	} else {
+        		transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
+        	}
             Link link = null;
             Node platform = null;
             for (RelationMember member : relation.getMembers()) {

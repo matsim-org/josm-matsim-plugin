@@ -179,6 +179,7 @@ class Importer {
             org.openstreetmap.josm.data.osm.Node stopPosition = null;
             Relation relation = new Relation();
             relation.put("matsim", "stop_relation");
+            relation.put("id", stop.getId().toString());
             relation.addMember(new RelationMember("platform", platform));
             dataSet.addPrimitive(relation);
             if(stop.getLinkId() != null) {

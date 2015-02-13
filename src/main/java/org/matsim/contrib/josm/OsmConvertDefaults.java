@@ -3,10 +3,7 @@ package org.matsim.contrib.josm;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.data.osm.Way;
 
 /**
  * Holds the default converting values

@@ -3,7 +3,6 @@ package org.matsim.contrib.josm;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
-import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 
 /**
  * The task which is executed after confirming the ImportDialog. Creates a new
