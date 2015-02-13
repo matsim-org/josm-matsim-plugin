@@ -172,7 +172,6 @@ class Importer {
             org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
             platform.put("name", stop.getName());
-            platform.put("id", stop.getId().toString());
             dataSet.addPrimitive(platform);
             Way newWay = null;
             Id<Link> linkId = null;
@@ -210,7 +209,7 @@ class Importer {
             Relation lineRelation = new Relation();
             lineRelation.put("type", "route_master");
             lineRelation.put("ref", line.getId().toString());
-            TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(line.getId());
+            TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(Id.create(lineRelation.getUniqueId(), TransitLine.class));
             for (TransitRoute route : line.getRoutes().values()) {
                 Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
@@ -219,10 +218,10 @@ class Importer {
                     Relation stopRelation = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
                    ;
                     newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-                    routeRelation.addMember(stopRelation.firstMember());
                     if (stopRelation.getMembersCount()>1) {
                     	routeRelation.addMember(stopRelation.lastMember());
                     }
+                    routeRelation.addMember(stopRelation.firstMember());
                 }
 
                 List<Id<Link>> links = new ArrayList<>();

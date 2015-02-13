@@ -498,7 +498,7 @@ class NewConverter {
     private static Id<TransitLine> getTransitLineId(Relation relation) {
         for (OsmPrimitive primitive : relation.getReferrers()) {
             if (primitive instanceof Relation && primitive.hasTag("type", "route_master")) {
-                return Id.create(primitive.get("ref"), TransitLine.class);
+                return Id.create(relation.getUniqueId(), TransitLine.class);
             }
         }
         // no enclosing transit line; use route id as line id;

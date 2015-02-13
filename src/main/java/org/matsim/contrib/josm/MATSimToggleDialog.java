@@ -31,6 +31,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -441,7 +442,15 @@ class MATSimToggleDialog extends ToggleDialog implements MapView.EditLayerChange
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			TransitRoute route = routes.get(rowIndex);
 			if (columnIndex == 0) {
-				return route.getId().toString();
+				DataSet currentDataSet = Main.main.getCurrentDataSet();
+				if (currentDataSet != null) {
+					Relation routeRelation = (Relation) currentDataSet.getPrimitiveById(Long.parseLong(route.getId().toString()), OsmPrimitiveType.RELATION);
+					if (routeRelation.hasKey("ref")) {
+						return routeRelation.get("ref");
+					} else {
+						return route.getId().toString();
+					}
+				}
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {
@@ -481,7 +490,7 @@ class MATSimToggleDialog extends ToggleDialog implements MapView.EditLayerChange
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
             DataSet currentDataSet = Main.main.getCurrentDataSet();
-            if (currentDataSet != null) {
+            if (currentDataSet != null && !e.getValueIsAdjusting()) {
                 currentDataSet.clearHighlightedWaySegments();
                 int row = table_pt.getRowSorter().convertRowIndexToModel(table_pt.getSelectedRow());
                 Long tempId = Long.parseLong((String) this.getValueAt(row, 0));

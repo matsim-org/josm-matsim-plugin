@@ -60,14 +60,18 @@ public class TransitScheduleExporter {
                     .getMatsimScenario().getTransitSchedule()
                     .getTransitLines().values()) {
 
-                TransitLine newTLine;
-                if (schedule.getTransitLines().containsKey(line.getId())) {
-                    newTLine = schedule.getTransitLines().get(line.getId());
+                Id<TransitLine> lineId;
+                Relation lineRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(line.getId().toString()), OsmPrimitiveType.RELATION);
+                
+                if (lineRelation.hasKey("ref")) {
+                	lineId = Id.create(lineRelation.get("ref"), TransitLine.class);
                 } else {
-                    newTLine = schedule.getFactory().createTransitLine(
-                            line.getId());
-                    schedule.addTransitLine(newTLine);
+                	lineId = line.getId();
                 }
+                TransitLine newTLine = schedule.getFactory().createTransitLine(
+                            lineId);
+                    schedule.addTransitLine(newTLine);
+               
 
                 for (TransitRoute route : line.getRoutes().values()) {
                     List<Id<Link>> links = new ArrayList<>();
@@ -95,13 +99,28 @@ public class TransitScheduleExporter {
 
                     List<TransitRouteStop> newTRStops = new ArrayList<>();
                     for (TransitRouteStop tRStop : route.getStops()) {
+                    	Id<TransitStopFacility> stopId;
+                    	Relation stopRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(tRStop.getStopFacility().getId().toString()), OsmPrimitiveType.RELATION);
+                    	if (stopRelation.hasKey("id")) {
+                    		stopId = Id.create(stopRelation.get("id"), TransitStopFacility.class);
+                    	} else {
+                    		stopId = tRStop.getStopFacility().getId();
+                    	}
                         newTRStops.add(schedule.getFactory()
                                 .createTransitRouteStop(
-                                        schedule.getFacilities().get(tRStop.getStopFacility().getId()), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                                        schedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                    }
+                    
+                    Id<TransitRoute> routeId;
+                    Relation routeRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(route.getId().toString()), OsmPrimitiveType.RELATION);
+                    if (routeRelation.hasKey("ref")) {
+                    	routeId = Id.create(routeRelation.get("ref"), TransitRoute.class);
+                    } else {
+                    	routeId = route.getId();
                     }
 
                     TransitRoute newTRoute = schedule.getFactory()
-                            .createTransitRoute(route.getId(),
+                            .createTransitRoute(routeId,
                                     networkRoute, newTRStops,
                                     route.getTransportMode());
                     newTLine.addRoute(newTRoute);
