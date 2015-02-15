@@ -58,6 +58,7 @@ class Importer {
         dataSet = new DataSet();
         if (sourceScenario == null) {
             sourceScenario = readScenario();
+            copyIdsToOrigIds(sourceScenario);
         }
         targetScenario = ScenarioUtils.createScenario(sourceScenario.getConfig());
         convertNetwork();
@@ -74,6 +75,15 @@ class Importer {
                 link2Segment,
                 relation2Route
         );
+    }
+
+    private void copyIdsToOrigIds(Scenario sourceScenario) {
+        for (Node node : sourceScenario.getNetwork().getNodes().values()) {
+            ((NodeImpl) node).setOrigId(node.getId().toString());
+        }
+        for (Link link : sourceScenario.getNetwork().getLinks().values()) {
+            ((LinkImpl) link).setOrigId(link.getId().toString());
+        }
     }
 
     private Scenario readScenario() {
@@ -99,7 +109,7 @@ class Importer {
 
             // set id of MATSim node as tag, as actual id of new MATSim node is
             // set as corresponding OSM node id
-            nodeOsm.put(ImportTask.NODE_TAG_ID, node.getId().toString());
+            nodeOsm.put(ImportTask.NODE_TAG_ID, ((NodeImpl) node).getOrigId());
             node2OsmNode.put(node, nodeOsm);
             dataSet.addPrimitive(nodeOsm);
             Node newNode = targetScenario
@@ -107,7 +117,7 @@ class Importer {
                     .getFactory()
                     .createNode(Id.create(nodeOsm.getUniqueId(), Node.class),
                             node.getCoord());
-            ((NodeImpl) newNode).setOrigId(node.getId().toString());
+            ((NodeImpl) newNode).setOrigId(((NodeImpl) node).getOrigId());
             targetScenario.getNetwork().addNode(newNode);
         }
 
@@ -122,7 +132,7 @@ class Importer {
             way.addNode(toNode);
             // set id of link as tag, as actual id of new link is set as
             // corresponding way id
-            way.put(ImportTask.WAY_TAG_ID, link.getId().toString());
+            way.put(ImportTask.WAY_TAG_ID, ((LinkImpl) link).getOrigId());
             way.put("freespeed", String.valueOf(link.getFreespeed()));
             way.put("capacity", String.valueOf(link.getCapacity()));
             way.put("length", String.valueOf(link.getLength()));
@@ -157,7 +167,7 @@ class Importer {
             newLink.setLength(link.getLength());
             newLink.setNumberOfLanes(link.getNumberOfLanes());
             newLink.setAllowedModes(link.getAllowedModes());
-            ((LinkImpl) newLink).setOrigId(link.getId().toString());
+            ((LinkImpl) newLink).setOrigId(((LinkImpl) link).getOrigId());
             targetScenario.getNetwork().addLink(newLink);
             way2Links.put(way, Collections.singletonList(newLink));
             linkId2Way.put(link.getId(), way);
@@ -173,9 +183,9 @@ class Importer {
             platform.put("public_transport", "platform");
             platform.put("name", stop.getName());
             dataSet.addPrimitive(platform);
-            Way newWay = null;
+            Way newWay;
             Id<Link> linkId = null;
-            org.openstreetmap.josm.data.osm.Node stopPosition = null;
+            org.openstreetmap.josm.data.osm.Node stopPosition;
             Relation relation = new Relation();
             relation.put("matsim", "stop_relation");
             relation.put("id", stop.getId().toString());

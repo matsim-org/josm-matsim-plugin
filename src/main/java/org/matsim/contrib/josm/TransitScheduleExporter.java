@@ -17,7 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransitScheduleExporter {
+class TransitScheduleExporter {
 
     private File scheduleFile;
 
@@ -49,10 +49,12 @@ public class TransitScheduleExporter {
                                 id, stop.getCoord(),
                                 stop.getIsBlockingLane());
 
-                Id<Link> oldId = stop.getLinkId();
-                Link oldLink = layer.getMatsimScenario().getNetwork().getLinks().get(oldId);
-                Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
-                newStop.setLinkId(newLinkId);
+                Id<Link> linkId = stop.getLinkId();
+                if (linkId != null) {
+                    Link oldLink = layer.getMatsimScenario().getNetwork().getLinks().get(linkId);
+                    Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
+                    newStop.setLinkId(newLinkId);
+                }
                 schedule.addStopFacility(newStop);
             }
 

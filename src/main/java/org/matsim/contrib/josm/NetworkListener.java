@@ -5,26 +5,23 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.network.NodeImpl;
+import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
-import org.openstreetmap.josm.data.osm.visitor.Visitor;
-import org.openstreetmap.josm.data.validation.util.AggregatePrimitivesVisitor;
+import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
  * 
  * 
  */
-class NetworkListener implements DataSetListener, Visitor {
+class NetworkListener implements DataSetListener {
 
 	private final Logger log = Logger.getLogger(NetworkListener.class);
 
@@ -46,32 +43,15 @@ class NetworkListener implements DataSetListener, Visitor {
 	}
 
     void visitAll(DataSet data) {
+        MyAggregatePrimitivesVisitor visitor = new MyAggregatePrimitivesVisitor();
         for (Node node : data.getNodes()) {
-            visit(node);
+            visitor.visit(node);
         }
         for (Way way : data.getWays()) {
-            visit(way);
+            visitor.visit(way);
         }
         for (Relation relation : data.getRelations()) {
-            visit(relation);
-        }
-    }
-
-    private void visitAll(Collection<OsmPrimitive> hull) {
-        for (OsmPrimitive primitive : hull) {
-            if (primitive instanceof Node) {
-                visit(((Node) primitive));
-            }
-        }
-        for (OsmPrimitive primitive : hull) {
-            if (primitive instanceof Way) {
-                visit(((Way) primitive));
-            }
-        }
-        for (OsmPrimitive primitive : hull) {
-            if (primitive instanceof Relation) {
-                visit(((Relation) primitive));
-            }
+            visitor.visit(relation);
         }
     }
 
@@ -85,11 +65,8 @@ class NetworkListener implements DataSetListener, Visitor {
 	// convert all referred elements of the moved node
 	public void nodeMoved(NodeMovedEvent moved) {
 		log.debug("Node(s) moved.");
-        AggregatePrimitivesVisitor aggregatePrimitivesVisitor = new AggregatePrimitivesVisitor();
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(moved.getNode());
-		moved.getNode().visitReferrers(aggregatePrimitivesVisitor);
-        Collection<OsmPrimitive> hull = aggregatePrimitivesVisitor.visit(Collections.<OsmPrimitive>emptyList());
-        visitAll(hull);
     }
 
     @Override
@@ -101,33 +78,31 @@ class NetworkListener implements DataSetListener, Visitor {
 	@Override
 	// convert added primitive as well as the ones connected to it
 	public void primitivesAdded(PrimitivesAddedEvent added) {
-        AggregatePrimitivesVisitor aggregatePrimitivesVisitor = new AggregatePrimitivesVisitor();
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         for (OsmPrimitive primitive : added.getPrimitives()) {
 			log.info("Primitive added. " + primitive.getType() + " " + primitive.getUniqueId());
 			if (primitive instanceof Way) {
                 aggregatePrimitivesVisitor.visit((Way) primitive);
-				primitive.visitReferrers(aggregatePrimitivesVisitor);
 			} else if (primitive instanceof Relation) {
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
                 aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
 			}
 		}
-        Collection<OsmPrimitive> hull = aggregatePrimitivesVisitor.visit(Collections.<OsmPrimitive>emptyList());
-        visitAll(hull);
 	}
 
 	@Override
 	// delete any MATSim reference to the removed element and invoke new
 	// conversion of referring elements
 	public void primitivesRemoved(PrimitivesRemovedEvent primitivesRemoved) {
-		for (OsmPrimitive primitive : primitivesRemoved.getPrimitives()) {
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
+        for (OsmPrimitive primitive : primitivesRemoved.getPrimitives()) {
 			if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-                visit(((org.openstreetmap.josm.data.osm.Node) primitive));
+                aggregatePrimitivesVisitor.visit(((org.openstreetmap.josm.data.osm.Node) primitive));
 			} else if (primitive instanceof Way) {
-				visit((Way) primitive);
+                aggregatePrimitivesVisitor.visit((Way) primitive);
 			} else if (primitive instanceof Relation) {
-				visit((Relation) primitive);
+                aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
 	}
@@ -136,110 +111,141 @@ class NetworkListener implements DataSetListener, Visitor {
 	// convert affected relation
 	public void relationMembersChanged(RelationMembersChangedEvent arg0) {
 		log.debug("Relation member changed " + arg0.getType());
-		visit(arg0.getRelation());
-	}
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
+        aggregatePrimitivesVisitor.visit(arg0.getRelation());
+    }
 
 	@Override
 	// convert affected elements and other connected elements
 	public void tagsChanged(TagsChangedEvent changed) {
-        AggregatePrimitivesVisitor aggregatePrimitivesVisitor = new AggregatePrimitivesVisitor();
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         log.debug("Tags changed " + changed.getType() + " "
 				+ changed.getPrimitive().getType() + " "
 				+ changed.getPrimitive().getUniqueId());
 		for (OsmPrimitive primitive : changed.getPrimitives()) {
 			if (primitive instanceof Way) {
                 aggregatePrimitivesVisitor.visit((Way) primitive);
-				primitive.visitReferrers(aggregatePrimitivesVisitor);
 			} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
                 aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
-				primitive.visitReferrers(aggregatePrimitivesVisitor);
 			} else if (primitive instanceof Relation) {
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
-        Collection<OsmPrimitive> hull = aggregatePrimitivesVisitor.visit(Collections.<OsmPrimitive>emptyList());
-        visitAll(hull);
     }
 
 	@Override
 	// convert affected elements and other connected elements
 	public void wayNodesChanged(WayNodesChangedEvent changed) {
-        AggregatePrimitivesVisitor aggregatePrimitivesVisitor = new AggregatePrimitivesVisitor();
+        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         log.debug("Way Nodes changed " + changed.getType() + " "
 				+ changed.getChangedWay().getType() + " "
 				+ changed.getChangedWay().getUniqueId());
         aggregatePrimitivesVisitor.visit(changed.getChangedWay());
-        Collection<OsmPrimitive> hull = aggregatePrimitivesVisitor.visit(Collections.<OsmPrimitive>emptyList());
-        visitAll(hull);
 	}
 
-    @Override
-    public void visit(org.openstreetmap.josm.data.osm.Node node) {
-        log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
-        if (node.isDeleted()) {
-            Id<org.matsim.api.core.v01.network.Node> id = Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
-            if (scenario.getNetwork().getNodes().containsKey(id)) {
-                NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getNodes().get(id);
-                log.debug("MATSim Node removed. " + matsimNode.getOrigId());
-                scenario.getNetwork().removeNode(matsimNode.getId());
+    private void searchAndRemoveRoute(TransitRoute route) {
+        // We do not know what line the route is in, so we have to search for it.
+        for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+            boolean removed = line.removeRoute(route);
+            if (removed) {
+                if (line.getRoutes().isEmpty()) {
+                    // We do not create lines independently for now so we have to remove empty lines
+                    scenario.getTransitSchedule().removeTransitLine(line);
+                    return;
+                }
             }
-        } else {
-            NewConverter.checkNode(scenario.getNetwork(), node);
         }
     }
 
-	@Override
-	// convert Way, remove previous references in the MATSim data
-	public void visit(Way way) {
-		List<Link> oldLinks = way2Links.remove(way);
-		if (oldLinks != null) {
-			for (Link link : oldLinks) {
-				Link removedLink = scenario.getNetwork().removeLink(link.getId());
-				link2Segments.remove(removedLink);
-				log.debug(removedLink + " removed.");
-			}
-		}
-		if (!way.isDeleted()) {
-			NewConverter.convertWay(way, scenario.getNetwork(), way2Links, link2Segments);
-		}
-		log.info("Number of links: " + scenario.getNetwork().getLinks().size());
-	}
+    class MyAggregatePrimitivesVisitor extends AbstractVisitor {
 
-	@Override
-    public void visit(Relation relation) {
-        // convert Relation, remove previous references in the MATSim data
-        if (relation2Route.containsKey(relation)) {
-            TransitRoute route = relation2Route.get(relation);
-            searchAndRemoveRoute(route);
-            relation2Route.remove(relation);
+        final Collection<OsmPrimitive> visited = new HashSet<>();
+
+        @Override
+        public void visit(Node node) {
+            if (visited.add(node)) {
+                log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
+                if (node.isDeleted()) {
+                    Id<org.matsim.api.core.v01.network.Node> id = Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
+                    if (scenario.getNetwork().getNodes().containsKey(id)) {
+                        NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getNodes().get(id);
+                        log.debug("MATSim Node removed. " + matsimNode.getOrigId());
+                        scenario.getNetwork().removeNode(matsimNode.getId());
+                    }
+                } else {
+                    NewConverter.checkNode(scenario.getNetwork(), node);
+                }
+                // When a Node was touched, we need to look at ways (because their length may change)
+                // and at relations (because it may be a transit stop)
+                // which contain it.
+                for (OsmPrimitive primitive : node.getReferrers()) {
+                    primitive.accept(this);
+                }
+            }
         }
-        if (scenario.getConfig().scenario().isUseTransit()) {
+
+        @Override
+        public void visit(Way way) {
+            // When a Way is touched, we need to look at relations (because they may
+            // be transit routes which have changed now).
+            // I probably have to look at the nodes (because they may not be needed anymore),
+            // but then I would probably traverse the entire net.
+            if (visited.add(way)) {
+                List<Link> oldLinks = way2Links.remove(way);
+                if (oldLinks != null) {
+                    for (Link link : oldLinks) {
+                        Link removedLink = scenario.getNetwork().removeLink(link.getId());
+                        link2Segments.remove(removedLink);
+                        log.debug(removedLink + " removed.");
+                    }
+                }
+                if (!way.isDeleted()) {
+                    NewConverter.convertWay(way, scenario.getNetwork(), way2Links, link2Segments);
+                }
+                for (OsmPrimitive primitive : way.getReferrers()) {
+                    primitive.accept(this);
+                }
+                log.info("Number of links: " + scenario.getNetwork().getLinks().size());
+            }
+
+        }
+
+        @Override
+        public void visit(Relation relation) {
+            if (visited.add(relation)) {
+                // convert Relation, remove previous references in the MATSim data
+                TransitRoute route = relation2Route.remove(relation);
+                if (route != null) {
+                    searchAndRemoveRoute(route);
+                }
+                if (scenario.getConfig().scenario().isUseTransit()) {
+                    Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
+                    if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
+                        scenario.getTransitSchedule().removeStopFacility(scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
+                    }
+                }
+                if (!relation.isDeleted()) {
+                    if (relation.hasTag("type", "route")) {
+                        createTransitRoute(relation);
+                    }
+                    if (relation.hasTag("matsim", "stop_relation")) {
+                        createStopFacility(relation);
+                    }
+                }
+            }
+        }
+
+        private void createStopFacility(Relation relation) {
             Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
-            if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
-                scenario.getTransitSchedule().removeStopFacility(scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
-            }
-        }
-        if (!relation.isDeleted()) {
-            NewConverter.convertTransitRouteIfItIsOne(relation, scenario, relation2Route, way2Links);
-            convertTransitStopFacilityIfItIsOne(relation);
-        }
-    }
-
-    private void convertTransitStopFacilityIfItIsOne(Relation relation) {
-        if (relation.hasTag("matsim", "stop_relation")) {
-        	Id<TransitStopFacility> transitStopFacilityId;
-        	if (relation.hasKey("id")) {
-        		transitStopFacilityId = Id.create(relation.get("id"), TransitStopFacility.class);
-        	} else {
-        		transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
-        	}
             Link link = null;
             Node platform = null;
             for (RelationMember member : relation.getMembers()) {
                 if (member.isWay() && member.hasRole("link")) {
                     Way way = member.getWay();
                     List<Link> links = way2Links.get(way);
-                    link = links.get(links.size() - 1);
+                    if (links != null) {
+                        link = links.get(links.size() - 1);
+                    }
                 } else if (member.isNode() && member.hasRole("platform")) {
                     platform = member.getNode();
                 }
@@ -256,24 +262,68 @@ class NetworkListener implements DataSetListener, Visitor {
                 scenario.getTransitSchedule().addStopFacility(stop);
             }
         }
-    }
 
-    private void searchAndRemoveRoute(TransitRoute route) {
-        // We do not know what line the route is in, so we have to search for it.
-        for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-            boolean removed = line.removeRoute(route);
-            if (removed) {
-                if (line.getRoutes().isEmpty()) {
-                    // We do not create lines independently for now so we have to remove empty lines
-                    scenario.getTransitSchedule().removeTransitLine(line);
-                    return;
+        private void createTransitRoute(Relation relation) {
+            RelationSorter sorter = new RelationSorter();
+            sorter.sortMembers(relation.getMembers());
+            log.debug("converting route relation" + relation.getUniqueId() + " " + relation.getName());
+            ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
+            TransitSchedule schedule = scenario.getTransitSchedule();
+            TransitScheduleFactory builder = schedule.getFactory();
+            for (RelationMember member : relation.getMembers()) {
+                if (member.isNode() && member.getMember().hasTag("public_transport", "platform")) {
+                    TransitStopFacility facility = findFacilityForPlatform(member.getNode());
+                    if (facility != null) {
+                        routeStops.add(builder.createTransitRouteStop(facility, 0, 0));
+                    }
                 }
+            }
+            Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
+            Id<TransitLine> transitLineId = NewConverter.getTransitLineId(relation);
+            TransitLine tLine;
+            if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
+                tLine = builder.createTransitLine(transitLineId);
+                schedule.addTransitLine(tLine);
+            } else {
+                tLine = scenario.getTransitSchedule().getTransitLines().get(transitLineId);
+            }
+            NetworkRoute networkRoute = createNetworkRoute(relation);
+            TransitRoute tRoute = builder.createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
+            tLine.addRoute(tRoute);
+            relation2Route.put(relation, tRoute);
+        }
+
+        TransitStopFacility findFacilityForPlatform(Node node) {
+            for (OsmPrimitive referrer : node.getReferrers()) {
+                if (referrer instanceof Relation && referrer.hasTag("matsim", "stop_relation")) {
+                    referrer.accept(this);
+                    TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
+                            .get(Id.create(referrer.getUniqueId(), TransitStopFacility.class));
+                    if (facility != null) {
+                        return facility;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private NetworkRoute createNetworkRoute(Relation relation) {
+            List<Id<Link>> links = new ArrayList<>();
+            for (Way way : relation.getMemberPrimitives(Way.class)) {
+                visit(way);
+                List<Link> wayLinks = way2Links.get(way);
+                if (wayLinks != null) {
+                    for (Link link : wayLinks) {
+                        links.add(link.getId());
+                    }
+                }
+            }
+            if (links.isEmpty()) {
+                return null;
+            } else {
+                return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
             }
         }
     }
 
-    @Override
-	public void visit(Changeset arg0) {
-
-	}
 }

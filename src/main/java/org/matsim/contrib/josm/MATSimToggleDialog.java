@@ -494,8 +494,8 @@ class MATSimToggleDialog extends ToggleDialog implements MapView.EditLayerChange
                 currentDataSet.clearHighlightedWaySegments();
                 int selectedRow = table_pt.getSelectedRow();
                 if (selectedRow != -1) {
-                    Long tempId = Long.parseLong((String) table_pt.getValueAt(selectedRow, 0));
-                    Relation route = (Relation) currentDataSet.getPrimitiveById(tempId, OsmPrimitiveType.RELATION);
+                    Long id = Long.parseLong(routes.get(selectedRow).getId().toString());
+                    Relation route = (Relation) currentDataSet.getPrimitiveById(id, OsmPrimitiveType.RELATION);
                     for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
                         primitive.setHighlighted(true);
                     }

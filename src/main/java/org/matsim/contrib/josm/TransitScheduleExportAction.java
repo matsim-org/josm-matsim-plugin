@@ -12,16 +12,12 @@ import java.io.File;
 import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-/**
- * Exports data to gpx.
- * @since 78
- */
-public class TransitScheduleExportAction extends DiskAccessAction {
+class TransitScheduleExportAction extends DiskAccessAction {
 
     /**
      * Constructs a new {@code GpxExportAction}.
      */
-    public TransitScheduleExportAction() {
+    TransitScheduleExportAction() {
         super(tr("Export MATSim transit schedule..."), null, tr("Export the transit schedule."), null);
     }
 

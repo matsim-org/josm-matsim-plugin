@@ -455,50 +455,10 @@ class NewConverter {
 		return links;
 	}
 
-	public static void convertTransitRouteIfItIsOne(Relation relation,
-                                                    Scenario scenario, Map<Relation, TransitRoute> relation2Route,
-                                                    Map<Way, List<Link>> way2Links) {
-        if (!relation.hasTag("type", "route")) {
-            return;
-        }
-        RelationSorter sorter = new RelationSorter();
-        sorter.sortMembers(relation.getMembers());
-		log.debug("converting route relation" + relation.getUniqueId() + " " + relation.getName());
-        ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
-        TransitSchedule schedule = scenario.getTransitSchedule();
-        TransitScheduleFactory builder = schedule.getFactory();
-        for (RelationMember member : relation.getMembers()) {
-			if (member.isNode()
-					&& !member.getMember().isIncomplete()
-					&& member.getMember()
-							.hasTag("public_transport", "platform")) {
-				Id<TransitStopFacility> id = Id.create(member.getNode().getUniqueId(), TransitStopFacility.class);
-                routeStops.add(builder.createTransitRouteStop(schedule.getFacilities().get(id), 0, 0));
-			}
-		}
-
-        NetworkRoute route = createConnectedWayRoute(relation, scenario, way2Links);
-
-		Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
-		
-
-        Id<TransitLine> transitLineId = getTransitLineId(relation);
-		TransitLine tLine;
-		if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
-			tLine = builder.createTransitLine(transitLineId);
-            schedule.addTransitLine(tLine);
-        } else {
-			tLine = scenario.getTransitSchedule().getTransitLines().get(transitLineId);
-		}
-		TransitRoute tRoute = builder.createTransitRoute(routeId, route, routeStops, relation.get("route"));
-		tLine.addRoute(tRoute);
-		relation2Route.put(relation, tRoute);
-	}
-
-    private static Id<TransitLine> getTransitLineId(Relation relation) {
+    static Id<TransitLine> getTransitLineId(Relation relation) {
         for (OsmPrimitive primitive : relation.getReferrers()) {
             if (primitive instanceof Relation && primitive.hasTag("type", "route_master")) {
-                return Id.create(relation.getUniqueId(), TransitLine.class);
+                return Id.create(primitive.getUniqueId(), TransitLine.class);
             }
         }
         // no enclosing transit line; use route id as line id;
@@ -511,21 +471,7 @@ class NewConverter {
         }
     }
 
-    private static NetworkRoute createConnectedWayRoute(Relation relation, Scenario scenario, Map<Way, List<Link>> way2Links) {
-        List<Id<Link>> links = new ArrayList<>();
-        for (Way way : relation.getMemberPrimitives(Way.class)) {
-            for (Link link : way2Links.get(way)) {
-                links.add(link.getId());
-            }
-        }
-        if (links.isEmpty()) {
-            return null;
-        } else {
-            return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
-        }
-	}
-
-	// checks for used MATSim tag scheme
+    // checks for used MATSim tag scheme
 	private static boolean meetsMatsimReq(Map<String, String> keys) {
 		if (!keys.containsKey("capacity"))
 			return false;
