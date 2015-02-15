@@ -238,9 +238,7 @@ class Importer {
                 NetworkRoute newNetworkRoute;
                 if (networkRoute != null) {
                     Id<Link> oldStartId = networkRoute.getStartLinkId();
-                    Link oldStartLink = sourceScenario.getNetwork().getLinks()
-                            .get(oldStartId);
-                    Way newStartWay = linkId2Way.get(oldStartLink.getId());
+                    Way newStartWay = linkId2Way.get(oldStartId);
                     List<Link> newStartLinks = way2Links.get(newStartWay);
                     Id<Link> startId = newStartLinks.get(0).getId();
 
@@ -252,8 +250,7 @@ class Importer {
                                 .get(linkId)));
                     }
                     Id<Link> oldEndId = networkRoute.getEndLinkId();
-                    Link oldEndLink = sourceScenario.getNetwork().getLinks()
-                            .get(oldEndId);
+                    Link oldEndLink = sourceScenario.getNetwork().getLinks().get(oldEndId);
                     Way newEndWay = linkId2Way.get(oldEndLink.getId());
                     List<Link> newEndLinks = way2Links.get(newEndWay);
                     Id<Link> endId = newEndLinks.get(0).getId();

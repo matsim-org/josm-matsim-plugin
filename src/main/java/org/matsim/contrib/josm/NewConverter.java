@@ -364,31 +364,25 @@ class NewConverter {
 				node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
 		if (!node.isIncomplete()) {
             EastNorth eastNorth = node.getEastNorth();
-            if (!network.getNodes().containsKey(nodeId)) {
-				org.matsim.api.core.v01.network.Node nn = network
-						.getFactory()
-						.createNode(
-								Id.create(
-										node.getUniqueId(),
-										org.matsim.api.core.v01.network.Node.class),
-								new CoordImpl(eastNorth.getX(), eastNorth.getY()));
-				if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-					((NodeImpl) nn).setOrigId(node.get(ImportTask.NODE_TAG_ID));
-				} else {
-					((NodeImpl) nn).setOrigId(nn.getId().toString());
-				}
-				network.addNode(nn);
-			} else {
-				if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-					((NodeImpl) network.getNodes().get(nodeId)).setOrigId(node
-							.get(ImportTask.NODE_TAG_ID));
-				} else {
-					((NodeImpl) network.getNodes().get(nodeId))
-							.setOrigId(String.valueOf(node.getUniqueId()));
-				}
+            NodeImpl matsimNode = (NodeImpl) network.getNodes().get(nodeId);
+            if (matsimNode == null) {
+                matsimNode = (NodeImpl) network
+                        .getFactory()
+                        .createNode(
+                                Id.create(
+                                        node.getUniqueId(),
+                                        org.matsim.api.core.v01.network.Node.class),
+                                new CoordImpl(eastNorth.getX(), eastNorth.getY()));
+                network.addNode(matsimNode);
+            } else {
 				Coord coord = new CoordImpl(eastNorth.getX(), eastNorth.getY());
-				((NodeImpl) network.getNodes().get(nodeId)).setCoord(coord);
+				matsimNode.setCoord(coord);
 			}
+            if (node.hasKey(ImportTask.NODE_TAG_ID)) {
+                matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
+            } else {
+                matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
+            }
 		}
 	}
 
