@@ -63,8 +63,8 @@ class ConvertTask extends PleaseWaitRunnable {
 
 		// scenario for converted data
 		Scenario sourceScenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-		sourceScenario.getConfig().scenario().setUseTransit(true);
-		sourceScenario.getConfig().scenario().setUseVehicles(true);
+		sourceScenario.getConfig().scenario().setUseTransit(Preferences.isSupportTransit());
+		sourceScenario.getConfig().scenario().setUseVehicles(Preferences.isSupportTransit());
 
 		this.progressMonitor.setTicks(1);
 		this.progressMonitor.setCustomText("converting osm data..");

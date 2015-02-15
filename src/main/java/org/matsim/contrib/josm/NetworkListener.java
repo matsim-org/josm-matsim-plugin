@@ -213,23 +213,23 @@ class NetworkListener implements DataSetListener {
         @Override
         public void visit(Relation relation) {
             if (visited.add(relation)) {
-                // convert Relation, remove previous references in the MATSim data
-                TransitRoute route = relation2Route.remove(relation);
-                if (route != null) {
-                    searchAndRemoveRoute(route);
-                }
                 if (scenario.getConfig().scenario().isUseTransit()) {
+                    // convert Relation, remove previous references in the MATSim data
+                    TransitRoute route = relation2Route.remove(relation);
+                    if (route != null) {
+                        searchAndRemoveRoute(route);
+                    }
                     Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
                     if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
                         scenario.getTransitSchedule().removeStopFacility(scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
                     }
-                }
-                if (!relation.isDeleted()) {
-                    if (relation.hasTag("type", "route")) {
-                        createTransitRoute(relation);
-                    }
-                    if (relation.hasTag("matsim", "stop_relation")) {
-                        createStopFacility(relation);
+                    if (!relation.isDeleted()) {
+                        if (relation.hasTag("type", "route")) {
+                            createTransitRoute(relation);
+                        }
+                        if (relation.hasTag("matsim", "stop_relation")) {
+                            createStopFacility(relation);
+                        }
                     }
                 }
             }
