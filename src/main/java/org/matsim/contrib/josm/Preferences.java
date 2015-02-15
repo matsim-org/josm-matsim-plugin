@@ -89,12 +89,12 @@ final class Preferences extends DefaultTabPreferenceSetting {
                 if (transitFeature.isSelected()) {
                     cleanNetwork.setSelected(false);
                 } else {
-                    cleanNetwork.setSelected(Main.pref.getBoolean("matsim_cleanNetwork"));
+                    cleanNetwork.setSelected(isCleanNetwork());
                 }
                 cleanNetwork.setEnabled(!transitFeature.isSelected());
             }
         });
-        cleanNetwork.setSelected(Main.pref.getBoolean("matsim_cleanNetwork", true));
+        cleanNetwork.setSelected(isCleanNetwork());
         cleanNetwork.setEnabled(!Main.pref.getBoolean("matsim_supportTransit"));
 		keepPaths.setSelected(Main.pref.getBoolean("matsim_keepPaths", false));
 		convertingDefaults.addActionListener(new ActionListener() {
@@ -158,6 +158,10 @@ final class Preferences extends DefaultTabPreferenceSetting {
 
 		return pnl;
 	}
+
+    static boolean isCleanNetwork() {
+        return Main.pref.getBoolean("matsim_cleanNetwork", true);
+    }
 
     static boolean isSupportTransit() {
         return Main.pref.getBoolean("matsim_supportTransit", false);
