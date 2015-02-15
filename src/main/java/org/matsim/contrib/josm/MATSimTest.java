@@ -84,7 +84,7 @@ class MATSimTest extends Test {
 		this.linkIds = new HashMap<>();
 		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
 			layer = (MATSimLayer) Main.main.getActiveLayer();
-			this.network = layer.getMatsimScenario().getNetwork();
+			this.network = layer.getScenario().getNetwork();
 		}
 	}
 

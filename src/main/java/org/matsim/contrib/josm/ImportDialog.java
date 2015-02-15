@@ -49,11 +49,11 @@ class ImportDialog extends JPanel {
 		
 		c.gridx=1;
 		add(networkPathButton, c);
-		
+
 		c.gridy=1;
 		c.gridx=0;
 		add(schedulePath,c);
-		
+
 		c.gridx=1;
 		add(schedulePathButton,c);
 
@@ -84,7 +84,8 @@ class ImportDialog extends JPanel {
 				}
 			}
 		});
-		
+        schedulePath.setEnabled(Preferences.isSupportTransit());
+        schedulePathButton.setEnabled(Preferences.isSupportTransit());
 		schedulePathButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -102,7 +103,7 @@ class ImportDialog extends JPanel {
 				}
 			}
 		});
-		
+
 		
 	}
 }

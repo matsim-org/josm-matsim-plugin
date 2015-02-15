@@ -12,7 +12,7 @@ import java.io.File;
 import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-class TransitScheduleExportAction extends DiskAccessAction {
+class TransitScheduleExportAction extends DiskAccessAction implements org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
     /**
      * Constructs a new {@code GpxExportAction}.
@@ -40,10 +40,21 @@ class TransitScheduleExportAction extends DiskAccessAction {
     }
 
     /**
-     * Refreshes the enabled state
+     * Notifies me when the layer changes, but not when preferences change.
      */
     @Override
     protected void updateEnabledState() {
-        setEnabled(getEditLayer() instanceof MATSimLayer);
+        setEnabled(shouldBeEnabled());
     }
+
+    @Override
+    public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+        setEnabled(shouldBeEnabled());
+    }
+
+    private boolean shouldBeEnabled() {
+        return getEditLayer() instanceof MATSimLayer
+                && ((MATSimLayer) getEditLayer()).getScenario().getConfig().scenario().isUseTransit();
+    }
+
 }

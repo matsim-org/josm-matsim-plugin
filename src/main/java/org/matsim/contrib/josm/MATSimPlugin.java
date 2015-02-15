@@ -35,23 +35,22 @@ import org.xml.sax.SAXException;
  */
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
-    static MATSimToggleDialog toggleDialog;
+    private PTToggleDialog ptToggleDialog = new PTToggleDialog();
+    private LinksToggleDialog linksToggleDialog = new LinksToggleDialog();
 
-    private static final boolean matsimRenderer = Main.pref.getBoolean(
-			"matsim_renderer", false);
-
-	public MATSimPlugin(PluginInformation info) {
+    public MATSimPlugin(PluginInformation info) {
 		super(info);
 
 		// add xml exporter for matsim data
 		ExtensionFileFilter.exporters.add(0, new MATSimNetworkFileExporter());
 
 		// add commands to tools list
-        MATSimAction matsimAction = new MATSimAction();
-		Main.main.menu.toolsMenu.add(matsimAction.getImportAction());
-		Main.main.menu.toolsMenu.add(matsimAction.getNewNetworkAction());
-		Main.main.menu.toolsMenu.add(matsimAction.getConvertAction());
-        Main.main.menu.toolsMenu.add(matsimAction.getExportTransitScheduleAction());
+        Main.main.menu.toolsMenu.add(new ImportAction());
+        Main.main.menu.toolsMenu.add(new NewNetworkAction());
+        Main.main.menu.toolsMenu.add(new ConvertAction());
+        TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
+        Main.main.menu.toolsMenu.add(transitScheduleExportAction);
+        Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
 
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream(
@@ -88,7 +87,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		}
 
 		// register map renderer
-		if (matsimRenderer) {
+		if (Main.pref.getBoolean("matsim_renderer", false)) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
 			factory.register(MapRenderer.class, "MATSim Renderer",
 					"This is the MATSim map renderer");
@@ -97,8 +96,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 		// register for preference changed events
 		Main.pref.addPreferenceChangeListener(this);
-		Main.pref.addPreferenceChangeListener(MapRenderer.Properties
-				.getInstance());
+		Main.pref.addPreferenceChangeListener(MapRenderer.Properties.getInstance());
 
 		// load default converting parameters
 		OsmConvertDefaults.load();
@@ -115,8 +113,8 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	@Override
 	public void mapFrameInitialized(MapFrame oldFrame, MapFrame newFrame) {
 		if (oldFrame == null && newFrame != null) { // map frame added
-			toggleDialog = new MATSimToggleDialog();
-			Main.map.addToggleDialog(toggleDialog);
+            Main.map.addToggleDialog(linksToggleDialog);
+            Main.map.addToggleDialog(ptToggleDialog);
 		}
 	}
 
@@ -137,6 +135,12 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 				factory.activateDefault();
 				factory.unregister(MapRenderer.class);
 			}
-		}
+		} else if (e.getKey().equalsIgnoreCase("matsim_supportTransit")) {
+            boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
+            ptToggleDialog.setEnabled(supportTransit);
+            if (!supportTransit) {
+                ptToggleDialog.hideDialog();
+            }
+        }
 	}
 }

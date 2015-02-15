@@ -21,25 +21,18 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 final class Preferences extends DefaultTabPreferenceSetting {
 
-	private final static JCheckBox renderMatsim = new JCheckBox(
-			"Activate MATSim Renderer");
-	private final static JCheckBox showIds = new JCheckBox("Show link-Ids");
-	private final static JSlider wayOffset = new JSlider(0, 100);
-	private final static JLabel wayOffsetLabel = new JLabel(
-			"Link offset for overlapping links");
-	private final static JCheckBox showInternalIds = new JCheckBox(
-			"Show internal Ids in table");
-
-	private final static JCheckBox cleanNetwork = new JCheckBox("Clean Network");
-	private final static JCheckBox keepPaths = new JCheckBox("Keep Paths");
-
+    private final JCheckBox transitFeature = new JCheckBox("Transit support [alpha]");
+	private final JCheckBox renderMatsim = new JCheckBox("Activate MATSim Renderer");
+	private final JCheckBox showIds = new JCheckBox("Show link-Ids");
+	private final JSlider wayOffset = new JSlider(0, 100);
+	private final JLabel wayOffsetLabel = new JLabel("Link offset for overlapping links");
+	private final JCheckBox showInternalIds = new JCheckBox("Show internal Ids in table");
+	private final JCheckBox cleanNetwork = new JCheckBox("Clean Network");
+	private final JCheckBox keepPaths = new JCheckBox("Keep Paths");
     private final JButton convertingDefaults = new JButton("Set converting defaults");
-
-	private final static JCheckBox filterActive = new JCheckBox(
-			"Activate hierarchy filter");
-	private final static JLabel hierarchyLabel = new JLabel(
-			"Only convert hierarchies up to: ");
-	private final static JTextField hierarchyLayer = new JTextField();
+	private final JCheckBox filterActive = new JCheckBox("Activate hierarchy filter");
+	private final JLabel hierarchyLabel = new JLabel("Only convert hierarchies up to: ");
+	private final JTextField hierarchyLayer = new JTextField();
 
 	public static class Factory implements PreferenceSettingFactory {
 		@Override
@@ -56,62 +49,57 @@ final class Preferences extends DefaultTabPreferenceSetting {
 	private JPanel buildVisualizationPanel() {
 		JPanel pnl = new JPanel(new GridBagLayout());
 		GridBagConstraints cOptions = new GridBagConstraints();
-
-		wayOffset
-				.setValue((int) ((Main.pref.getDouble("matsim_wayOffset", 0)) / 0.03));
-
-		showIds.setSelected(Main.pref.getBoolean("matsim_showIds")
-				&& Main.pref.getBoolean("matsim_renderer"));
+        wayOffset.setValue((int) ((Main.pref.getDouble("matsim_wayOffset", 0)) / 0.03));
+		showIds.setSelected(Main.pref.getBoolean("matsim_showIds"));
 		renderMatsim.setSelected(Main.pref.getBoolean("matsim_renderer"));
 		wayOffset.setEnabled(Main.pref.getBoolean("matsim_renderer"));
 		showIds.setEnabled(Main.pref.getBoolean("matsim_renderer"));
 		wayOffsetLabel.setEnabled(Main.pref.getBoolean("matsim_renderer"));
-		showInternalIds.setSelected(Main.pref.getBoolean(
-				"matsim_showInternalIds", false));
-
+		showInternalIds.setSelected(Main.pref.getBoolean("matsim_showInternalIds", false));
 		cOptions.anchor = GridBagConstraints.NORTHWEST;
-
 		cOptions.insets = new Insets(4, 4, 4, 4);
-
 		cOptions.weightx = 0;
 		cOptions.weighty = 0;
 		cOptions.gridx = 0;
 		cOptions.gridy = 0;
 		pnl.add(renderMatsim, cOptions);
-
 		cOptions.gridy = 1;
 		pnl.add(showIds, cOptions);
-
 		cOptions.weightx = 0;
 		cOptions.gridy = 2;
 		pnl.add(wayOffsetLabel, cOptions);
-
 		cOptions.weightx = 1;
 		cOptions.gridx = 1;
 		pnl.add(wayOffset, cOptions);
-
 		cOptions.weightx = 0;
 		cOptions.weighty = 1;
 		cOptions.gridx = 0;
 		cOptions.gridy = 3;
 		pnl.add(showInternalIds, cOptions);
-
 		return pnl;
 	}
 
 	private JPanel buildConvertPanel() {
 		JPanel pnl = new JPanel(new GridBagLayout());
 		GridBagConstraints cOptions = new GridBagConstraints();
-
-		cleanNetwork.setSelected(Main.pref.getBoolean("matsim_cleanNetwork",
-				true));
-		keepPaths.setSelected(Main.pref.getBoolean("matsim_keepPaths",
-				false));
-		
+        transitFeature.setSelected(isSupportTransit());
+        transitFeature.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (transitFeature.isSelected()) {
+                    cleanNetwork.setSelected(false);
+                } else {
+                    cleanNetwork.setSelected(Main.pref.getBoolean("matsim_cleanNetwork"));
+                }
+                cleanNetwork.setEnabled(!transitFeature.isSelected());
+            }
+        });
+        cleanNetwork.setSelected(Main.pref.getBoolean("matsim_cleanNetwork", true));
+        cleanNetwork.setEnabled(!Main.pref.getBoolean("matsim_supportTransit"));
+		keepPaths.setSelected(Main.pref.getBoolean("matsim_keepPaths", false));
 		convertingDefaults.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
 				OsmConvertDefaultsDialog dialog = new OsmConvertDefaultsDialog();
 				JOptionPane pane = new JOptionPane(dialog,
 						JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -141,18 +129,20 @@ final class Preferences extends DefaultTabPreferenceSetting {
 		cOptions.weightx = 0;
 		cOptions.gridx = 0;
 		cOptions.gridy = 0;
-		pnl.add(cleanNetwork, cOptions);
+        pnl.add(transitFeature, cOptions);
+        cOptions.gridy = 1;
+        pnl.add(cleanNetwork, cOptions);
 		
-		cOptions.gridy = 1;
+		cOptions.gridy = 2;
 		pnl.add(keepPaths, cOptions);
 
-		cOptions.gridy = 2;
+		cOptions.gridy = 3;
 		pnl.add(convertingDefaults, cOptions);
 
-		cOptions.gridy = 3;
+		cOptions.gridy = 4;
 		pnl.add(filterActive, cOptions);
 
-		cOptions.gridy = 4;
+		cOptions.gridy = 5;
 		pnl.add(hierarchyLabel, cOptions);
 		cOptions.gridx = 1;
 		pnl.add(hierarchyLayer, cOptions);
@@ -162,14 +152,18 @@ final class Preferences extends DefaultTabPreferenceSetting {
 		cOptions.fill = GridBagConstraints.HORIZONTAL;
 		cOptions.gridwidth = 2;
 		cOptions.gridx = 0;
-		cOptions.gridy = 5;
+		cOptions.gridy = 6;
 		JSeparator jSep = new JSeparator(SwingConstants.HORIZONTAL);
 		pnl.add(jSep, cOptions);
 
 		return pnl;
 	}
 
-	JTabbedPane buildContentPane() {
+    static boolean isSupportTransit() {
+        return Main.pref.getBoolean("matsim_supportTransit", false);
+    }
+
+    JTabbedPane buildContentPane() {
 		JTabbedPane pane = getTabPane();
 		pane.addTab(tr("Visualization"), buildVisualizationPanel());
 		pane.addTab(tr("Converter Options"), buildConvertPanel());
@@ -189,45 +183,15 @@ final class Preferences extends DefaultTabPreferenceSetting {
 
 	@Override
 	public boolean ok() {
-		if (!showIds.isSelected()) {
-			Main.pref.put("matsim_showIds", false);
-		} else {
-			Main.pref.put("matsim_showIds", true);
-		}
-		if (!renderMatsim.isSelected()) {
-			Main.pref.put("matsim_renderer", false);
-		} else {
-			Main.pref.put("matsim_renderer", true);
-		}
-		if (!cleanNetwork.isSelected()) {
-			Main.pref.put("matsim_cleanNetwork", false);
-		} else {
-			Main.pref.put("matsim_cleanNetwork", true);
-		}
-		if (!keepPaths.isSelected()) {
-			if (Main.pref.put("matsim_keepPaths", false)) {
-				NewConverter.keepPaths = false;
-			}
-		} else {
-			if (Main.pref.put("matsim_keepPaths", true)) {
-				NewConverter.keepPaths = true;
-			}
-		}
-		if (showInternalIds.isSelected()) {
-			Main.pref.put("matsim_showInternalIds", true);
-		} else {
-			Main.pref.put("matsim_showInternalIds", false);
-		}
-		if (filterActive.isSelected()) {
-			Main.pref.put("matsim_filterActive", true);
-		} else {
-			Main.pref.put("matsim_filterActive", false);
-		}
-		Main.pref.putInteger("matsim_filter_hierarchy",
-				Integer.parseInt(hierarchyLayer.getText()));
-		int temp = wayOffset.getValue();
-		double offset = ((double) temp) * 0.03;
-		Main.pref.putDouble("matsim_wayOffset", offset);
+        Main.pref.put("matsim_supportTransit", transitFeature.isSelected());
+        Main.pref.put("matsim_showIds", showIds.isSelected());
+        Main.pref.put("matsim_renderer", renderMatsim.isSelected());
+        Main.pref.put("matsim_cleanNetwork", cleanNetwork.isSelected());
+        Main.pref.put("matsim_keepPaths", keepPaths.isSelected());
+        Main.pref.put("matsim_showInternalIds", showInternalIds.isSelected());
+        Main.pref.put("matsim_filterActive", filterActive.isSelected());
+		Main.pref.putInteger("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
+        Main.pref.putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
 		return false;
 	}
 }

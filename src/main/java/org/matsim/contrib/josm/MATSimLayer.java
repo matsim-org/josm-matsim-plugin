@@ -65,7 +65,7 @@ class MATSimLayer extends OsmDataLayer {
 		return relation2Route;
 	}
 
-	public Scenario getMatsimScenario() {
+	public Scenario getScenario() {
 		return matsimScenario;
 	}
 

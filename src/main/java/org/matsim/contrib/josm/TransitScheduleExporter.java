@@ -31,9 +31,9 @@ class TransitScheduleExporter {
         config.scenario().setUseTransit(true);
         config.scenario().setUseVehicles(true);
         TransitSchedule schedule = sc.getTransitSchedule();
-        if (layer.getMatsimScenario().getTransitSchedule() != null) {
+        if (layer.getScenario().getTransitSchedule() != null) {
             TransitSchedule oldSchedule = layer
-                    .getMatsimScenario().getTransitSchedule();
+                    .getScenario().getTransitSchedule();
 
             for (TransitStopFacility stop : oldSchedule.getFacilities()
                     .values()) {
@@ -51,7 +51,7 @@ class TransitScheduleExporter {
 
                 Id<Link> linkId = stop.getLinkId();
                 if (linkId != null) {
-                    Link oldLink = layer.getMatsimScenario().getNetwork().getLinks().get(linkId);
+                    Link oldLink = layer.getScenario().getNetwork().getLinks().get(linkId);
                     Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
                     newStop.setLinkId(newLinkId);
                 }
@@ -59,7 +59,7 @@ class TransitScheduleExporter {
             }
 
             for (TransitLine line : layer
-                    .getMatsimScenario().getTransitSchedule()
+                    .getScenario().getTransitSchedule()
                     .getTransitLines().values()) {
 
                 Id<TransitLine> lineId;
@@ -82,19 +82,19 @@ class TransitScheduleExporter {
                     if (networkRoute != null) {
                         Id<Link> startLinkId = Id
                                 .createLinkId(((LinkImpl) layer
-                                        .getMatsimScenario().getNetwork()
+                                        .getScenario().getNetwork()
                                         .getLinks()
                                         .get(networkRoute.getStartLinkId()))
                                         .getOrigId());
                         for (Id<Link> id : networkRoute.getLinkIds()) {
                             links.add(Id
                                     .createLinkId(((LinkImpl) layer
-                                            .getMatsimScenario().getNetwork()
+                                            .getScenario().getNetwork()
                                             .getLinks().get(id)).getOrigId()));
                         }
                         Id<Link> endLinkId = Id
                                 .createLinkId(((LinkImpl) layer
-                                        .getMatsimScenario().getNetwork()
+                                        .getScenario().getNetwork()
                                         .getLinks()
                                         .get(networkRoute.getEndLinkId()))
                                         .getOrigId());

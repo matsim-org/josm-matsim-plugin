@@ -74,7 +74,7 @@ class ConvertTask extends PleaseWaitRunnable {
         networkListener.visitAll(((OsmDataLayer) layer).data);
 
         // check if network should be cleaned
-		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
+		if ((!Main.pref.getBoolean("matsim_supportTransit")) && Main.pref.getBoolean("matsim_cleanNetwork")) {
 			this.progressMonitor.setTicks(2);
 			this.progressMonitor.setCustomText("cleaning network..");
 			new NetworkCleaner().run(sourceScenario.getNetwork());
