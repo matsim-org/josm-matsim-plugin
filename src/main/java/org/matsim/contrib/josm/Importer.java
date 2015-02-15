@@ -226,7 +226,6 @@ class Importer {
                 for (TransitRouteStop tRStop : route.getStops()) {
                     TransitStopFacility stop = stops.get(tRStop.getStopFacility().getId());
                     Relation stopRelation = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
-                   ;
                     newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
                     if (stopRelation.getMembersCount()>1) {
                     	routeRelation.addMember(stopRelation.lastMember());
@@ -235,38 +234,40 @@ class Importer {
                 }
 
                 List<Id<Link>> links = new ArrayList<>();
-                Id<Link> oldStartId = route.getRoute().getStartLinkId();
-                Link oldStartLink = sourceScenario.getNetwork().getLinks()
-                        .get(oldStartId);
-                Way newStartWay = linkId2Way.get(oldStartLink.getId());
-                List<Link> newStartLinks = way2Links.get(newStartWay);
-                Id<Link> startId = newStartLinks.get(0).getId();
+                NetworkRoute networkRoute = route.getRoute();
+                NetworkRoute newNetworkRoute;
+                if (networkRoute != null) {
+                    Id<Link> oldStartId = networkRoute.getStartLinkId();
+                    Link oldStartLink = sourceScenario.getNetwork().getLinks()
+                            .get(oldStartId);
+                    Way newStartWay = linkId2Way.get(oldStartLink.getId());
+                    List<Link> newStartLinks = way2Links.get(newStartWay);
+                    Id<Link> startId = newStartLinks.get(0).getId();
 
-                routeRelation.addMember(new RelationMember("", linkId2Way.get(route
-                        .getRoute().getStartLinkId())));
-                for (Id<Link> linkId : route.getRoute().getLinkIds()) {
-                    links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
-                            .getId());
-                    routeRelation.addMember(new RelationMember("", linkId2Way
-                            .get(linkId)));
+                    routeRelation.addMember(new RelationMember("", linkId2Way.get(networkRoute.getStartLinkId())));
+                    for (Id<Link> linkId : networkRoute.getLinkIds()) {
+                        links.add(way2Links.get(linkId2Way.get(linkId)).get(0)
+                                .getId());
+                        routeRelation.addMember(new RelationMember("", linkId2Way
+                                .get(linkId)));
+                    }
+                    Id<Link> oldEndId = networkRoute.getEndLinkId();
+                    Link oldEndLink = sourceScenario.getNetwork().getLinks()
+                            .get(oldEndId);
+                    Way newEndWay = linkId2Way.get(oldEndLink.getId());
+                    List<Link> newEndLinks = way2Links.get(newEndWay);
+                    Id<Link> endId = newEndLinks.get(0).getId();
+                    routeRelation.addMember(new RelationMember("", linkId2Way.get(networkRoute.getEndLinkId())));
+                    newNetworkRoute = new LinkNetworkRouteImpl(startId,endId);
+                    newNetworkRoute.setLinkIds(startId, links, endId);
+                } else {
+                    newNetworkRoute = null;
                 }
-                Id<Link> oldEndId = route.getRoute().getEndLinkId();
-                Link oldEndLink = sourceScenario.getNetwork().getLinks()
-                        .get(oldEndId);
-                Way newEndWay = linkId2Way.get(oldEndLink.getId());
-                List<Link> newEndLinks = way2Links.get(newEndWay);
-                Id<Link> endId = newEndLinks.get(0).getId();
-                routeRelation.addMember(new RelationMember("", linkId2Way.get(route
-                        .getRoute().getEndLinkId())));
-
-                NetworkRoute networkRoute = new LinkNetworkRouteImpl(startId,
-                        endId);
-                networkRoute.setLinkIds(startId, links, endId);
 
                 TransitRoute newRoute = targetScenario
                         .getTransitSchedule()
                         .getFactory()
-                        .createTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class), networkRoute,
+                        .createTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class), newNetworkRoute,
                                 newTransitStops, route.getTransportMode());
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");

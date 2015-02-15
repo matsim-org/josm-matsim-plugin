@@ -77,27 +77,32 @@ class TransitScheduleExporter {
 
                 for (TransitRoute route : line.getRoutes().values()) {
                     List<Id<Link>> links = new ArrayList<>();
-                    Id<Link> startLinkId = Id
-                            .createLinkId(((LinkImpl) layer
-                                    .getMatsimScenario().getNetwork()
-                                    .getLinks()
-                                    .get(route.getRoute().getStartLinkId()))
-                                    .getOrigId());
-                    for (Id<Link> id : route.getRoute().getLinkIds()) {
-                        links.add(Id
+                    NetworkRoute networkRoute = route.getRoute();
+                    NetworkRoute newNetworkRoute;
+                    if (networkRoute != null) {
+                        Id<Link> startLinkId = Id
                                 .createLinkId(((LinkImpl) layer
                                         .getMatsimScenario().getNetwork()
-                                        .getLinks().get(id)).getOrigId()));
+                                        .getLinks()
+                                        .get(networkRoute.getStartLinkId()))
+                                        .getOrigId());
+                        for (Id<Link> id : networkRoute.getLinkIds()) {
+                            links.add(Id
+                                    .createLinkId(((LinkImpl) layer
+                                            .getMatsimScenario().getNetwork()
+                                            .getLinks().get(id)).getOrigId()));
+                        }
+                        Id<Link> endLinkId = Id
+                                .createLinkId(((LinkImpl) layer
+                                        .getMatsimScenario().getNetwork()
+                                        .getLinks()
+                                        .get(networkRoute.getEndLinkId()))
+                                        .getOrigId());
+                        newNetworkRoute = new LinkNetworkRouteImpl(startLinkId, endLinkId);
+                        newNetworkRoute.setLinkIds(startLinkId, links, endLinkId);
+                    } else {
+                        newNetworkRoute = null;
                     }
-                    Id<Link> endLinkId = Id
-                            .createLinkId(((LinkImpl) layer
-                                    .getMatsimScenario().getNetwork()
-                                    .getLinks()
-                                    .get(route.getRoute().getEndLinkId()))
-                                    .getOrigId());
-                    NetworkRoute networkRoute = new LinkNetworkRouteImpl(
-                            startLinkId, endLinkId);
-                    networkRoute.setLinkIds(startLinkId, links, endLinkId);
 
                     List<TransitRouteStop> newTRStops = new ArrayList<>();
                     for (TransitRouteStop tRStop : route.getStops()) {
@@ -123,7 +128,7 @@ class TransitScheduleExporter {
 
                     TransitRoute newTRoute = schedule.getFactory()
                             .createTransitRoute(routeId,
-                                    networkRoute, newTRStops,
+                                    newNetworkRoute, newTRStops,
                                     route.getTransportMode());
                     newTLine.addRoute(newTRoute);
                 }
