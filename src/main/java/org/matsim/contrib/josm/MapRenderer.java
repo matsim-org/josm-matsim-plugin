@@ -46,6 +46,7 @@ public class MapRenderer extends StyledMapRenderer {
 
 	public static void setWay2Links(Map<Way, List<Link>> way2LinksTmp) {
 		way2Links = way2LinksTmp;
+        Main.map.repaint();
 	}
 
 	/**
@@ -70,7 +71,7 @@ public class MapRenderer extends StyledMapRenderer {
 			boolean showOrientation, boolean showHeadArrowOnly,
 			boolean showOneway, boolean onewayReversed) {
 
-        if (way2Links != null && way2Links.containsKey(way)) {
+        if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
             if (!way.isSelected()) {
                 if (Properties.showIds) { // draw id on path
                     drawTextOnPath(way,
