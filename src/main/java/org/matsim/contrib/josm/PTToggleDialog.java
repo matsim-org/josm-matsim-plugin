@@ -54,13 +54,14 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             notifyDataChanged();
         }
     };
+    private Scenario scenario;
 
     @Override
     public void showNotify() {
         DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
         SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
         MapView.addEditLayerChangeListener(this);
-        notifyDataChanged();
+        notifyEverythingChanged();
     }
 
     @Override
@@ -89,11 +90,10 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
     }
 
 	// called when MATSim data changes to update the data in this dialog
-	private void notifyDataChanged() {
+	private void notifyEverythingChanged() {
         Map<Way, List<Link>> way2Links;
         Map<Link, List<WaySegment>> link2Segments;
         OsmDataLayer layer = Main.main.getEditLayer();
-        Scenario scenario;
         if (layer instanceof MATSimLayer) {
             scenario = ((MATSimLayer) layer).getScenario();
             if (scenario.getConfig().scenario().isUseTransit()) {
@@ -115,6 +115,10 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             relation2Route = new HashMap<>();
             scenario = null;
         }
+        notifyDataChanged();
+    }
+
+    private void notifyDataChanged() {
         if (scenario != null && scenario.getConfig().scenario().isUseTransit()) {
             setTitle(tr(
                     "Lines: {0} / Routes: {1} / Stops: {2}",
@@ -122,7 +126,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         } else {
             setTitle(tr("No MATSim transit schedule active"));
         }
-	}
+    }
 
     private int countStopFacilities(Scenario scenario) {
         if (scenario.getConfig().scenario().isUseTransit()) {
@@ -157,12 +161,11 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 	// converted
 	// also adjusts standard file export formats
 	public void editLayerChanged(OsmDataLayer oldLayer, OsmDataLayer newLayer) {
-
 		// clear old data set listeners
 		if (osmNetworkListener != null && oldLayer != null) {
 			oldLayer.data.removeDataSetListener(osmNetworkListener);
 		}
-
+        notifyEverythingChanged();
 	}
 
 	private class MATSimTableRenderer extends DefaultTableCellRenderer {

@@ -74,7 +74,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
         DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
         SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
         MapView.addEditLayerChangeListener(this);
-        notifyDataChanged();
+        notifyEverythingChanged();
     }
 
     @Override
@@ -127,7 +127,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
     }
 
 	// called when MATSim data changes to update the data in this dialog
-	private void notifyDataChanged() {
+	private void notifyEverythingChanged() {
         OsmDataLayer layer = Main.main.getEditLayer();
         if (layer != null) {
             Scenario currentScenario;
@@ -158,6 +158,12 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             link2Segments = new HashMap<>();
             this.scenario = null;
         }
+        // set converted links that are to be drawn blue by map renderer
+        MapRenderer.setWay2Links(way2Links);
+        notifyDataChanged();
+    }
+
+    private void notifyDataChanged() {
         if (scenario != null) {
             setTitle(tr(
                     "Links: {0} / Nodes: {1}",
@@ -166,8 +172,6 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             setTitle(tr("No MATSim layer active"));
         }
         tableModel_links.selectionChanged(null);
-        // set converted links that are to be drawn blue by map renderer
-        MapRenderer.setWay2Links(way2Links);
     }
 
     @Override
@@ -181,7 +185,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 		if (osmNetworkListener != null && oldLayer != null) {
 			oldLayer.data.removeDataSetListener(osmNetworkListener);
 		}
-        notifyDataChanged();
+        notifyEverythingChanged();
 	}
 
 	@Override
