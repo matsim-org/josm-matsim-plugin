@@ -138,8 +138,6 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
                 osmNetworkListener = null; // MATSim layers have their own network listener
             } else {
                 currentScenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-                currentScenario.getConfig().scenario().setUseTransit(true);
-                currentScenario.getConfig().scenario().setUseVehicles(true);
                 way2Links = new HashMap<>();
                 link2Segments = new HashMap<>();
                 osmNetworkListener = new NetworkListener(currentScenario, way2Links, link2Segments, new HashMap<Relation, TransitRoute>());
