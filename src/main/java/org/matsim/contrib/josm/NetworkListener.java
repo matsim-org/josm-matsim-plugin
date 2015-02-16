@@ -9,6 +9,7 @@ import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
 import org.matsim.pt.transitSchedule.api.*;
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
@@ -59,7 +60,8 @@ class NetworkListener implements DataSetListener {
 	public void dataChanged(DataChangedEvent dataChangedEvent) {
 		log.debug("Data changed. ");
         visitAll(dataChangedEvent.getDataset());
-	}
+        removeEmptyLines();
+    }
 
 	@Override
 	// convert all referred elements of the moved node
@@ -72,7 +74,6 @@ class NetworkListener implements DataSetListener {
     @Override
 	public void otherDatasetChange(AbstractDatasetChangedEvent arg0) {
 		log.debug("Other dataset change. " + arg0.getType());
-        visitAll(arg0.getDataset());
 	}
 
 	@Override
@@ -105,17 +106,35 @@ class NetworkListener implements DataSetListener {
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
-	}
+        removeEmptyLines();
+    }
 
 	@Override
 	// convert affected relation
 	public void relationMembersChanged(RelationMembersChangedEvent arg0) {
-		log.debug("Relation member changed " + arg0.getType());
+		log.debug("Relation member changed " + arg0.getRelation().getUniqueId());
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(arg0.getRelation());
+        removeEmptyLines();
     }
 
-	@Override
+    private void removeEmptyLines() {
+        if (scenario.getConfig().scenario().isUseTransit()) {
+            // We do not create lines independently for now so we have to remove empty lines
+            Collection<TransitLine> linesToRemove = new ArrayList<>();
+            for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+                if (line.getRoutes().isEmpty()) {
+                    linesToRemove.add(line);
+                }
+            }
+            for (TransitLine transitLine : linesToRemove) {
+                scenario.getTransitSchedule().removeTransitLine(transitLine);
+            }
+        }
+    }
+
+
+    @Override
 	// convert affected elements and other connected elements
 	public void tagsChanged(TagsChangedEvent changed) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
@@ -146,20 +165,279 @@ class NetworkListener implements DataSetListener {
     private void searchAndRemoveRoute(TransitRoute route) {
         // We do not know what line the route is in, so we have to search for it.
         for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-            boolean removed = line.removeRoute(route);
-            if (removed) {
-                if (line.getRoutes().isEmpty()) {
-                    // We do not create lines independently for now so we have to remove empty lines
-                    scenario.getTransitSchedule().removeTransitLine(line);
-                    return;
-                }
-            }
+            line.removeRoute(route);
         }
     }
 
     class MyAggregatePrimitivesVisitor extends AbstractVisitor {
 
         final Collection<OsmPrimitive> visited = new HashSet<>();
+
+        void convertWay(Way way) {
+            log.debug("### Way " + way.getUniqueId() + " (" + way.getNodesCount()
+                    + " nodes) ###");
+            List<Link> links = new ArrayList<>();
+
+            if (way.getNodesCount() > 1 && (way.hasTag(NewConverter.TAG_HIGHWAY, OsmConvertDefaults.getWayDefaults().keySet())
+                    || NewConverter.meetsMatsimReq(way.getKeys())
+                    || (way.hasTag(NewConverter.TAG_RAILWAY, OsmConvertDefaults.getWayDefaults().keySet())))) {
+                List<Node> nodeOrder = new ArrayList<>();
+                StringBuilder nodeOrderLog = new StringBuilder();
+                for (int l = 0; l < way.getNodesCount(); l++) {
+                    Node current = way.getNode(l);
+                    if (l == 0 || l == way.getNodesCount() - 1 || Preferences.isKeepPaths()) {
+                        nodeOrder.add(current);
+                        log.debug("--- Way " + way.getUniqueId()
+                                + ": dumped node " + l + " ("
+                                + current.getUniqueId() + ") ");
+                        nodeOrderLog.append("(").append(l).append(") ");
+                    } else if (current.equals(way.getNode(way.getNodesCount() - 1))) {
+                        nodeOrder.add(current); // add node twice if it occurs
+                                                // twice in a loop so length
+                                                // to this node is not
+                                                // calculated wrong
+                        log.debug("--- Way " + way.getUniqueId()
+                                + ": dumped node " + l + " ("
+                                + current.getUniqueId()
+                                + ") beginning of loop / closed area ");
+                        nodeOrderLog.append("(").append(l).append(") ");
+                    } else if (current.isConnectionNode()) {
+                        for (OsmPrimitive prim : current.getReferrers()) {
+                            if (prim instanceof Way && !prim.equals(way)) {
+                                if (prim.hasKey(NewConverter.TAG_HIGHWAY)
+                                        || NewConverter.meetsMatsimReq(prim.getKeys())) {
+                                    nodeOrder.add(current);
+                                    log.debug("--- Way " + way.getUniqueId()
+                                            + ": dumped node " + l + " ("
+                                            + current.getUniqueId()
+                                            + ") way intersection");
+                                    nodeOrderLog.append("(").append(l).append(") ");
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        for (OsmPrimitive prim : current.getReferrers()) {
+                            if (prim instanceof Relation
+                                    && prim.hasTag("route", "train", "track", "bus",
+                                    "light_rail", "tram", "subway")
+                                    && prim.hasTag("type", "route")
+                                    && !nodeOrder.contains(current)) {
+                                nodeOrder.add(current);
+                                log.debug("--- Way " + way.getUniqueId()
+                                        + ": dumped node " + l + " ("
+                                        + current.getUniqueId()
+                                        + ") stop position "
+                                        + current.getLocalName());
+                            }
+                        }
+                    }
+                }
+
+                log.debug("--- Way " + way.getUniqueId()
+                        + ": order of kept nodes [ " + nodeOrderLog.toString()
+                        + "]");
+
+                for (Node node : nodeOrder) {
+                    NewConverter.checkNode(scenario.getNetwork(), node);
+
+                    log.debug("--- Way " + way.getUniqueId()
+                            + ": created / updated MATSim node "
+                            + node.getUniqueId());
+                }
+
+                Double capacity = 0.;
+                Double freespeed = 0.;
+                Double nofLanes = 0.;
+                boolean oneway = true;
+                boolean onewayReverse = false;
+
+                if (way.getKeys().containsKey(NewConverter.TAG_HIGHWAY)
+                        || way.getKeys().containsKey(NewConverter.TAG_RAILWAY)) {
+
+                    String wayType;
+                    if (way.getKeys().containsKey(NewConverter.TAG_HIGHWAY)) {
+                        wayType = way.getKeys().get(NewConverter.TAG_HIGHWAY);
+                    } else if (way.getKeys().containsKey(NewConverter.TAG_RAILWAY)) {
+                        wayType = way.getKeys().get(NewConverter.TAG_RAILWAY);
+                    } else {
+                        return;
+                    }
+
+                    // load defaults
+                    OsmConvertDefaults.OsmWayDefaults defaults = OsmConvertDefaults.getWayDefaults().get(wayType);
+                    if (defaults != null) {
+
+                        if (defaults.hierarchy > Main.pref.getInteger(
+                                "matsim_filter_hierarchy", 6)) {
+                            return;
+                        }
+                        nofLanes = defaults.lanes;
+                        double laneCapacity = defaults.laneCapacity;
+                        freespeed = defaults.freespeed;
+                        oneway = defaults.oneway;
+
+                        // check if there are tags that overwrite defaults
+                        // - check tag "junction"
+                        if ("roundabout".equals(way.getKeys().get(NewConverter.TAG_JUNCTION))) {
+                            // if "junction" is not set in tags, get()
+                            // returns null and
+                            // equals()
+                            // evaluates to false
+                            oneway = true;
+                        }
+
+                        // check tag "oneway"
+                        String onewayTag = way.getKeys().get(NewConverter.TAG_ONEWAY);
+                        if (onewayTag != null) {
+                            if ("yes".equals(onewayTag)) {
+                                oneway = true;
+                            } else if ("true".equals(onewayTag)) {
+                                oneway = true;
+                            } else if ("1".equals(onewayTag)) {
+                                oneway = true;
+                            } else if ("-1".equals(onewayTag)) {
+                                onewayReverse = true;
+                                oneway = false;
+                            } else if ("no".equals(onewayTag)) {
+                                oneway = false; // may be used to overwrite
+                                                // defaults
+                            } else {
+                                log.warn("--- Way " + way.getUniqueId()
+                                        + ": could not parse oneway tag");
+                            }
+                        }
+
+                        // In case trunks, primary and secondary roads are
+                        // marked as
+                        // oneway,
+                        // the default number of lanes should be two instead
+                        // of one.
+                        if (wayType.equalsIgnoreCase("trunk")
+                                || wayType.equalsIgnoreCase("primary")
+                                || wayType.equalsIgnoreCase("secondary")) {
+                            if (oneway && nofLanes == 1.0) {
+                                nofLanes = 2.0;
+                            }
+                        }
+
+                        String maxspeedTag = way.getKeys().get(NewConverter.TAG_MAXSPEED);
+                        if (maxspeedTag != null) {
+                            try {
+                                freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert
+                                // km/h to
+                                // m/s
+                            } catch (NumberFormatException e) {
+                                log.warn("--- Way " + way.getUniqueId()
+                                        + ": could not parse maxspeed tag");
+                            }
+                        }
+
+                        // check tag "lanes"
+                        String lanesTag = way.getKeys().get(NewConverter.TAG_LANES);
+                        if (lanesTag != null) {
+                            try {
+                                double tmp = Double.parseDouble(lanesTag);
+                                if (tmp > 0) {
+                                    nofLanes = tmp;
+                                }
+                            } catch (Exception e) {
+                                log.warn("--- Way " + way.getUniqueId()
+                                        + ": could not parse lanes tag");
+                            }
+                        }
+                        // create the link(s)
+                        capacity = nofLanes * laneCapacity;
+                    }
+                }
+                if (way.getKeys().containsKey("capacity")) {
+                    Double capacityTag = NewConverter.parseDoubleIfPossible(way.getKeys()
+                            .get("capacity"));
+                    if (capacityTag != null) {
+                        capacity = capacityTag;
+                    } else {
+                        log.warn("--- Way " + way.getUniqueId()
+                                + ": could not parse MATSim capacity tag");
+                    }
+                }
+                if (way.getKeys().containsKey("freespeed")) {
+                    Double freespeedTag = NewConverter.parseDoubleIfPossible(way.getKeys()
+                            .get("freespeed"));
+                    if (freespeedTag != null) {
+                        freespeed = freespeedTag;
+                    } else {
+                        log.warn("--- Way " + way.getUniqueId()
+                                + ": could not parse MATSim freespeed tag");
+                    }
+                }
+                if (way.getKeys().containsKey("permlanes")) {
+                    Double permlanesTag = NewConverter.parseDoubleIfPossible(way.getKeys()
+                            .get("permlanes"));
+                    if (permlanesTag != null) {
+                        nofLanes = permlanesTag;
+                    } else {
+                        log.warn("--- Way " + way.getUniqueId()
+                                + ": could not parse MATSim permlanes tag");
+                    }
+                }
+
+                Double taggedLength = null;
+                if (way.getKeys().containsKey("length")) {
+                    Double temp = NewConverter.parseDoubleIfPossible(way.getKeys().get("length"));
+                    if (temp != null) {
+                        taggedLength = temp;
+
+                    } else {
+                        log.warn("--- Way " + way.getUniqueId()
+                                + ": could not parse MATSim length tag");
+                    }
+                }
+
+
+                long increment = 0;
+                for (int k = 1; k < nodeOrder.size(); k++) {
+                    List<WaySegment> segs = new ArrayList<>();
+                    Node nodeFrom = nodeOrder.get(k - 1);
+                    Node nodeTo = nodeOrder.get(k);
+                    int fromIdx = way.getNodes().indexOf(nodeFrom);
+                    int toIdx = way.getNodes().indexOf(nodeTo);
+                    if (fromIdx > toIdx) { // loop, take latter occurrence
+                        toIdx = way.getNodes().lastIndexOf(nodeTo);
+                    }
+                    Double length = 0.;
+                    for (int m = fromIdx; m < toIdx; m++) {
+                        segs.add(new WaySegment(way, m));
+                        length += way
+                                .getNode(m)
+                                .getCoor()
+                                .greatCircleDistance(
+                                        way.getNode(m + 1).getCoor());
+                    }
+                    log.debug("--- Way " + way.getUniqueId()
+                            + ": length between " + fromIdx + " and " + toIdx
+                            + ": " + length);
+                    if (taggedLength != null) {
+                        if (length != 0.0) {
+                            length = taggedLength * length / way.getLength();
+                        } else {
+                            length = taggedLength;
+                        }
+                    }
+                    List<Link> tempLinks = NewConverter.createLink(scenario.getNetwork(), way, nodeFrom,
+                            nodeTo, length, increment, oneway, onewayReverse,
+                            freespeed, capacity, nofLanes, NewConverter.determineModes(way));
+                    for (Link link : tempLinks) {
+                        link2Segments.put(link, segs);
+                    }
+                    links.addAll(tempLinks);
+                    increment++;
+                }
+            }
+
+            log.debug("### Finished Way " + way.getUniqueId() + ". " + links.size()
+                    + " links resulted. ###");
+            way2Links.put(way, links);
+        }
 
         @Override
         public void visit(Node node) {
@@ -172,8 +450,6 @@ class NetworkListener implements DataSetListener {
                         log.debug("MATSim Node removed. " + matsimNode.getOrigId());
                         scenario.getNetwork().removeNode(matsimNode.getId());
                     }
-                } else {
-                    NewConverter.checkNode(scenario.getNetwork(), node);
                 }
                 // When a Node was touched, we need to look at ways (because their length may change)
                 // and at relations (because it may be a transit stop)
@@ -200,7 +476,7 @@ class NetworkListener implements DataSetListener {
                     }
                 }
                 if (!way.isDeleted()) {
-                    NewConverter.convertWay(way, scenario.getNetwork(), way2Links, link2Segments);
+                    convertWay(way);
                 }
                 for (OsmPrimitive primitive : way.getReferrers()) {
                     primitive.accept(this);
@@ -224,6 +500,11 @@ class NetworkListener implements DataSetListener {
                         scenario.getTransitSchedule().removeStopFacility(scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
                     }
                     if (!relation.isDeleted()) {
+                        if (relation.hasTag("type", "route_master")) {
+                            for (OsmPrimitive osmPrimitive : relation.getMemberPrimitives()) {
+                                osmPrimitive.accept(this);
+                            }
+                        }
                         if (relation.hasTag("type", "route")) {
                             createTransitRoute(relation);
                         }
@@ -243,7 +524,7 @@ class NetworkListener implements DataSetListener {
                 if (member.isWay() && member.hasRole("link")) {
                     Way way = member.getWay();
                     List<Link> links = way2Links.get(way);
-                    if (links != null) {
+                    if (links != null && !links.isEmpty()) {
                         link = links.get(links.size() - 1);
                     }
                 } else if (member.isNode() && member.hasRole("platform")) {

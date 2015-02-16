@@ -96,7 +96,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
         });
         cleanNetwork.setSelected(isCleanNetwork());
         cleanNetwork.setEnabled(!Main.pref.getBoolean("matsim_supportTransit"));
-		keepPaths.setSelected(Main.pref.getBoolean("matsim_keepPaths", false));
+		keepPaths.setSelected(isKeepPaths());
 		convertingDefaults.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -158,6 +158,10 @@ final class Preferences extends DefaultTabPreferenceSetting {
 
 		return pnl;
 	}
+
+    static boolean isKeepPaths() {
+        return Main.pref.getBoolean("matsim_keepPaths", false);
+    }
 
     static boolean isCleanNetwork() {
         return Main.pref.getBoolean("matsim_cleanNetwork", true);
