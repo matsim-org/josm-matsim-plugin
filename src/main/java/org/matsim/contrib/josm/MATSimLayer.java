@@ -38,6 +38,7 @@ class MATSimLayer extends OsmDataLayer {
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
 	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
+    private final NetworkListener networkListener;
 
     public MATSimLayer(DataSet data, String name, File associatedFile,
                        Scenario scenario,
@@ -49,8 +50,8 @@ class MATSimLayer extends OsmDataLayer {
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
-		NetworkListener listener = new NetworkListener(data, scenario, way2Links, link2Segment, relation2Route);
-        data.addDataSetListener(listener);
+        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment, relation2Route);
+        data.addDataSetListener(networkListener);
     }
 
 	public Map<Way, List<Link>> getWay2Links() {
@@ -97,4 +98,7 @@ class MATSimLayer extends OsmDataLayer {
         return SaveActionBase.createAndOpenSaveFileChooser(tr("Save MATSim network file"), "xml");
     }
 
+    public NetworkListener getNetworkListener() {
+        return networkListener;
+    }
 }

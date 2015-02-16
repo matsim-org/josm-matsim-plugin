@@ -28,10 +28,30 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 	private final Scenario scenario;
 
-	private final Map<Way, List<Link>> way2Links;
+    private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private final Map<Relation, TransitRoute> relation2Route;
     private DataSet data;
+    private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
+
+
+    public void removeListener(ScenarioDataChangedListener listener) {
+        listeners.remove(listener);
+    }
+
+    interface ScenarioDataChangedListener {
+        public void notifyDataChanged();
+    }
+
+    void fireNotifyDataChanged() {
+        for (ScenarioDataChangedListener listener : listeners) {
+            listener.notifyDataChanged();
+        }
+    }
+
+    void addListener(ScenarioDataChangedListener listener) {
+        listeners.add(listener);
+    }
 
     public NetworkListener(DataSet data, Scenario scenario, Map<Way, List<Link>> way2Links,
                            Map<Link, List<WaySegment>> link2Segments,
@@ -57,6 +77,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         for (Relation relation : data.getRelations()) {
             visitor.visit(relation);
         }
+        fireNotifyDataChanged();
     }
 
     @Override
@@ -64,6 +85,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		log.debug("Data changed. ");
         visitAll();
         removeEmptyLines();
+        fireNotifyDataChanged();
     }
 
 	@Override
@@ -72,6 +94,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		log.debug("Node(s) moved.");
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(moved.getNode());
+        fireNotifyDataChanged();
     }
 
     @Override
@@ -93,6 +116,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
 			}
 		}
+        fireNotifyDataChanged();
 	}
 
 	@Override
@@ -110,6 +134,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			}
 		}
         removeEmptyLines();
+        fireNotifyDataChanged();
     }
 
 	@Override
@@ -119,6 +144,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(arg0.getRelation());
         removeEmptyLines();
+        fireNotifyDataChanged();
     }
 
     private void removeEmptyLines() {
@@ -153,6 +179,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
+        fireNotifyDataChanged();
     }
 
 	@Override
@@ -163,6 +190,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				+ changed.getChangedWay().getType() + " "
 				+ changed.getChangedWay().getUniqueId());
         aggregatePrimitivesVisitor.visit(changed.getChangedWay());
+        fireNotifyDataChanged();
 	}
 
     private void searchAndRemoveRoute(TransitRoute route) {
@@ -180,6 +208,11 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             visitAll();
             removeEmptyLines();
         }
+        fireNotifyDataChanged();
+    }
+
+    public Scenario getScenario() {
+        return scenario;
     }
 
     class MyAggregatePrimitivesVisitor extends AbstractVisitor {
@@ -618,5 +651,19 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             }
         }
     }
+
+
+    public Map<Way, List<Link>> getWay2Links() {
+        return way2Links;
+    }
+
+    public Map<Link, List<WaySegment>> getLink2Segments() {
+        return link2Segments;
+    }
+
+    public Map<Relation, TransitRoute> getRelation2Route() {
+        return relation2Route;
+    }
+
 
 }

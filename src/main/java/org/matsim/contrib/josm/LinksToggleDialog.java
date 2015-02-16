@@ -45,15 +45,11 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 
 @SuppressWarnings("serial")
-class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener {
+class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
 	private final JTable table_links;
 	private final MATSimTableModel_links tableModel_links = new MATSimTableModel_links();
 
-    private final JButton networkAttributes = new JButton(new ImageProvider(
-			"dialogs", "edit").setWidth(16).get());
-    private Map<Way, List<Link>> way2Links = new HashMap<>();
-	private Map<Link, List<WaySegment>> link2Segments = new HashMap<>();
-    private Scenario scenario;
+    private final JButton networkAttributes = new JButton(new ImageProvider("dialogs", "edit").setWidth(16).get());
     private NetworkListener osmNetworkListener;
 
     private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
@@ -130,23 +126,18 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
         OsmDataLayer layer = Main.main.getEditLayer();
+        if (osmNetworkListener != null) {
+            osmNetworkListener.removeListener(this);
+        }
         if (isShowing() && layer != null) {
-            Scenario currentScenario;
             if (layer instanceof MATSimLayer) {
-                currentScenario = ((MATSimLayer) layer).getScenario();
-                way2Links = ((MATSimLayer) layer).getWay2Links();
-                link2Segments = ((MATSimLayer) layer).getLink2Segments();
-                osmNetworkListener = null; // MATSim layers have their own network listener
+                osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim layers have their own network listener
             } else {
-                currentScenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-                way2Links = new HashMap<>();
-                link2Segments = new HashMap<>();
-                osmNetworkListener = new NetworkListener(layer.data, currentScenario, way2Links, link2Segments, new HashMap<Relation, TransitRoute>());
+                osmNetworkListener = new NetworkListener(layer.data, ScenarioUtils.createScenario(ConfigUtils.createConfig()), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
                 osmNetworkListener.visitAll();
                 layer.data.addDataSetListener(osmNetworkListener);
             }
             table_links.setModel(tableModel_links);
-            this.scenario = currentScenario;
             this.networkAttributes.setEnabled(true);
             checkInternalIdColumn();
         } else { // empty data mappings if no data layer is active
@@ -154,20 +145,21 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             table_links.setModel(new DefaultTableModel());
             setTitle(tr("Links/Nodes"));
             networkAttributes.setEnabled(false);
-            way2Links = new HashMap<>();
-            link2Segments = new HashMap<>();
-            this.scenario = null;
         }
-        // set converted links that are to be drawn blue by map renderer
-        MapRenderer.setWay2Links(way2Links);
+        if (osmNetworkListener != null) {
+            // set converted links that are to be drawn blue by map renderer
+            MapRenderer.setWay2Links(osmNetworkListener.getWay2Links());
+            osmNetworkListener.addListener(this);
+        }
         notifyDataChanged();
     }
 
-    private void notifyDataChanged() {
-        if (scenario != null) {
+    @Override
+    public void notifyDataChanged() {
+        if (osmNetworkListener != null) {
             setTitle(tr(
                     "Links: {0} / Nodes: {1}",
-                    scenario.getNetwork().getLinks().size(), scenario.getNetwork().getNodes().size()));
+                    osmNetworkListener.getScenario().getNetwork().getLinks().size(), osmNetworkListener.getScenario().getNetwork().getNodes().size()));
         } else {
             setTitle(tr("No MATSim layer active"));
         }
@@ -273,7 +265,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			Id<Link> id = links.get(rowIndex);
-			Link link = scenario.getNetwork().getLinks().get(id);
+			Link link = osmNetworkListener.getScenario().getNetwork().getLinks().get(id);
 			if (columnIndex == 0) {
 				return ((LinkImpl) link).getOrigId();
 			} else if (columnIndex == 1) {
@@ -297,16 +289,18 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 		// changes
 		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
             links.clear();
-            DataSet currentDataSet = Main.main.getCurrentDataSet();
-            if (currentDataSet != null) {
-                currentDataSet.clearHighlightedWaySegments();
-                int i = 0;
-                for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
-                    if (primitive instanceof Way) {
-                        if (way2Links.containsKey(primitive)) {
-                            for (Link link : way2Links.get(primitive)) {
-                                links.put(i, link.getId());
-                                i++;
+            if (osmNetworkListener != null) {
+                DataSet currentDataSet = Main.main.getCurrentDataSet();
+                if (currentDataSet != null) {
+                    currentDataSet.clearHighlightedWaySegments();
+                    int i = 0;
+                    for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
+                        if (primitive instanceof Way) {
+                            if (osmNetworkListener.getWay2Links().containsKey(primitive)) {
+                                for (Link link : osmNetworkListener.getWay2Links().get(primitive)) {
+                                    links.put(i, link.getId());
+                                    i++;
+                                }
                             }
                         }
                     }
@@ -322,9 +316,9 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             DataSet currentDataSet = Main.main.getCurrentDataSet();
             if (currentDataSet != null) {
                 int row = table_links.getRowSorter().convertRowIndexToModel(table_links.getSelectedRow());
-                Link link = scenario.getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
-                if (link2Segments.containsKey(link)) {
-                    List<WaySegment> segments = link2Segments.get(link);
+                Link link = osmNetworkListener.getScenario().getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
+                if (osmNetworkListener.getLink2Segments().containsKey(link)) {
+                    List<WaySegment> segments = osmNetworkListener.getLink2Segments().get(link);
                     currentDataSet.setHighlightedWaySegments(segments);
                     Collection<OsmPrimitive> zoom = new ArrayList<>();
                     if (!segments.isEmpty()) {

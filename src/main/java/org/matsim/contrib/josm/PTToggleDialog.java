@@ -37,9 +37,8 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 
 @SuppressWarnings("serial")
-class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener {
+class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
 	private final JTable table_pt;
-    private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
     private NetworkListener osmNetworkListener;
 
     private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
@@ -54,7 +53,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             notifyDataChanged();
         }
     };
-    private Scenario scenario;
 
     @Override
     public void showNotify() {
@@ -92,38 +90,36 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
-        Map<Way, List<Link>> way2Links;
-        Map<Link, List<WaySegment>> link2Segments;
+        if (osmNetworkListener != null) {
+            osmNetworkListener.removeListener(this);
+        }
         OsmDataLayer layer = Main.main.getEditLayer();
         if (isShowing() && layer instanceof MATSimLayer) {
-            scenario = ((MATSimLayer) layer).getScenario();
-            if (scenario.getConfig().scenario().isUseTransit()) {
-                relation2Route = ((MATSimLayer) layer).getRelation2Route();
-                osmNetworkListener = null; // MATSim layers have their own network listener
+            if (((MATSimLayer) layer).getScenario().getConfig().scenario().isUseTransit()) {
+                osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim layers have their own network listener
             }
         } else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
-            scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+            Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
             scenario.getConfig().scenario().setUseTransit(true);
             scenario.getConfig().scenario().setUseVehicles(true);
-            way2Links = new HashMap<>();
-            link2Segments = new HashMap<>();
-            relation2Route = new HashMap<>();
-            osmNetworkListener = new NetworkListener(layer.data, scenario, way2Links, link2Segments, relation2Route);
+            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             osmNetworkListener.visitAll();
             layer.data.addDataSetListener(osmNetworkListener);
         } else { // empty data mappings if no data layer is active
             setTitle(tr("Lines/Stops/Routes"));
-            relation2Route = new HashMap<>();
-            scenario = null;
+        }
+        if (osmNetworkListener != null) {
+            osmNetworkListener.addListener(this);
         }
         notifyDataChanged();
     }
 
-    private void notifyDataChanged() {
-        if (scenario != null && scenario.getConfig().scenario().isUseTransit()) {
+    @Override
+    public void notifyDataChanged() {
+        if (osmNetworkListener != null && osmNetworkListener.getScenario().getConfig().scenario().isUseTransit()) {
             setTitle(tr(
                     "Lines: {0} / Routes: {1} / Stops: {2}",
-                    countTransitLines(scenario), countTransitRoutes(scenario), countStopFacilities(scenario)));
+                    countTransitLines(osmNetworkListener.getScenario()), countTransitRoutes(osmNetworkListener.getScenario()), countStopFacilities(osmNetworkListener.getScenario())));
         } else {
             setTitle(tr("No MATSim transit schedule active"));
         }
@@ -251,22 +247,24 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		// changes
 		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
             this.routes.clear();
-            DataSet currentDataSet = Main.main.getCurrentDataSet();
-            if (currentDataSet != null) {
-                currentDataSet.clearHighlightedWaySegments();
-                currentDataSet.clearHighlightedVirtualNodes();
-                Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
-                for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
-                    for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-                        if (relation2Route.containsKey(maybeRelation)) {
-                            uniqueRoutes.add(relation2Route.get(maybeRelation));
+            if (osmNetworkListener != null) {
+                DataSet currentDataSet = Main.main.getCurrentDataSet();
+                if (currentDataSet != null) {
+                    currentDataSet.clearHighlightedWaySegments();
+                    currentDataSet.clearHighlightedVirtualNodes();
+                    Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
+                    for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
+                        for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
+                            if (osmNetworkListener.getRelation2Route().containsKey(maybeRelation)) {
+                                uniqueRoutes.add(osmNetworkListener.getRelation2Route().get(maybeRelation));
+                            }
                         }
                     }
-                }
-                int i = 0;
-                for (TransitRoute uniqueRoute: uniqueRoutes) {
-                    routes.put(i, uniqueRoute);
-                    i++;
+                    int i = 0;
+                    for (TransitRoute uniqueRoute: uniqueRoutes) {
+                        routes.put(i, uniqueRoute);
+                        i++;
+                    }
                 }
             }
 			fireTableDataChanged();
