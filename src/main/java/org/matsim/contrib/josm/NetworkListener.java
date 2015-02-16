@@ -22,7 +22,7 @@ import java.util.*;
  * 
  * 
  */
-class NetworkListener implements DataSetListener {
+class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
 	private final Logger log = Logger.getLogger(NetworkListener.class);
 
@@ -31,11 +31,14 @@ class NetworkListener implements DataSetListener {
 	private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private final Map<Relation, TransitRoute> relation2Route;
+    private DataSet data;
 
-	public NetworkListener(Scenario scenario, Map<Way, List<Link>> way2Links,
+    public NetworkListener(DataSet data, Scenario scenario, Map<Way, List<Link>> way2Links,
                            Map<Link, List<WaySegment>> link2Segments,
                            Map<Relation, TransitRoute> relation2Route)
 			throws IllegalArgumentException {
+        this.data = data;
+        MATSimPlugin.addPreferenceChangedListener(this);
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
@@ -43,7 +46,7 @@ class NetworkListener implements DataSetListener {
 		log.debug("Listener initialized");
 	}
 
-    void visitAll(DataSet data) {
+    void visitAll() {
         MyAggregatePrimitivesVisitor visitor = new MyAggregatePrimitivesVisitor();
         for (Node node : data.getNodes()) {
             visitor.visit(node);
@@ -59,7 +62,7 @@ class NetworkListener implements DataSetListener {
     @Override
 	public void dataChanged(DataChangedEvent dataChangedEvent) {
 		log.debug("Data changed. ");
-        visitAll(dataChangedEvent.getDataset());
+        visitAll();
         removeEmptyLines();
     }
 
@@ -166,6 +169,16 @@ class NetworkListener implements DataSetListener {
         // We do not know what line the route is in, so we have to search for it.
         for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
             line.removeRoute(route);
+        }
+    }
+
+    @Override
+    public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent e) {
+        if (e.getKey().equalsIgnoreCase("matsim_keepPaths")
+                || e.getKey().equalsIgnoreCase("matsim_filterActive")
+                || e.getKey().equalsIgnoreCase("matsim_filter_hierarchy")) {
+            visitAll();
+            removeEmptyLines();
         }
     }
 

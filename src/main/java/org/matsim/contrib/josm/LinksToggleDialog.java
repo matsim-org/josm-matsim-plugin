@@ -82,6 +82,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
         DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
         SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
         MapView.removeEditLayerChangeListener(this);
+        notifyEverythingChanged();
     }
 
 	LinksToggleDialog() {
@@ -129,7 +130,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
         OsmDataLayer layer = Main.main.getEditLayer();
-        if (layer != null) {
+        if (isShowing() && layer != null) {
             Scenario currentScenario;
             if (layer instanceof MATSimLayer) {
                 currentScenario = ((MATSimLayer) layer).getScenario();
@@ -140,8 +141,8 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
                 currentScenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
                 way2Links = new HashMap<>();
                 link2Segments = new HashMap<>();
-                osmNetworkListener = new NetworkListener(currentScenario, way2Links, link2Segments, new HashMap<Relation, TransitRoute>());
-                osmNetworkListener.visitAll(layer.data);
+                osmNetworkListener = new NetworkListener(layer.data, currentScenario, way2Links, link2Segments, new HashMap<Relation, TransitRoute>());
+                osmNetworkListener.visitAll();
                 layer.data.addDataSetListener(osmNetworkListener);
             }
             table_links.setModel(tableModel_links);
@@ -149,6 +150,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             this.networkAttributes.setEnabled(true);
             checkInternalIdColumn();
         } else { // empty data mappings if no data layer is active
+            osmNetworkListener = null;
             table_links.setModel(new DefaultTableModel());
             setTitle(tr("Links/Nodes"));
             networkAttributes.setEnabled(false);
@@ -188,7 +190,8 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 
 	@Override
 	public void preferenceChanged(PreferenceChangeEvent e) {
-		if (e.getKey().equalsIgnoreCase("matsim_showInternalIds")) {
+		super.preferenceChanged(e);
+        if (e.getKey().equalsIgnoreCase("matsim_showInternalIds")) {
 			checkInternalIdColumn();
 		}
 	}

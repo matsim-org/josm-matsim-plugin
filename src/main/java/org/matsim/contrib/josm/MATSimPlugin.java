@@ -2,8 +2,11 @@ package org.matsim.contrib.josm;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -35,6 +38,7 @@ import org.xml.sax.SAXException;
  */
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
+    private static Collection<WeakReference<PreferenceChangedListener>> preferenceChangeListeners = new ArrayList<>();
     private PTToggleDialog ptToggleDialog = new PTToggleDialog();
     private LinksToggleDialog linksToggleDialog = new LinksToggleDialog();
 
@@ -102,6 +106,10 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		OsmConvertDefaults.load();
 	}
 
+    static void addPreferenceChangedListener(PreferenceChangedListener listener) {
+        preferenceChangeListeners.add(new WeakReference<>(listener));
+    }
+
 	/**
 	 * Called when the JOSM map frame is created or destroyed.
 	 * 
@@ -142,5 +150,15 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
                 ptToggleDialog.hideDialog();
             }
         }
-	}
+        Iterator<WeakReference<PreferenceChangedListener>> iterator = preferenceChangeListeners.iterator();
+        while (iterator.hasNext()) {
+            WeakReference<PreferenceChangedListener> next = iterator.next();
+            PreferenceChangedListener preferenceChangedListener = next.get();
+            if (preferenceChangedListener != null) {
+                preferenceChangedListener.preferenceChanged(e);
+            } else {
+                iterator.remove();
+            }
+        }
+    }
 }

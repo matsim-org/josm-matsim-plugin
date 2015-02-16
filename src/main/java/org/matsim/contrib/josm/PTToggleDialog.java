@@ -69,6 +69,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
         SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
         MapView.removeEditLayerChangeListener(this);
+        notifyEverythingChanged();
     }
 
 	PTToggleDialog() {
@@ -94,21 +95,21 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         Map<Way, List<Link>> way2Links;
         Map<Link, List<WaySegment>> link2Segments;
         OsmDataLayer layer = Main.main.getEditLayer();
-        if (layer instanceof MATSimLayer) {
+        if (isShowing() && layer instanceof MATSimLayer) {
             scenario = ((MATSimLayer) layer).getScenario();
             if (scenario.getConfig().scenario().isUseTransit()) {
                 relation2Route = ((MATSimLayer) layer).getRelation2Route();
                 osmNetworkListener = null; // MATSim layers have their own network listener
             }
-        } else if (layer != null && Preferences.isSupportTransit()) {
+        } else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
             scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
             scenario.getConfig().scenario().setUseTransit(true);
             scenario.getConfig().scenario().setUseVehicles(true);
             way2Links = new HashMap<>();
             link2Segments = new HashMap<>();
             relation2Route = new HashMap<>();
-            osmNetworkListener = new NetworkListener(scenario, way2Links, link2Segments, relation2Route);
-            osmNetworkListener.visitAll(layer.data);
+            osmNetworkListener = new NetworkListener(layer.data, scenario, way2Links, link2Segments, relation2Route);
+            osmNetworkListener.visitAll();
             layer.data.addDataSetListener(osmNetworkListener);
         } else { // empty data mappings if no data layer is active
             setTitle(tr("Lines/Stops/Routes"));

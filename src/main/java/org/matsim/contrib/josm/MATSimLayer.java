@@ -49,7 +49,7 @@ class MATSimLayer extends OsmDataLayer {
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
 		this.relation2Route = relation2Route;
-		NetworkListener listener = new NetworkListener(scenario, way2Links, link2Segment, relation2Route);
+		NetworkListener listener = new NetworkListener(data, scenario, way2Links, link2Segment, relation2Route);
         data.addDataSetListener(listener);
     }
 
