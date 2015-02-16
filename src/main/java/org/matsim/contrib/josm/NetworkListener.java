@@ -591,7 +591,6 @@ class NetworkListener implements DataSetListener {
         private NetworkRoute createNetworkRoute(Relation relation) {
             List<Id<Link>> links = new ArrayList<>();
             for (Way way : relation.getMemberPrimitives(Way.class)) {
-                visit(way);
                 List<Link> wayLinks = way2Links.get(way);
                 if (wayLinks != null) {
                     for (Link link : wayLinks) {
