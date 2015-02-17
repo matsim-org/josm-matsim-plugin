@@ -65,7 +65,7 @@ jar {
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": "v0.3.2",
+                "Plugin-Version": "v0.3.3-SNAPSHOT",
                 "Plugin-Mainversion": 7889,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
@@ -109,10 +109,6 @@ compileJava.dependsOn "getJosm"
 // Install the plug-in into the local JOSM plug-in directory.
 // You can start JOSM from your IDE and debug the plug-in, but the JOSM
 // plug-in system still expects the plug-in jar in its correct place.
-//
-// If you use Windows,
-// please add something here which detects this and uses the proper JOSM
-// plug-in path on Windows.
 import org.apache.tools.ant.taskdefs.condition.Os
 task installLocalJosm {
     doLast {
