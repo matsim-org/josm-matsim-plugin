@@ -13,6 +13,9 @@ import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 
 import java.util.*;
 
@@ -567,13 +570,29 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         }
 
         private NetworkRoute createNetworkRoute(Relation relation) {
+        	
+        	WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+    		List<WayConnectionType> connections = calc.updateLinks(relation
+    				.getMembers());
+
             List<Id<Link>> links = new ArrayList<>();
             for (Way way : relation.getMemberPrimitives(Way.class)) {
                 List<Link> wayLinks = way2Links.get(way);
                 if (wayLinks != null) {
-                    for (Link link : wayLinks) {
-                        links.add(link.getId());
-                    }
+                	int i = relation.getMemberPrimitivesList().indexOf(way);
+                	if (connections.get(i).direction.equals(Direction.FORWARD)) {
+	                    for (Link link : wayLinks) {
+	                    	if (!link.getId().toString().endsWith("_r")) {
+	                    		links.add(link.getId());
+	                    	}
+	                    }
+                	} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
+                		 for (Link link : wayLinks) {
+ 	                    	if (link.getId().toString().endsWith("_r")) {
+ 	                    		links.add(link.getId());
+ 	                    	}
+ 	                    }
+                	}
                 }
             }
             if (links.isEmpty()) {
