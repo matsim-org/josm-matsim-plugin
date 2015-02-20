@@ -52,9 +52,23 @@ final class Preferences extends DefaultTabPreferenceSetting {
         wayOffset.setValue((int) ((Main.pref.getDouble("matsim_wayOffset", 0)) / 0.03));
 		showIds.setSelected(Main.pref.getBoolean("matsim_showIds"));
 		renderMatsim.setSelected(Main.pref.getBoolean("matsim_renderer"));
-		wayOffset.setEnabled(Main.pref.getBoolean("matsim_renderer"));
-		showIds.setEnabled(Main.pref.getBoolean("matsim_renderer"));
-		wayOffsetLabel.setEnabled(Main.pref.getBoolean("matsim_renderer"));
+        renderMatsim.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!renderMatsim.isSelected()) {
+                    showIds.setSelected(false);
+                } else {
+                    showIds.setSelected(isCleanNetwork());
+                }
+                showIds.setEnabled(renderMatsim.isSelected());
+                wayOffset.setEnabled(renderMatsim.isSelected());
+                showIds.setEnabled(renderMatsim.isSelected());
+                wayOffsetLabel.setEnabled(renderMatsim.isSelected());
+            }
+        });
+		wayOffset.setEnabled(renderMatsim.isSelected());
+		showIds.setEnabled(renderMatsim.isSelected());
+		wayOffsetLabel.setEnabled(renderMatsim.isSelected());
 		showInternalIds.setSelected(Main.pref.getBoolean("matsim_showInternalIds", false));
 		cOptions.anchor = GridBagConstraints.NORTHWEST;
 		cOptions.insets = new Insets(4, 4, 4, 4);
@@ -95,7 +109,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
             }
         });
         cleanNetwork.setSelected(isCleanNetwork());
-        cleanNetwork.setEnabled(!Main.pref.getBoolean("matsim_supportTransit"));
+        cleanNetwork.setEnabled(!transitFeature.isSelected());
 		keepPaths.setSelected(isKeepPaths());
 		convertingDefaults.addActionListener(new ActionListener() {
 			@Override
