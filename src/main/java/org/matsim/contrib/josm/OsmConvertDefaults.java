@@ -47,7 +47,7 @@ class OsmConvertDefaults {
 		values.put(
 				"primary_link",
 				Main.pref.get("matsim_convertDefaults_primary_link", "3;1;"
-						+ Double.toString(600. / 3.6) + ";1.0;1500;false"));
+						+ Double.toString(60. / 3.6) + ";1.0;1500;false"));
 		values.put(
 				"secondary",
 				Main.pref.get("matsim_convertDefaults_secondary", "4;1;"
@@ -127,7 +127,7 @@ class OsmConvertDefaults {
 		Main.pref.put("matsim_convertDefaults_primary",
 				"3;1;" + Double.toString(80. / 3.6) + ";1.0;1500;false");
 		Main.pref.put("matsim_convertDefaults_primary_link",
-				"3;1;" + Double.toString(600. / 3.6) + ";1.0;1500;false");
+				"3;1;" + Double.toString(60. / 3.6) + ";1.0;1500;false");
 		Main.pref.put("matsim_convertDefaults_secondary",
 				"4;1;" + Double.toString(60. / 3.6) + ";1.0;1000;false");
 		Main.pref.put("matsim_convertDefaults_tertiary",
