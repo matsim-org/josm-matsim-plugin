@@ -315,16 +315,12 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 		public void valueChanged(ListSelectionEvent e) {
             DataSet currentDataSet = Main.main.getCurrentDataSet();
             if (currentDataSet != null) {
-                int row = table_links.getRowSorter().convertRowIndexToModel(table_links.getSelectedRow());
-                Link link = osmNetworkListener.getScenario().getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
-                if (osmNetworkListener.getLink2Segments().containsKey(link)) {
-                    List<WaySegment> segments = osmNetworkListener.getLink2Segments().get(link);
-                    currentDataSet.setHighlightedWaySegments(segments);
-                    Collection<OsmPrimitive> zoom = new ArrayList<>();
-                    if (!segments.isEmpty()) {
-                        zoom.add(segments.get(0).way);
-                        AutoScaleAction.zoomTo(zoom);
-                        Main.map.mapView.repaint();
+                if (table_links.getSelectedRow() != -1) {
+                    int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
+                    Link link = osmNetworkListener.getScenario().getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
+                    if (osmNetworkListener.getLink2Segments().containsKey(link)) {
+                        List<WaySegment> segments = osmNetworkListener.getLink2Segments().get(link);
+                        currentDataSet.setHighlightedWaySegments(segments);
                     }
                 }
                 Main.map.mapView.repaint();

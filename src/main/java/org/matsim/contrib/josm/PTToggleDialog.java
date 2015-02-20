@@ -183,10 +183,10 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		private final String[] columnNames = { "route id", "mode", "#stops",
 				"#links" };
 
-		private Map<Integer, TransitRoute> routes;
+		private List<TransitRoute> routes;
 
 		MATSimTableModel_pt() {
-			this.routes = new HashMap<>();
+			this.routes = new ArrayList<>();
 			DataSet.addSelectionListener(this);
 		}
 
@@ -260,11 +260,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
                             }
                         }
                     }
-                    int i = 0;
-                    for (TransitRoute uniqueRoute: uniqueRoutes) {
-                        routes.put(i, uniqueRoute);
-                        i++;
-                    }
+                    routes.addAll(uniqueRoutes);
                 }
             }
 			fireTableDataChanged();
@@ -277,12 +273,11 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
                 currentDataSet.clearHighlightedWaySegments();
                 int selectedRow = table_pt.getSelectedRow();
                 if (selectedRow != -1) {
-                    Long id = Long.parseLong(routes.get(selectedRow).getId().toString());
+                    Long id = Long.parseLong(routes.get(table_pt.convertRowIndexToModel(selectedRow)).getId().toString());
                     Relation route = (Relation) currentDataSet.getPrimitiveById(id, OsmPrimitiveType.RELATION);
                     for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
                         primitive.setHighlighted(true);
                     }
-                    AutoScaleAction.zoomTo(Collections.singleton((OsmPrimitive)route));
                 }
                 Main.map.mapView.repaint();
             }
