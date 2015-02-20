@@ -17,6 +17,7 @@ import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.util.HighlightHelper;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -185,6 +186,8 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
 		private List<TransitRoute> routes;
 
+        private HighlightHelper highlightHelper = new HighlightHelper();
+
 		MATSimTableModel_pt() {
 			this.routes = new ArrayList<>();
 			DataSet.addSelectionListener(this);
@@ -250,8 +253,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             if (osmNetworkListener != null) {
                 DataSet currentDataSet = Main.main.getCurrentDataSet();
                 if (currentDataSet != null) {
-                    currentDataSet.clearHighlightedWaySegments();
-                    currentDataSet.clearHighlightedVirtualNodes();
                     Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
                     for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
                         for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
@@ -270,14 +271,13 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		public void valueChanged(ListSelectionEvent e) {
             DataSet currentDataSet = Main.main.getCurrentDataSet();
             if (currentDataSet != null && !e.getValueIsAdjusting()) {
+                highlightHelper.clear();
                 currentDataSet.clearHighlightedWaySegments();
                 int selectedRow = table_pt.getSelectedRow();
                 if (selectedRow != -1) {
                     Long id = Long.parseLong(routes.get(table_pt.convertRowIndexToModel(selectedRow)).getId().toString());
                     Relation route = (Relation) currentDataSet.getPrimitiveById(id, OsmPrimitiveType.RELATION);
-                    for (OsmPrimitive primitive: route.getMemberPrimitivesList()) {
-                        primitive.setHighlighted(true);
-                    }
+                    highlightHelper.highlight(route.getMemberPrimitivesList());
                 }
                 Main.map.mapView.repaint();
             }
