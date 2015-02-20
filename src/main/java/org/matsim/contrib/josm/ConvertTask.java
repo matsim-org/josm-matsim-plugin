@@ -45,7 +45,7 @@ class ConvertTask extends PleaseWaitRunnable {
 	@Override
 	protected void realRun() throws SAXException, IOException,
 			OsmTransferException {
-		
+		this.converter.run();
     }
 
 	/**
