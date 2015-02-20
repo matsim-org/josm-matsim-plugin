@@ -7,6 +7,7 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
@@ -92,8 +93,10 @@ class ConvertTask extends PleaseWaitRunnable {
 	@Override
 	protected void finish() {
 		if (newLayer != null) {
-			Main.main.addLayer(newLayer);
-			Main.map.mapView.setActiveLayer(newLayer);
+            // Do not zoom to full layer extent, but leave the view port where it is.
+            // (Perhaps I want to look at the particular are I am viewing right now.)
+            ProjectionBounds projectionBounds = null;
+			Main.main.addLayer(newLayer, projectionBounds);
 		}
 	}
 

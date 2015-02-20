@@ -1,7 +1,6 @@
 package org.matsim.contrib.josm;
 
 import org.openstreetmap.josm.actions.JosmAction;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import java.awt.event.ActionEvent;
@@ -39,7 +38,7 @@ class ConvertAction extends JosmAction {
 
     @Override
     protected void updateEnabledState() {
-        setEnabled(getEditLayer() instanceof OsmDataLayer
+        setEnabled(getEditLayer() != null
                 && !(getEditLayer() instanceof MATSimLayer));
     }
 }
