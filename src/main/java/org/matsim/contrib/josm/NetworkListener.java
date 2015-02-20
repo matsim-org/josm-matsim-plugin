@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm;
 
-import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -23,8 +22,6 @@ import java.util.*;
  * 
  */
 class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
-
-	private final Logger log = Logger.getLogger(NetworkListener.class);
 
 	private final Scenario scenario;
 
@@ -63,7 +60,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
 		this.relation2Route = relation2Route;
-		log.debug("Listener initialized");
 	}
 
     void visitAll() {
@@ -82,7 +78,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
     @Override
 	public void dataChanged(DataChangedEvent dataChangedEvent) {
-		log.debug("Data changed. ");
         visitAll();
         removeEmptyLines();
         fireNotifyDataChanged();
@@ -91,7 +86,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	@Override
 	// convert all referred elements of the moved node
 	public void nodeMoved(NodeMovedEvent moved) {
-		log.debug("Node(s) moved.");
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(moved.getNode());
         fireNotifyDataChanged();
@@ -99,7 +93,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
     @Override
 	public void otherDatasetChange(AbstractDatasetChangedEvent arg0) {
-		log.debug("Other dataset change. " + arg0.getType());
 	}
 
 	@Override
@@ -107,7 +100,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	public void primitivesAdded(PrimitivesAddedEvent added) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         for (OsmPrimitive primitive : added.getPrimitives()) {
-			log.info("Primitive added. " + primitive.getType() + " " + primitive.getUniqueId());
 			if (primitive instanceof Way) {
                 aggregatePrimitivesVisitor.visit((Way) primitive);
 			} else if (primitive instanceof Relation) {
@@ -140,7 +132,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	@Override
 	// convert affected relation
 	public void relationMembersChanged(RelationMembersChangedEvent arg0) {
-		log.debug("Relation member changed " + arg0.getRelation().getUniqueId());
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(arg0.getRelation());
         removeEmptyLines();
@@ -167,9 +158,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	// convert affected elements and other connected elements
 	public void tagsChanged(TagsChangedEvent changed) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-        log.debug("Tags changed " + changed.getType() + " "
-				+ changed.getPrimitive().getType() + " "
-				+ changed.getPrimitive().getUniqueId());
 		for (OsmPrimitive primitive : changed.getPrimitives()) {
 			if (primitive instanceof Way) {
                 aggregatePrimitivesVisitor.visit((Way) primitive);
@@ -186,9 +174,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	// convert affected elements and other connected elements
 	public void wayNodesChanged(WayNodesChangedEvent changed) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-        log.debug("Way Nodes changed " + changed.getType() + " "
-				+ changed.getChangedWay().getType() + " "
-				+ changed.getChangedWay().getUniqueId());
         aggregatePrimitivesVisitor.visit(changed.getChangedWay());
         fireNotifyDataChanged();
 	}
@@ -220,8 +205,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         final Collection<OsmPrimitive> visited = new HashSet<>();
 
         void convertWay(Way way) {
-            log.debug("### Way " + way.getUniqueId() + " (" + way.getNodesCount()
-                    + " nodes) ###");
             List<Link> links = new ArrayList<>();
 
             if (way.getNodesCount() > 1 && (way.hasTag(NewConverter.TAG_HIGHWAY, OsmConvertDefaults.getWayDefaults().keySet())
@@ -233,19 +216,12 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     Node current = way.getNode(l);
                     if (l == 0 || l == way.getNodesCount() - 1 || Preferences.isKeepPaths()) {
                         nodeOrder.add(current);
-                        log.debug("--- Way " + way.getUniqueId()
-                                + ": dumped node " + l + " ("
-                                + current.getUniqueId() + ") ");
                         nodeOrderLog.append("(").append(l).append(") ");
                     } else if (current.equals(way.getNode(way.getNodesCount() - 1))) {
                         nodeOrder.add(current); // add node twice if it occurs
                                                 // twice in a loop so length
                                                 // to this node is not
                                                 // calculated wrong
-                        log.debug("--- Way " + way.getUniqueId()
-                                + ": dumped node " + l + " ("
-                                + current.getUniqueId()
-                                + ") beginning of loop / closed area ");
                         nodeOrderLog.append("(").append(l).append(") ");
                     } else if (current.isConnectionNode()) {
                         for (OsmPrimitive prim : current.getReferrers()) {
@@ -253,10 +229,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                                 if (prim.hasKey(NewConverter.TAG_HIGHWAY)
                                         || NewConverter.meetsMatsimReq(prim.getKeys())) {
                                     nodeOrder.add(current);
-                                    log.debug("--- Way " + way.getUniqueId()
-                                            + ": dumped node " + l + " ("
-                                            + current.getUniqueId()
-                                            + ") way intersection");
                                     nodeOrderLog.append("(").append(l).append(") ");
                                     break;
                                 }
@@ -270,26 +242,12 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                                     && prim.hasTag("type", "route")
                                     && !nodeOrder.contains(current)) {
                                 nodeOrder.add(current);
-                                log.debug("--- Way " + way.getUniqueId()
-                                        + ": dumped node " + l + " ("
-                                        + current.getUniqueId()
-                                        + ") stop position "
-                                        + current.getLocalName());
                             }
                         }
                     }
                 }
-
-                log.debug("--- Way " + way.getUniqueId()
-                        + ": order of kept nodes [ " + nodeOrderLog.toString()
-                        + "]");
-
                 for (Node node : nodeOrder) {
                     NewConverter.checkNode(scenario.getNetwork(), node);
-
-                    log.debug("--- Way " + way.getUniqueId()
-                            + ": created / updated MATSim node "
-                            + node.getUniqueId());
                 }
 
                 Double capacity = 0.;
@@ -348,9 +306,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                             } else if ("no".equals(onewayTag)) {
                                 oneway = false; // may be used to overwrite
                                                 // defaults
-                            } else {
-                                log.warn("--- Way " + way.getUniqueId()
-                                        + ": could not parse oneway tag");
                             }
                         }
 
@@ -374,8 +329,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                                 // km/h to
                                 // m/s
                             } catch (NumberFormatException e) {
-                                log.warn("--- Way " + way.getUniqueId()
-                                        + ": could not parse maxspeed tag");
                             }
                         }
 
@@ -388,8 +341,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                                     nofLanes = tmp;
                                 }
                             } catch (Exception e) {
-                                log.warn("--- Way " + way.getUniqueId()
-                                        + ": could not parse lanes tag");
                             }
                         }
                         // create the link(s)
@@ -402,8 +353,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     if (capacityTag != null) {
                         capacity = capacityTag;
                     } else {
-                        log.warn("--- Way " + way.getUniqueId()
-                                + ": could not parse MATSim capacity tag");
                     }
                 }
                 if (way.getKeys().containsKey("freespeed")) {
@@ -412,8 +361,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     if (freespeedTag != null) {
                         freespeed = freespeedTag;
                     } else {
-                        log.warn("--- Way " + way.getUniqueId()
-                                + ": could not parse MATSim freespeed tag");
                     }
                 }
                 if (way.getKeys().containsKey("permlanes")) {
@@ -422,8 +369,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     if (permlanesTag != null) {
                         nofLanes = permlanesTag;
                     } else {
-                        log.warn("--- Way " + way.getUniqueId()
-                                + ": could not parse MATSim permlanes tag");
                     }
                 }
 
@@ -434,8 +379,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                         taggedLength = temp;
 
                     } else {
-                        log.warn("--- Way " + way.getUniqueId()
-                                + ": could not parse MATSim length tag");
                     }
                 }
 
@@ -459,9 +402,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                                 .greatCircleDistance(
                                         way.getNode(m + 1).getCoor());
                     }
-                    log.debug("--- Way " + way.getUniqueId()
-                            + ": length between " + fromIdx + " and " + toIdx
-                            + ": " + length);
                     if (taggedLength != null) {
                         if (length != 0.0) {
                             length = taggedLength * length / way.getLength();
@@ -479,21 +419,16 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     increment++;
                 }
             }
-
-            log.debug("### Finished Way " + way.getUniqueId() + ". " + links.size()
-                    + " links resulted. ###");
             way2Links.put(way, links);
         }
 
         @Override
         public void visit(Node node) {
             if (visited.add(node)) {
-                log.debug("Visiting node " + node.getUniqueId() + " " + node.getName());
                 if (node.isDeleted()) {
                     Id<org.matsim.api.core.v01.network.Node> id = Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
                     if (scenario.getNetwork().getNodes().containsKey(id)) {
                         NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getNodes().get(id);
-                        log.debug("MATSim Node removed. " + matsimNode.getOrigId());
                         scenario.getNetwork().removeNode(matsimNode.getId());
                     }
                 }
@@ -518,7 +453,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     for (Link link : oldLinks) {
                         Link removedLink = scenario.getNetwork().removeLink(link.getId());
                         link2Segments.remove(removedLink);
-                        log.debug(removedLink + " removed.");
                     }
                 }
                 if (!way.isDeleted()) {
@@ -527,7 +461,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 for (OsmPrimitive primitive : way.getReferrers()) {
                     primitive.accept(this);
                 }
-                log.info("Number of links: " + scenario.getNetwork().getLinks().size());
             }
 
         }
@@ -593,7 +526,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         private void createTransitRoute(Relation relation) {
             RelationSorter sorter = new RelationSorter();
             sorter.sortMembers(relation.getMembers());
-            log.debug("converting route relation" + relation.getUniqueId() + " " + relation.getName());
             ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
             TransitSchedule schedule = scenario.getTransitSchedule();
             TransitScheduleFactory builder = schedule.getFactory();
