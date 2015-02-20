@@ -207,7 +207,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         void convertWay(Way way) {
             List<Link> links = new ArrayList<>();
 
-            if (way.getNodesCount() > 1 && (way.hasTag(NewConverter.TAG_HIGHWAY, OsmConvertDefaults.getWayDefaults().keySet())
+            if (way.isUsable() && way.getNodesCount() > 1 && (way.hasTag(NewConverter.TAG_HIGHWAY, OsmConvertDefaults.getWayDefaults().keySet())
                     || NewConverter.meetsMatsimReq(way.getKeys())
                     || (way.hasTag(NewConverter.TAG_RAILWAY, OsmConvertDefaults.getWayDefaults().keySet())))) {
                 List<Node> nodeOrder = new ArrayList<>();
