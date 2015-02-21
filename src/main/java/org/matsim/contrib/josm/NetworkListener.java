@@ -587,6 +587,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	                    	}
 	                    }
                 	} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
+                		//reverse order of links if backwards
+                		Collections.reverse(wayLinks);
                 		 for (Link link : wayLinks) {
  	                    	if (link.getId().toString().endsWith("_r")) {
  	                    		links.add(link.getId());
