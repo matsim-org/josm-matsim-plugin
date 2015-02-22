@@ -7,7 +7,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.actions.AutoScaleAction;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
@@ -54,6 +53,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             notifyDataChanged();
         }
     };
+    private final MATSimTableModel_pt tableModel_pt;
 
     @Override
     public void showNotify() {
@@ -81,7 +81,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		table_pt.setDefaultRenderer(Object.class, new MATSimTableRenderer());
 		table_pt.setAutoCreateRowSorter(true);
 		table_pt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        MATSimTableModel_pt tableModel_pt = new MATSimTableModel_pt();
+        tableModel_pt = new MATSimTableModel_pt();
         table_pt.setModel(tableModel_pt);
         table_pt.getSelectionModel().addListSelectionListener(tableModel_pt);
 
@@ -124,6 +124,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         } else {
             setTitle(tr("No MATSim transit schedule active"));
         }
+        tableModel_pt.selectionChanged();
     }
 
     private int countStopFacilities(Scenario scenario) {
@@ -179,7 +180,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
     // handles the underlying data of the routes table
 	private class MATSimTableModel_pt extends AbstractTableModel implements
-			SelectionChangedListener, ListSelectionListener {
+			ListSelectionListener {
 
 		private final String[] columnNames = { "route id", "mode", "#stops",
 				"#links" };
@@ -190,7 +191,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
 		MATSimTableModel_pt() {
 			this.routes = new ArrayList<>();
-			DataSet.addSelectionListener(this);
 		}
 
 		@Override
@@ -245,10 +245,9 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 			throw new RuntimeException();
 		}
 
-		@Override
 		// change shown route information of selected elements when selection
 		// changes
-		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
+		void selectionChanged() {
             this.routes.clear();
             if (osmNetworkListener != null) {
                 DataSet currentDataSet = Main.main.getCurrentDataSet();
