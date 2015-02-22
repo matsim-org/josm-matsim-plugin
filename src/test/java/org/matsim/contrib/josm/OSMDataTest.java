@@ -45,8 +45,8 @@ public class OSMDataTest {
 	    public void init() {
 	        new JOSMFixture(folder.getRoot().getPath()).init(false);
             OsmConvertDefaults.load();
-	        URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm");
-	        URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm");
+	        URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
+	        URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
 		       
 	        InputStream incompleteWayInput = null;
 	        InputStream busRouteInput = null; 
