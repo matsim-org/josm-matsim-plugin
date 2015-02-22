@@ -9,8 +9,10 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.openstreetmap.josm.Main;
@@ -95,7 +97,21 @@ public class ImportTaskTest {
             Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), layer.getScenario().getTransitSchedule().getFacilities().size());
             Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), layer.getScenario().getTransitSchedule().getTransitLines().size());
             Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(layer.getScenario().getTransitSchedule()));
+            Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(layer.getScenario().getTransitSchedule()));
         }
+    }
+
+    private int countLinksInRoutes(TransitSchedule transitSchedule) {
+        int result = 0;
+        for (TransitLine transitLine : transitSchedule.getTransitLines().values()) {
+            for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+                NetworkRoute route = transitRoute.getRoute();
+                if (route != null) {
+                    result += route.getLinkIds().size();
+                }
+            }
+        }
+        return result;
     }
 
     private long countRoutes(TransitSchedule transitSchedule) {
