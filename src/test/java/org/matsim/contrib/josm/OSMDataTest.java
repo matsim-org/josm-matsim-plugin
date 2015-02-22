@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -41,6 +42,7 @@ public class OSMDataTest {
 	    @Before
 	    public void init() {
 	        new JOSMFixture(folder.getRoot().getPath()).init(false);
+            OsmConvertDefaults.load();
 	        URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm");
 	        URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm");
 		       
@@ -62,7 +64,10 @@ public class OSMDataTest {
 			}
 	    	incompleteWayLayer = new OsmDataLayer(incompleteWayData, "test", null);
 	    	busRouteLayer = new OsmDataLayer(busRouteData, "test", null);
-	    	busRouteListener = new NetworkListener(busRouteData, ScenarioUtils.createScenario(ConfigUtils.createConfig()), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            Config config = ConfigUtils.createConfig();
+            config.scenario().setUseTransit(true);
+            config.scenario().setUseVehicles(true);
+            busRouteListener = new NetworkListener(busRouteData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             busRouteListener.visitAll();
 	    
 	    }
