@@ -7,11 +7,13 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
+import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
+import org.openstreetmap.josm.data.osm.visitor.Visitor;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.RelationSorter;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
@@ -66,7 +68,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	}
 
     void visitAll() {
-        MyAggregatePrimitivesVisitor visitor = new MyAggregatePrimitivesVisitor();
+        ConvertVisitor visitor = new ConvertVisitor();
         for (Node node : data.getNodes()) {
             visitor.visit(node);
         }
@@ -91,7 +93,59 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	public void nodeMoved(NodeMovedEvent moved) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(moved.getNode());
+        aggregatePrimitivesVisitor.finished();
         fireNotifyDataChanged();
+    }
+
+    class MyAggregatePrimitivesVisitor implements Visitor {
+
+        Set<OsmPrimitive> primitives = new HashSet<>();
+
+        @Override
+        public void visit(Node node) {
+            primitives.add(node);
+            // When a Node was touched, we need to look at ways (because their length may change)
+            // and at relations (because it may be a transit stop)
+            // which contain it.
+            for (OsmPrimitive primitive : node.getReferrers()) {
+                primitive.accept(this);
+            }
+        }
+
+        @Override
+        public void visit(Way way) {
+            // When a Way is touched, we need to look at relations (because they may
+            // be transit routes which have changed now).
+            // I probably have to look at the nodes (because they may not be needed anymore),
+            // but then I would probably traverse the entire net.
+            for (OsmPrimitive primitive : way.getReferrers()) {
+                primitive.accept(this);
+            }
+        }
+
+        @Override
+        public void visit(Relation relation) {
+
+        }
+
+        @Override
+        public void visit(Changeset changeset) {
+
+        }
+
+        void finished() {
+            ConvertVisitor visitor = new ConvertVisitor();
+            for (Node node : data.getNodes()) {
+                visitor.visit(node);
+            }
+            for (Way way : data.getWays()) {
+                visitor.visit(way);
+            }
+            for (Relation relation : data.getRelations()) {
+                visitor.visit(relation);
+            }
+        }
+
     }
 
     @Override
@@ -111,6 +165,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
 			}
 		}
+        aggregatePrimitivesVisitor.finished();
         fireNotifyDataChanged();
 	}
 
@@ -128,6 +183,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
+        aggregatePrimitivesVisitor.finished();
         removeEmptyLines();
         fireNotifyDataChanged();
     }
@@ -137,6 +193,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	public void relationMembersChanged(RelationMembersChangedEvent arg0) {
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(arg0.getRelation());
+        aggregatePrimitivesVisitor.finished();
         removeEmptyLines();
         fireNotifyDataChanged();
     }
@@ -170,13 +227,14 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 aggregatePrimitivesVisitor.visit((Relation) primitive);
 			}
 		}
+        aggregatePrimitivesVisitor.finished();
         fireNotifyDataChanged();
     }
 
 	@Override
 	// convert affected elements and other connected elements
 	public void wayNodesChanged(WayNodesChangedEvent changed) {
-        MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
+        ConvertVisitor aggregatePrimitivesVisitor = new ConvertVisitor();
         aggregatePrimitivesVisitor.visit(changed.getChangedWay());
         fireNotifyDataChanged();
 	}
@@ -203,7 +261,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         return scenario;
     }
 
-    class MyAggregatePrimitivesVisitor extends AbstractVisitor {
+    class ConvertVisitor extends AbstractVisitor {
 
         final Collection<OsmPrimitive> visited = new HashSet<>();
 
@@ -435,21 +493,11 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                         scenario.getNetwork().removeNode(matsimNode.getId());
                     }
                 }
-                // When a Node was touched, we need to look at ways (because their length may change)
-                // and at relations (because it may be a transit stop)
-                // which contain it.
-                for (OsmPrimitive primitive : node.getReferrers()) {
-                    primitive.accept(this);
-                }
             }
         }
 
         @Override
         public void visit(Way way) {
-            // When a Way is touched, we need to look at relations (because they may
-            // be transit routes which have changed now).
-            // I probably have to look at the nodes (because they may not be needed anymore),
-            // but then I would probably traverse the entire net.
             if (visited.add(way)) {
                 List<Link> oldLinks = way2Links.remove(way);
                 if (oldLinks != null) {
@@ -461,11 +509,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 if (!way.isDeleted()) {
                     convertWay(way);
                 }
-                for (OsmPrimitive primitive : way.getReferrers()) {
-                    primitive.accept(this);
-                }
             }
-
         }
 
         @Override
@@ -551,6 +595,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             }
             NetworkRoute networkRoute = createNetworkRoute(relation);
             TransitRoute tRoute = builder.createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
+            ((TransitRouteImpl) tRoute).setLineRouteName(relation.get("ref"));
             tLine.addRoute(tRoute);
             relation2Route.put(relation, tRoute);
         }
@@ -570,33 +615,35 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         }
 
         private NetworkRoute createNetworkRoute(Relation relation) {
-        	
-        	WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-    		List<WayConnectionType> connections = calc.updateLinks(relation
-    				.getMembers());
-
             List<Id<Link>> links = new ArrayList<>();
-            for (Way way : relation.getMemberPrimitives(Way.class)) {
-                List<Link> wayLinks = way2Links.get(way);
-                if (wayLinks != null) {
-                	int i = relation.getMemberPrimitivesList().indexOf(way);
-                	if (connections.get(i).direction.equals(Direction.FORWARD)) {
-	                    for (Link link : wayLinks) {
-	                    	if (!link.getId().toString().endsWith("_r")) {
-	                    		links.add(link.getId());
-	                    	}
-	                    }
-                	} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
-                		//reverse order of links if backwards
-                		Collections.reverse(wayLinks);
-                		 for (Link link : wayLinks) {
- 	                    	if (link.getId().toString().endsWith("_r")) {
- 	                    		links.add(link.getId());
- 	                    	}
- 	                    }
-                	}
+            if (!relation.getMembers().isEmpty()) { // WayConnectionTypeCalculator will crash otherwise
+                WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+                List<WayConnectionType> connections = calc.updateLinks(relation
+                        .getMembers());
+
+                for (Way way : relation.getMemberPrimitives(Way.class)) {
+                    List<Link> wayLinks = way2Links.get(way);
+                    if (wayLinks != null) {
+                        int i = relation.getMemberPrimitivesList().indexOf(way);
+                        if (connections.get(i).direction.equals(Direction.FORWARD)) {
+                            for (Link link : wayLinks) {
+                                if (!link.getId().toString().endsWith("_r")) {
+                                    links.add(link.getId());
+                                }
+                            }
+                        } else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
+                            //reverse order of links if backwards
+                            Collections.reverse(wayLinks);
+                            for (Link link : wayLinks) {
+                                if (link.getId().toString().endsWith("_r")) {
+                                    links.add(link.getId());
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
             if (links.isEmpty()) {
                 return null;
             } else {
