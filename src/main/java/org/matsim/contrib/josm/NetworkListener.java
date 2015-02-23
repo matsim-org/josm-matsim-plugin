@@ -7,6 +7,7 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
+import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
@@ -594,6 +595,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             }
             NetworkRoute networkRoute = createNetworkRoute(relation);
             TransitRoute tRoute = builder.createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
+            ((TransitRouteImpl) tRoute).setLineRouteName(relation.get("ref"));
             tLine.addRoute(tRoute);
             relation2Route.put(relation, tRoute);
         }

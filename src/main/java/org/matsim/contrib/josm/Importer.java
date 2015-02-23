@@ -12,6 +12,7 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -83,6 +84,13 @@ class Importer {
         }
         for (Link link : sourceScenario.getNetwork().getLinks().values()) {
             ((LinkImpl) link).setOrigId(link.getId().toString());
+        }
+        if (sourceScenario.getConfig().scenario().isUseTransit()) {
+            for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+                for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+                    ((TransitRouteImpl) transitRoute).setLineRouteName(transitRoute.getId().toString());
+                }
+            }
         }
     }
 
@@ -252,7 +260,7 @@ class Importer {
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");
                 routeRelation.put("route", route.getTransportMode());
-                routeRelation.put("ref", route.getId().toString());
+                routeRelation.put("ref", ((TransitRouteImpl) route).getLineRouteName());
                 dataSet.addPrimitive(routeRelation);
                 lineRelation.addMember(new RelationMember(null, routeRelation));
                 relation2Route.put(routeRelation, newRoute);
