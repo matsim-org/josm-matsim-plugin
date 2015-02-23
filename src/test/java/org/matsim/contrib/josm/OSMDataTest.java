@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -21,6 +22,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
@@ -45,6 +47,7 @@ public class OSMDataTest {
 	    public void init() {
 	        new JOSMFixture(folder.getRoot().getPath()).init(false);
             OsmConvertDefaults.load();
+            Main.pref.put("matsim_supportTransit", true);
 	        URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 	        URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
 		       
@@ -85,19 +88,20 @@ public class OSMDataTest {
 	    
 	    @Test
 	    public void testBusRoute() throws InterruptedException, ExecutionException, IOException, IllegalDataException {
-		        Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getLinks().size());
-	            Assert.assertEquals(6,busRouteListener.getScenario().getNetwork().getNodes().size());
-	            Assert.assertEquals(4,busRouteListener.getScenario().getTransitSchedule().getFacilities().size());
-	            Assert.assertEquals(1,busRouteListener.getScenario().getTransitSchedule().getTransitLines().size());
-	            Assert.assertEquals(2,countRoutes(busRouteListener.getScenario().getTransitSchedule()));
-		    	for (TransitRoute route: busRouteListener.getScenario().getTransitSchedule().getTransitLines().values().iterator().next().getRoutes().values()) {
-		    		Assert.assertEquals(4, route.getStops().size());
-		    		Assert.assertEquals(3, route.getRoute().getLinkIds().size());
-		    	}
-		    	LayerConverter converter =  new LayerConverter(busRouteLayer);
-		    	converter.run();
-	        
-	    }
+            Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getLinks().size());
+            Assert.assertEquals(6,busRouteListener.getScenario().getNetwork().getNodes().size());
+            Assert.assertEquals(4,busRouteListener.getScenario().getTransitSchedule().getFacilities().size());
+            Assert.assertEquals(1,busRouteListener.getScenario().getTransitSchedule().getTransitLines().size());
+            Assert.assertEquals(2,countRoutes(busRouteListener.getScenario().getTransitSchedule()));
+            for (TransitRoute route: busRouteListener.getScenario().getTransitSchedule().getTransitLines().values().iterator().next().getRoutes().values()) {
+                Assert.assertEquals(4, route.getStops().size());
+                Assert.assertEquals(3, route.getRoute().getLinkIds().size());
+            }
+            LayerConverter converter =  new LayerConverter(busRouteLayer);
+            converter.run();
+            Scenario targetScenario = TransitScheduleExporter.convertIds(converter.getMatsimLayer().getScenario());
+            Assert.assertEquals("busRoute", targetScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
+        }
 
     private long countRoutes(TransitSchedule transitSchedule) {
         int result = 0;
