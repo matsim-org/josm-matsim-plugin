@@ -9,6 +9,7 @@ import org.matsim.core.network.LinkImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -26,54 +27,45 @@ class TransitScheduleExporter {
     }
 
     void run(MATSimLayer layer) {
+        Scenario targetScenario = convertIds(layer.getScenario());
+        if (targetScenario.getTransitSchedule() != null) {
+            new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(scheduleFile.getPath());
+        }
+    }
+
+    static Scenario convertIds(Scenario layerScenario) {
         Config config = ConfigUtils.createConfig();
-        Scenario sc = ScenarioUtils.createScenario(config);
+        Scenario targetScenario = ScenarioUtils.createScenario(config);
         config.scenario().setUseTransit(true);
         config.scenario().setUseVehicles(true);
-        TransitSchedule schedule = sc.getTransitSchedule();
-        if (layer.getScenario().getTransitSchedule() != null) {
-            TransitSchedule oldSchedule = layer
-                    .getScenario().getTransitSchedule();
-
+        if (layerScenario.getTransitSchedule() != null) {
+            TransitSchedule oldSchedule = layerScenario.getTransitSchedule();
+            TransitSchedule newSchedule = targetScenario.getTransitSchedule();
             for (TransitStopFacility stop : oldSchedule.getFacilities()
                     .values()) {
-            	Id<TransitStopFacility> id;
-            	Relation stopRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
-            	if (stopRelation.hasKey("id")) {
-            		id = Id.create(stopRelation.get("id"), TransitStopFacility.class);
-            	} else {
-            		id = stop.getId();
-            	}
-                TransitStopFacility newStop = schedule.getFactory()
+            	Id<TransitStopFacility> id = Id.create(stop.getName(), TransitStopFacility.class);
+                TransitStopFacility newStop = newSchedule.getFactory()
                         .createTransitStopFacility(
                                 id, stop.getCoord(),
                                 stop.getIsBlockingLane());
 
                 Id<Link> linkId = stop.getLinkId();
                 if (linkId != null) {
-                    Link oldLink = layer.getScenario().getNetwork().getLinks().get(linkId);
+                    Link oldLink = layerScenario.getNetwork().getLinks().get(linkId);
                     Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
                     newStop.setLinkId(newLinkId);
                 }
-                schedule.addStopFacility(newStop);
+                newSchedule.addStopFacility(newStop);
             }
 
-            for (TransitLine line : layer
-                    .getScenario().getTransitSchedule()
+            for (TransitLine line : layerScenario.getTransitSchedule()
                     .getTransitLines().values()) {
 
-                Id<TransitLine> lineId;
-                Relation lineRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(line.getId().toString()), OsmPrimitiveType.RELATION);
-                
-                if (lineRelation.hasKey("ref")) {
-                	lineId = Id.create(lineRelation.get("ref"), TransitLine.class);
-                } else {
-                	lineId = line.getId();
-                }
-                TransitLine newTLine = schedule.getFactory().createTransitLine(
-                            lineId);
-                    schedule.addTransitLine(newTLine);
-               
+                Id<TransitLine> lineId = Id.create(line.getName(), TransitLine.class);
+                TransitLine newTLine = newSchedule.getFactory().createTransitLine(
+                        lineId);
+                    newSchedule.addTransitLine(newTLine);
+
 
                 for (TransitRoute route : line.getRoutes().values()) {
                     List<Id<Link>> links = new ArrayList<>();
@@ -81,20 +73,17 @@ class TransitScheduleExporter {
                     NetworkRoute newNetworkRoute;
                     if (networkRoute != null) {
                         Id<Link> startLinkId = Id
-                                .createLinkId(((LinkImpl) layer
-                                        .getScenario().getNetwork()
+                                .createLinkId(((LinkImpl) layerScenario.getNetwork()
                                         .getLinks()
                                         .get(networkRoute.getStartLinkId()))
                                         .getOrigId());
                         for (Id<Link> id : networkRoute.getLinkIds()) {
                             links.add(Id
-                                    .createLinkId(((LinkImpl) layer
-                                            .getScenario().getNetwork()
+                                    .createLinkId(((LinkImpl) layerScenario.getNetwork()
                                             .getLinks().get(id)).getOrigId()));
                         }
                         Id<Link> endLinkId = Id
-                                .createLinkId(((LinkImpl) layer
-                                        .getScenario().getNetwork()
+                                .createLinkId(((LinkImpl) layerScenario.getNetwork()
                                         .getLinks()
                                         .get(networkRoute.getEndLinkId()))
                                         .getOrigId());
@@ -106,36 +95,24 @@ class TransitScheduleExporter {
 
                     List<TransitRouteStop> newTRStops = new ArrayList<>();
                     for (TransitRouteStop tRStop : route.getStops()) {
-                    	Id<TransitStopFacility> stopId;
-                    	Relation stopRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(tRStop.getStopFacility().getId().toString()), OsmPrimitiveType.RELATION);
-                    	if (stopRelation.hasKey("id")) {
-                    		stopId = Id.create(stopRelation.get("id"), TransitStopFacility.class);
-                    	} else {
-                    		stopId = tRStop.getStopFacility().getId();
-                    	}
-                        newTRStops.add(schedule.getFactory()
+                    	Id<TransitStopFacility> stopId = Id.create(tRStop.getStopFacility().getName(), TransitStopFacility.class);
+
+                        newTRStops.add(newSchedule.getFactory()
                                 .createTransitRouteStop(
-                                        schedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
-                    }
-                    
-                    Id<TransitRoute> routeId;
-                    Relation routeRelation = (Relation) layer.data.getPrimitiveById(Long.parseLong(route.getId().toString()), OsmPrimitiveType.RELATION);
-                    if (routeRelation.hasKey("ref")) {
-                    	routeId = Id.create(routeRelation.get("ref"), TransitRoute.class);
-                    } else {
-                    	routeId = route.getId();
+                                        newSchedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
                     }
 
-                    TransitRoute newTRoute = schedule.getFactory()
+                    Id<TransitRoute> routeId = Id.create(((TransitRouteImpl) route).getLineRouteName(), TransitRoute.class);
+
+                    TransitRoute newTRoute = newSchedule.getFactory()
                             .createTransitRoute(routeId,
                                     newNetworkRoute, newTRStops,
                                     route.getTransportMode());
                     newTLine.addRoute(newTRoute);
                 }
             }
-            new TransitScheduleWriter(schedule).writeFile(scheduleFile.getPath());
         }
-
+        return targetScenario;
     }
 
 }

@@ -562,7 +562,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                         transitStopFacilityId,
                         new CoordImpl(platform.getEastNorth().getX(), platform.getEastNorth().getY()),
                         true);
-                stop.setName(platform.getName());
+                stop.setName(relation.get("id"));
                 if (link != null) {
                     stop.setLinkId(link.getId());
                 }
@@ -574,30 +574,37 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             RelationSorter sorter = new RelationSorter();
             sorter.sortMembers(relation.getMembers());
             ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
-            TransitSchedule schedule = scenario.getTransitSchedule();
-            TransitScheduleFactory builder = schedule.getFactory();
             for (RelationMember member : relation.getMembers()) {
                 if (member.isNode() && member.getMember().hasTag("public_transport", "platform")) {
                     TransitStopFacility facility = findFacilityForPlatform(member.getNode());
                     if (facility != null) {
-                        routeStops.add(builder.createTransitRouteStop(facility, 0, 0));
+                        routeStops.add(scenario.getTransitSchedule().getFactory().createTransitRouteStop(facility, 0, 0));
                     }
                 }
             }
             Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
-            Id<TransitLine> transitLineId = NewConverter.getTransitLineId(relation);
-            TransitLine tLine;
-            if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
-                tLine = builder.createTransitLine(transitLineId);
-                schedule.addTransitLine(tLine);
-            } else {
-                tLine = scenario.getTransitSchedule().getTransitLines().get(transitLineId);
-            }
+            TransitLine tLine = getTransitLine(relation);
             NetworkRoute networkRoute = createNetworkRoute(relation);
-            TransitRoute tRoute = builder.createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
+            TransitRoute tRoute = scenario.getTransitSchedule().getFactory().createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
             ((TransitRouteImpl) tRoute).setLineRouteName(relation.get("ref"));
             tLine.addRoute(tRoute);
             relation2Route.put(relation, tRoute);
+        }
+
+        private TransitLine getTransitLine(Relation relation) {
+            Id<TransitLine> transitLineId = NewConverter.getTransitLineId(relation);
+            TransitLine tLine;
+            if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
+                tLine = scenario.getTransitSchedule().getFactory().createTransitLine(transitLineId);
+                scenario.getTransitSchedule().addTransitLine(tLine);
+            } else {
+                tLine = scenario.getTransitSchedule().getTransitLines().get(transitLineId);
+            }
+            Relation maybeLineRelation = ((Relation) data.getPrimitiveById(Long.parseLong(transitLineId.toString()), OsmPrimitiveType.RELATION));
+            if (maybeLineRelation != null) {
+                tLine.setName(maybeLineRelation.get("ref"));
+            }
+            return tLine;
         }
 
         TransitStopFacility findFacilityForPlatform(Node node) {

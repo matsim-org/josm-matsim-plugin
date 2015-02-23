@@ -78,6 +78,7 @@ class Importer {
         );
     }
 
+    // Abuse fields in MATSim data structures to hold the "real" object ids.
     private void copyIdsToOrigIds(Scenario sourceScenario) {
         for (Node node : sourceScenario.getNetwork().getNodes().values()) {
             ((NodeImpl) node).setOrigId(node.getId().toString());
@@ -87,9 +88,13 @@ class Importer {
         }
         if (sourceScenario.getConfig().scenario().isUseTransit()) {
             for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+                transitLine.setName(transitLine.getId().toString());
                 for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
                     ((TransitRouteImpl) transitRoute).setLineRouteName(transitRoute.getId().toString());
                 }
+            }
+            for (TransitStopFacility transitStopFacility : sourceScenario.getTransitSchedule().getFacilities().values()) {
+                transitStopFacility.setName(transitStopFacility.getId().toString());
             }
         }
     }
@@ -189,13 +194,12 @@ class Importer {
             LatLon latLon = projection.eastNorth2latlon(eastNorth);
             org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
-            platform.put("name", stop.getName());
             dataSet.addPrimitive(platform);
             Way newWay;
             Id<Link> linkId = null;
             Relation relation = new Relation();
             relation.put("matsim", "stop_relation");
-            relation.put("id", stop.getId().toString());
+            relation.put("id", stop.getName());
             relation.addMember(new RelationMember("platform", platform));
             dataSet.addPrimitive(relation);
             if(stop.getLinkId() != null) {
@@ -217,8 +221,9 @@ class Importer {
         for (TransitLine line : sourceScenario.getTransitSchedule().getTransitLines().values()) {
             Relation lineRelation = new Relation();
             lineRelation.put("type", "route_master");
-            lineRelation.put("ref", line.getId().toString());
+            lineRelation.put("ref", line.getName());
             TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(Id.create(lineRelation.getUniqueId(), TransitLine.class));
+            newLine.setName(line.getName());
             for (TransitRoute route : line.getRoutes().values()) {
                 Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
@@ -257,6 +262,7 @@ class Importer {
                         .getFactory()
                         .createTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class), newNetworkRoute,
                                 newTransitStops, route.getTransportMode());
+                ((TransitRouteImpl) newRoute).setLineRouteName(((TransitRouteImpl) route).getLineRouteName());
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");
                 routeRelation.put("route", route.getTransportMode());
