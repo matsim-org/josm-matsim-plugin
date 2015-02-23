@@ -4,6 +4,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.Main;
@@ -23,6 +24,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -226,15 +228,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			TransitRoute route = routes.get(rowIndex);
 			if (columnIndex == 0) {
-				DataSet currentDataSet = Main.main.getCurrentDataSet();
-				if (currentDataSet != null) {
-					Relation routeRelation = (Relation) currentDataSet.getPrimitiveById(Long.parseLong(route.getId().toString()), OsmPrimitiveType.RELATION);
-					if (routeRelation.hasKey("ref")) {
-						return routeRelation.get("ref");
-					} else {
-						return route.getId().toString();
-					}
-				}
+				return ((TransitRouteImpl)route).getLineRouteName();
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {
