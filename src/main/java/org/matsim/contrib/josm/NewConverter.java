@@ -26,63 +26,53 @@ class NewConverter {
 	final static String TAG_JUNCTION = "junction";
 	final static String TAG_ONEWAY = "oneway";
 
-    static Set<String> determineModes(Way way) {
-        Set<String> modes = new HashSet<>();
-        if (way.getKeys().containsKey("modes")) {
-            Set<String> tempModes = new HashSet<>();
-            String tempArray[] = way.getKeys().get("modes").split(";");
-            Collections.addAll(tempModes, tempArray);
-            if (tempModes.size() != 0) {
-                modes.clear();
-                modes.addAll(tempModes);
-            }
-        }
-        if (modes.isEmpty()) {
-            if (way.getKeys().containsKey(TAG_RAILWAY)) {
-                modes.add(TransportMode.pt);
-            }
-            if (way.getKeys().containsKey(TAG_HIGHWAY)) {
-                modes.add(TransportMode.car);
-            }
-        }
-        return modes;
-    }
+	static Set<String> determineModes(Way way) {
+		Set<String> modes = new HashSet<>();
+		if (way.getKeys().containsKey("modes")) {
+			Set<String> tempModes = new HashSet<>();
+			String tempArray[] = way.getKeys().get("modes").split(";");
+			Collections.addAll(tempModes, tempArray);
+			if (tempModes.size() != 0) {
+				modes.clear();
+				modes.addAll(tempModes);
+			}
+		}
+		if (modes.isEmpty()) {
+			if (way.getKeys().containsKey(TAG_RAILWAY)) {
+				modes.add(TransportMode.pt);
+			}
+			if (way.getKeys().containsKey(TAG_HIGHWAY)) {
+				modes.add(TransportMode.car);
+			}
+		}
+		return modes;
+	}
 
 	// create or update matsim node
-	static void checkNode(Network network, Node node) {
+	static void createNode(Network network, Node node) {
 		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(
 				node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
-		if (!node.isIncomplete()) {
-            EastNorth eastNorth = node.getEastNorth();
-            NodeImpl matsimNode = (NodeImpl) network.getNodes().get(nodeId);
-            if (matsimNode == null) {
-                matsimNode = (NodeImpl) network
-                        .getFactory()
-                        .createNode(
-                                Id.create(
-                                        node.getUniqueId(),
-                                        org.matsim.api.core.v01.network.Node.class),
-                                new CoordImpl(eastNorth.getX(), eastNorth.getY()));
-                network.addNode(matsimNode);
-            } else {
-				Coord coord = new CoordImpl(eastNorth.getX(), eastNorth.getY());
-				matsimNode.setCoord(coord);
-			}
-            if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-                matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
-            } else {
-                matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
-            }
+
+		EastNorth eastNorth = node.getEastNorth();
+		NodeImpl matsimNode = (NodeImpl) network.getFactory().createNode(
+				Id.create(node.getUniqueId(),
+						org.matsim.api.core.v01.network.Node.class),
+				new CoordImpl(eastNorth.getX(), eastNorth.getY()));
+		if (node.hasKey(ImportTask.NODE_TAG_ID)) {
+			matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
+		} else {
+			matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
 		}
+		network.addNode(matsimNode);
 	}
 
 	// creates links between given nodes along the respective WaySegments.
 	// adapted from original OsmNetworkReader
-	static List<Link> createLink(final Network network,
-                                 final Way way, final Node fromNode,
-                                 final Node toNode, double length, long increment, boolean oneway,
-                                 boolean onewayReverse, Double freespeed, Double capacity,
-                                 Double nofLanes, Set<String> modes) {
+	static List<Link> createLink(final Network network, final Way way,
+			final Node fromNode, final Node toNode, double length,
+			long increment, boolean oneway, boolean onewayReverse,
+			Double freespeed, Double capacity, Double nofLanes,
+			Set<String> modes) {
 
 		// only create link, if both nodes were found, node could be null, since
 		// nodes outside a layer were dropped
@@ -93,15 +83,16 @@ class NewConverter {
 		Id<org.matsim.api.core.v01.network.Node> toId = Id.create(
 				toNode.getUniqueId(),
 				org.matsim.api.core.v01.network.Node.class);
-		if (network.getNodes().get(fromId) != null && network.getNodes().get(toId) != null) {
+		if (network.getNodes().get(fromId) != null
+				&& network.getNodes().get(toId) != null) {
 			String id = String.valueOf(way.getUniqueId()) + "_" + increment;
 			String origId;
 
 			if (way.hasKey(ImportTask.WAY_TAG_ID)) {
 				origId = way.get(ImportTask.WAY_TAG_ID);
 			} else {
-                origId = id;
-            }
+				origId = id;
+			}
 
 			if (!onewayReverse) {
 				Link l = network.getFactory().createLink(
@@ -135,17 +126,18 @@ class NewConverter {
 		return links;
 	}
 
-    static Id<TransitLine> getTransitLineId(Relation relation) {
-        for (OsmPrimitive primitive : relation.getReferrers()) {
-            if (primitive instanceof Relation && primitive.hasTag("type", "route_master")) {
-                return Id.create(primitive.getUniqueId(), TransitLine.class);
-            }
-        }
-        // no enclosing transit line; use route id as line id;
-        return Id.create(relation.getUniqueId(), TransitLine.class);
-    }
+	static Id<TransitLine> getTransitLineId(Relation relation) {
+		for (OsmPrimitive primitive : relation.getReferrers()) {
+			if (primitive instanceof Relation
+					&& primitive.hasTag("type", "route_master")) {
+				return Id.create(primitive.getUniqueId(), TransitLine.class);
+			}
+		}
+		// no enclosing transit line; use route id as line id;
+		return Id.create(relation.getUniqueId(), TransitLine.class);
+	}
 
-    // checks for used MATSim tag scheme
+	// checks for used MATSim tag scheme
 	static boolean meetsMatsimReq(Map<String, String> keys) {
 		if (!keys.containsKey("capacity"))
 			return false;
