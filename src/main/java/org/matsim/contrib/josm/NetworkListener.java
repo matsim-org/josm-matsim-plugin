@@ -302,8 +302,7 @@ class NetworkListener implements DataSetListener,
 												.keySet())))) {
 				List<Node> nodeOrder = new ArrayList<>();
 				
-				for (int l = 0; l < way.getNodesCount(); l++) {
-					Node current = way.getNode(l);
+				for (Node current: way.getNodes()) {
 					if (scenario.getNetwork().getNodes().containsKey(Id.create(current.getUniqueId(), org.matsim.api.core.v01.network.Node.class))) {
 						nodeOrder.add(current);	
 					} 
@@ -455,6 +454,9 @@ class NetworkListener implements DataSetListener,
 					List<WaySegment> segs = new ArrayList<>();
 					Node nodeFrom = nodeOrder.get(k - 1);
 					Node nodeTo = nodeOrder.get(k);
+					if (nodeFrom.equals(nodeTo)) {
+						continue;
+					}
 					int fromIdx = way.getNodes().indexOf(nodeFrom);
 					int toIdx = way.getNodes().indexOf(nodeTo);
 					if (fromIdx > toIdx) { // loop, take latter occurrence

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='true' generator='JOSM'>
+  <node id='15' version='1' action='modify' visible='true' lat='52.56956611677' lon='13.41562924466'>
+    <tag k='name' v='15' />
+  </node>
+  <node id='14' version='1' action='modify' visible='true' lat='52.57171298565' lon='13.36378257929'>
+    <tag k='name' v='14' />
+  </node>
+  <node id='13' version='1' action='modify' visible='true' lat='52.57605171477' lon='13.30815258759'>
+    <tag k='name' v='13' />
+  </node>
+  <node id='17' version='1' action='modify' visible='true' lat='52.54871305421' lon='13.36252612095'>
+    <tag k='name' v='17' />
+  </node>
+  <node id='16' version='1' action='modify' visible='true' lat='52.59056362496' lon='13.36481285834'>
+    <tag k='name' v='16' />
+  </node>
+  <node id='12' version='1' action='modify' visible='true' lat='52.50408763488' lon='13.48341211694'>
+    <tag k='name' v='12' />
+  </node>
+  <node id='11' version='1' action='modify' visible='true' lat='52.55138839733' lon='13.46537229979'>
+    <tag k='name' v='11' />
+  </node>
+  <node id='10' version='1' action='modify' visible='true' lat='52.51679103265' lon='13.42305862965'>
+    <tag k='name' v='10' />
+  </node>
+  <node id='9' version='1' action='modify' visible='true' lat='52.51454970715' lon='13.4526132025'>
+    <tag k='name' v='9' />
+  </node>
+  <node id='8' version='1' action='modify' visible='true' lat='52.53018193652' lon='13.46168618687'>
+    <tag k='name' v='8' />
+  </node>
+  <node id='7' version='1' action='modify' visible='true' lat='52.5344443064' lon='13.42440610258'>
+    <tag k='name' v='7' />
+  </node>
+  <node id='6' version='1' action='modify' visible='true' lat='52.53346071931' lon='13.38622770301'>
+    <tag k='name' v='6' />
+  </node>
+  <node id='5' version='1' action='modify' visible='true' lat='52.52084305077' lon='13.3202743672'>
+    <tag k='name' v='5' />
+  </node>
+  <node id='4' version='1' action='modify' visible='true' lat='52.51860193197' lon='13.34982894005'>
+    <tag k='name' v='4' />
+  </node>
+  <node id='3' version='1' action='modify' visible='true' lat='52.53546914068' lon='13.35966417022'>
+    <tag k='name' v='3' />
+  </node>
+  <node id='2' version='1' action='modify' visible='true' lat='52.53849469628' lon='13.32162184013'>
+    <tag k='name' v='2' />
+  </node>
+  <node id='1' version='1' action='modify' visible='true' lat='52.53751119991' lon='13.28344344056'>
+    <tag k='name' v='1' />
+  </node>
+  <way id='4' version='1' action='modify' visible='true'>
+    <nd ref='13' />
+    <nd ref='14' />
+    <nd ref='15' />
+    <tag k='capacity' v='0.00' />
+    <tag k='freespeed' v='0.00' />
+    <tag k='modes' v='car' />
+    <tag k='permlanes' v='0.00' />
+  </way>
+  <way id='5' version='1' action='modify' visible='true'>
+    <nd ref='16' />
+    <nd ref='14' />
+    <nd ref='17' />
+    <tag k='capacity' v='0.00' />
+    <tag k='freespeed' v='0.00' />
+    <tag k='modes' v='car' />
+    <tag k='permlanes' v='0.00' />
+  </way>
+  <way id='3' version='1' action='modify' visible='true'>
+    <nd ref='11' />
+    <nd ref='8' />
+    <nd ref='12' />
+    <tag k='capacity' v='0.00' />
+    <tag k='freespeed' v='0.00' />
+    <tag k='modes' v='car' />
+    <tag k='permlanes' v='0.00' />
+  </way>
+  <way id='2' version='1' action='modify' visible='true'>
+    <nd ref='6' />
+    <nd ref='7' />
+    <nd ref='8' />
+    <nd ref='9' />
+    <nd ref='10' />
+    <nd ref='7' />
+    <tag k='capacity' v='0.00' />
+    <tag k='freespeed' v='0.00' />
+    <tag k='modes' v='car' />
+    <tag k='permlanes' v='0.00' />
+  </way>
+  <way id='1' version='1' action='modify' visible='true'>
+    <nd ref='1' />
+    <nd ref='2' />
+    <nd ref='3' />
+    <nd ref='4' />
+    <nd ref='5' />
+    <nd ref='2' />
+    <tag k='capacity' v='0.00' />
+    <tag k='freespeed' v='0.00' />
+    <tag k='modes' v='car' />
+    <tag k='permlanes' v='0.00' />
+  </way>
+</osm>
