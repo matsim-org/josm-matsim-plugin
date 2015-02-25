@@ -2,8 +2,11 @@ package org.matsim.contrib.josm;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
+import org.matsim.contrib.josm.scenario.EditableTransitRoute;
+import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
@@ -102,10 +105,11 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
                 osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim layers have their own network listener
             }
         } else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
-            Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-            scenario.getConfig().scenario().setUseTransit(true);
-            scenario.getConfig().scenario().setUseVehicles(true);
-            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            Config config = ConfigUtils.createConfig();
+            config.scenario().setUseTransit(true);
+            config.scenario().setUseVehicles(true);
+            EditableScenario scenario = EditableScenarioUtils.createScenario(config);
+            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, EditableTransitRoute>());
             osmNetworkListener.visitAll();
             layer.data.addDataSetListener(osmNetworkListener);
         } else { // empty data mappings if no data layer is active

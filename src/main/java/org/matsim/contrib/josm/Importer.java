@@ -1,9 +1,12 @@
 package org.matsim.contrib.josm;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
+import org.matsim.contrib.josm.scenario.EditableTransitLine;
+import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
@@ -11,8 +14,6 @@ import org.matsim.core.network.MatsimNetworkReader;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
@@ -32,15 +33,15 @@ class Importer {
     private Projection projection;
     private MATSimLayer layer;
 
-    HashMap<Relation, TransitRoute> relation2Route = new HashMap<>();
+    HashMap<Relation, EditableTransitRoute> relation2Route = new HashMap<>();
     HashMap<Id<TransitStopFacility>, TransitStopFacility> stops = new HashMap<>();
     HashMap<Way, List<Link>> way2Links = new HashMap<>();
     HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
     HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
     HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
     private DataSet dataSet;
-    private Scenario sourceScenario;
-    private Scenario targetScenario;
+    private EditableScenario sourceScenario;
+    private EditableScenario targetScenario;
 
     public Importer(String networkPath, String schedulePath, Projection projection) {
         this.networkPath = networkPath;
@@ -48,7 +49,7 @@ class Importer {
         this.projection = projection;
     }
 
-    public Importer(Scenario scenario, Projection projection) {
+    public Importer(EditableScenario scenario, Projection projection) {
         this.sourceScenario = scenario;
         this.projection = projection;
         this.networkPath = null;
@@ -61,7 +62,7 @@ class Importer {
             sourceScenario = readScenario();
             copyIdsToOrigIds(sourceScenario);
         }
-        targetScenario = ScenarioUtils.createScenario(sourceScenario.getConfig());
+        targetScenario = EditableScenarioUtils.createScenario(sourceScenario.getConfig());
         convertNetwork();
         if (sourceScenario.getConfig().scenario().isUseTransit()) {
             convertStops();
@@ -79,7 +80,7 @@ class Importer {
     }
 
     // Abuse fields in MATSim data structures to hold the "real" object ids.
-    private void copyIdsToOrigIds(Scenario sourceScenario) {
+    private void copyIdsToOrigIds(EditableScenario sourceScenario) {
         for (Node node : sourceScenario.getNetwork().getNodes().values()) {
             ((NodeImpl) node).setOrigId(node.getId().toString());
         }
@@ -87,10 +88,10 @@ class Importer {
             ((LinkImpl) link).setOrigId(link.getId().toString());
         }
         if (sourceScenario.getConfig().scenario().isUseTransit()) {
-            for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
-                transitLine.setName(transitLine.getId().toString());
-                for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
-                    ((TransitRouteImpl) transitRoute).setLineRouteName(transitRoute.getId().toString());
+            for (EditableTransitLine transitLine : sourceScenario.getTransitSchedule().getEditableTransitLines().values()) {
+                transitLine.setRealId(transitLine.getId());
+                for (EditableTransitRoute transitRoute : transitLine.getEditableRoutes().values()) {
+                    transitRoute.setRealId(transitRoute.getId());
                 }
             }
             for (TransitStopFacility transitStopFacility : sourceScenario.getTransitSchedule().getFacilities().values()) {
@@ -99,13 +100,13 @@ class Importer {
         }
     }
 
-    private Scenario readScenario() {
+    private EditableScenario readScenario() {
         Config config = ConfigUtils.createConfig();
         if (schedulePath != null) {
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
         }
-        Scenario tempScenario = ScenarioUtils.createScenario(config);
+        EditableScenario tempScenario = EditableScenarioUtils.createScenario(config);
         MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);
         reader.readFile(networkPath);
         if (schedulePath != null) {
@@ -218,13 +219,14 @@ class Importer {
     }
 
     private void convertLines() {
-        for (TransitLine line : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+        for (EditableTransitLine line : sourceScenario.getTransitSchedule().getEditableTransitLines().values()) {
             Relation lineRelation = new Relation();
             lineRelation.put("type", "route_master");
-            lineRelation.put("ref", line.getName());
-            TransitLine newLine = targetScenario.getTransitSchedule().getFactory().createTransitLine(Id.create(lineRelation.getUniqueId(), TransitLine.class));
+            lineRelation.put("ref", line.getRealId().toString());
+            EditableTransitLine newLine = new EditableTransitLine(Id.create(lineRelation.getUniqueId(), TransitLine.class));
+            newLine.setRealId(line.getRealId());
             newLine.setName(line.getName());
-            for (TransitRoute route : line.getRoutes().values()) {
+            for (EditableTransitRoute route : line.getEditableRoutes().values()) {
                 Relation routeRelation = new Relation();
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
                 for (TransitRouteStop tRStop : route.getStops()) {
@@ -257,16 +259,15 @@ class Importer {
                 } else {
                     newNetworkRoute = null;
                 }
-                TransitRoute newRoute = targetScenario
-                        .getTransitSchedule()
-                        .getFactory()
-                        .createTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class), newNetworkRoute,
-                                newTransitStops, route.getTransportMode());
-                ((TransitRouteImpl) newRoute).setLineRouteName(((TransitRouteImpl) route).getLineRouteName());
+                EditableTransitRoute newRoute = new EditableTransitRoute(Id.create(routeRelation.getUniqueId(), TransitRoute.class));
+                newRoute.setRealId(route.getRealId());
+                newRoute.setTransportMode(route.getTransportMode());
+                newRoute.getStops().addAll(newTransitStops);
+                newRoute.setRoute(newNetworkRoute);
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");
                 routeRelation.put("route", route.getTransportMode());
-                routeRelation.put("ref", ((TransitRouteImpl) route).getLineRouteName());
+                routeRelation.put("ref", route.getRealId().toString());
                 dataSet.addPrimitive(routeRelation);
                 lineRelation.addMember(new RelationMember(null, routeRelation));
                 relation2Route.put(routeRelation, newRoute);

@@ -98,7 +98,18 @@ public class ImportTaskTest {
             Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), layer.getScenario().getTransitSchedule().getTransitLines().size());
             Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(layer.getScenario().getTransitSchedule()));
             Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(layer.getScenario().getTransitSchedule()));
+            Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(layer.getScenario().getTransitSchedule()));
         }
+    }
+
+    private int countDepartures(TransitSchedule transitSchedule) {
+        int result = 0;
+        for (TransitLine transitLine : transitSchedule.getTransitLines().values()) {
+            for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+                result += transitRoute.getDepartures().size();
+            }
+        }
+        return result;
     }
 
     private int countLinksInRoutes(TransitSchedule transitSchedule) {

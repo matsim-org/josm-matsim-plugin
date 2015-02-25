@@ -3,11 +3,13 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.scenario.EditableTransitLine;
+import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
-import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.*;
@@ -28,11 +30,11 @@ import java.util.*;
  */
 class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
-	private final Scenario scenario;
+	private final EditableScenario scenario;
 
     private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
-	private final Map<Relation, TransitRoute> relation2Route;
+	private final Map<Relation, EditableTransitRoute> relation2Route;
     private DataSet data;
     private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
@@ -55,9 +57,9 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         listeners.add(listener);
     }
 
-    public NetworkListener(DataSet data, Scenario scenario, Map<Way, List<Link>> way2Links,
+    public NetworkListener(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links,
                            Map<Link, List<WaySegment>> link2Segments,
-                           Map<Relation, TransitRoute> relation2Route)
+                           Map<Relation, EditableTransitRoute> relation2Route)
 			throws IllegalArgumentException {
         this.data = data;
         MATSimPlugin.addPreferenceChangedListener(this);
@@ -517,9 +519,20 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             if (visited.add(relation)) {
                 if (scenario.getConfig().scenario().isUseTransit()) {
                     // convert Relation, remove previous references in the MATSim data
-                    TransitRoute route = relation2Route.remove(relation);
-                    if (route != null) {
-                        searchAndRemoveRoute(route);
+                    EditableTransitRoute oldRoute = relation2Route.get(relation);
+                    EditableTransitRoute newRoute = createTransitRoute(relation, oldRoute);
+                    if (oldRoute != null && newRoute == null) {
+                        searchAndRemoveRoute(oldRoute);
+                        relation2Route.remove(relation);
+                    } else if (oldRoute == null && newRoute != null) {
+                        TransitLine tLine = getTransitLine(relation);
+                        tLine.addRoute(newRoute);
+                        relation2Route.put(relation, newRoute);
+                    } else if (oldRoute != null) {
+                        // The line the route is assigned to might have changed, so remove it and add it again.
+                        searchAndRemoveRoute(oldRoute);
+                        TransitLine tLine = getTransitLine(relation);
+                        tLine.addRoute(newRoute);
                     }
                     Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(), TransitStopFacility.class);
                     if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
@@ -530,9 +543,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                             for (OsmPrimitive osmPrimitive : relation.getMemberPrimitives()) {
                                 osmPrimitive.accept(this);
                             }
-                        }
-                        if (relation.hasTag("type", "route")) {
-                            createTransitRoute(relation);
                         }
                         if (relation.hasTag("matsim", "stop_relation")) {
                             createStopFacility(relation);
@@ -570,39 +580,51 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             }
         }
 
-        private void createTransitRoute(Relation relation) {
-            RelationSorter sorter = new RelationSorter();
-            sorter.sortMembers(relation.getMembers());
-            ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
-            for (RelationMember member : relation.getMembers()) {
-                if (member.isNode() && member.getMember().hasTag("public_transport", "platform")) {
-                    TransitStopFacility facility = findFacilityForPlatform(member.getNode());
-                    if (facility != null) {
-                        routeStops.add(scenario.getTransitSchedule().getFactory().createTransitRouteStop(facility, 0, 0));
+        private EditableTransitRoute createTransitRoute(Relation relation, EditableTransitRoute oldRoute) {
+            if (!relation.isDeleted() && relation.hasTag("type", "route")) {
+                RelationSorter sorter = new RelationSorter();
+                sorter.sortMembers(relation.getMembers());
+                ArrayList<TransitRouteStop> routeStops = new ArrayList<>();
+                for (RelationMember member : relation.getMembers()) {
+                    if (member.isNode() && member.getMember().hasTag("public_transport", "platform")) {
+                        TransitStopFacility facility = findFacilityForPlatform(member.getNode());
+                        if (facility != null) {
+                            routeStops.add(scenario.getTransitSchedule().getFactory().createTransitRouteStop(facility, 0, 0));
+                        }
                     }
                 }
+                NetworkRoute networkRoute = createNetworkRoute(relation);
+                EditableTransitRoute newRoute;
+                if (oldRoute == null) {
+                    Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
+                    newRoute = new EditableTransitRoute(routeId);
+                } else {
+                    // Edit the previous object in place.
+                    newRoute = oldRoute;
+                }
+                newRoute.setRoute(networkRoute);
+                newRoute.getStops().clear();
+                newRoute.getStops().addAll(routeStops);
+                newRoute.setDescription(relation.get("route"));
+                newRoute.setRealId(Id.create(relation.get("ref"), TransitRoute.class));
+                return newRoute;
+            } else {
+                return null; // not a route
             }
-            Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
-            TransitLine tLine = getTransitLine(relation);
-            NetworkRoute networkRoute = createNetworkRoute(relation);
-            TransitRoute tRoute = scenario.getTransitSchedule().getFactory().createTransitRoute(routeId, networkRoute, routeStops, relation.get("route"));
-            ((TransitRouteImpl) tRoute).setLineRouteName(relation.get("ref"));
-            tLine.addRoute(tRoute);
-            relation2Route.put(relation, tRoute);
         }
 
         private TransitLine getTransitLine(Relation relation) {
             Id<TransitLine> transitLineId = NewConverter.getTransitLineId(relation);
-            TransitLine tLine;
+            EditableTransitLine tLine;
             if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
-                tLine = scenario.getTransitSchedule().getFactory().createTransitLine(transitLineId);
+                tLine = new EditableTransitLine(transitLineId);
                 scenario.getTransitSchedule().addTransitLine(tLine);
             } else {
-                tLine = scenario.getTransitSchedule().getTransitLines().get(transitLineId);
+                tLine = scenario.getTransitSchedule().getEditableTransitLines().get(transitLineId);
             }
             Relation maybeLineRelation = ((Relation) data.getPrimitiveById(Long.parseLong(transitLineId.toString()), OsmPrimitiveType.RELATION));
             if (maybeLineRelation != null) {
-                tLine.setName(maybeLineRelation.get("ref"));
+                tLine.setRealId(Id.create(maybeLineRelation.get("ref"), TransitLine.class));
             }
             return tLine;
         }
@@ -668,7 +690,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         return link2Segments;
     }
 
-    public Map<Relation, TransitRoute> getRelation2Route() {
+    public Map<Relation, EditableTransitRoute> getRelation2Route() {
         return relation2Route;
     }
 

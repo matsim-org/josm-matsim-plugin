@@ -3,6 +3,9 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.scenario.EditableTransitLine;
+import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
@@ -33,7 +36,7 @@ class TransitScheduleExporter {
         }
     }
 
-    static Scenario convertIds(Scenario layerScenario) {
+    static Scenario convertIds(EditableScenario layerScenario) {
         Config config = ConfigUtils.createConfig();
         Scenario targetScenario = ScenarioUtils.createScenario(config);
         config.scenario().setUseTransit(true);
@@ -58,16 +61,16 @@ class TransitScheduleExporter {
                 newSchedule.addStopFacility(newStop);
             }
 
-            for (TransitLine line : layerScenario.getTransitSchedule()
-                    .getTransitLines().values()) {
+            for (EditableTransitLine line : layerScenario.getTransitSchedule()
+                    .getEditableTransitLines().values()) {
 
-                Id<TransitLine> lineId = Id.create(line.getName(), TransitLine.class);
+                Id<TransitLine> lineId = Id.create(line.getRealId(), TransitLine.class);
                 TransitLine newTLine = newSchedule.getFactory().createTransitLine(
                         lineId);
                     newSchedule.addTransitLine(newTLine);
 
 
-                for (TransitRoute route : line.getRoutes().values()) {
+                for (EditableTransitRoute route : line.getEditableRoutes().values()) {
                     List<Id<Link>> links = new ArrayList<>();
                     NetworkRoute networkRoute = route.getRoute();
                     NetworkRoute newNetworkRoute;
@@ -102,7 +105,7 @@ class TransitScheduleExporter {
                                         newSchedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
                     }
 
-                    Id<TransitRoute> routeId = Id.create(((TransitRouteImpl) route).getLineRouteName(), TransitRoute.class);
+                    Id<TransitRoute> routeId = route.getRealId();
 
                     TransitRoute newTRoute = newSchedule.getFactory()
                             .createTransitRoute(routeId,
