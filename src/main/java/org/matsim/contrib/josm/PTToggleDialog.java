@@ -7,7 +7,6 @@ import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.pt.transitSchedule.TransitRouteImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.Main;
@@ -27,7 +26,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -109,7 +107,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
             EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, EditableTransitRoute>());
+            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             osmNetworkListener.visitAll();
             layer.data.addDataSetListener(osmNetworkListener);
         } else { // empty data mappings if no data layer is active
@@ -230,9 +228,9 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			TransitRoute route = routes.get(rowIndex);
+			EditableTransitRoute route = (EditableTransitRoute) routes.get(rowIndex);
 			if (columnIndex == 0) {
-				return ((TransitRouteImpl)route).getLineRouteName();
+				return route.getRealId();
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {
@@ -253,8 +251,9 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
                     Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
                     for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
                         for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-                            if (osmNetworkListener.getRelation2Route().containsKey(maybeRelation)) {
-                                uniqueRoutes.add(osmNetworkListener.getRelation2Route().get(maybeRelation));
+                            TransitRoute route = osmNetworkListener.findRoute(maybeRelation);
+                            if (route != null) {
+                                uniqueRoutes.add(route);
                             }
                         }
                     }
