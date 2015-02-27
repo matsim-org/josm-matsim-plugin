@@ -74,8 +74,7 @@ class Importer {
                 networkPath==null ? null : new File(networkPath),
                 targetScenario,
                 way2Links,
-                link2Segment,
-                relation2Route
+                link2Segment
         );
     }
 
@@ -264,6 +263,9 @@ class Importer {
                 newRoute.setTransportMode(route.getTransportMode());
                 newRoute.getStops().addAll(newTransitStops);
                 newRoute.setRoute(newNetworkRoute);
+                for (Departure departure : route.getDepartures().values()) {
+                    newRoute.addDeparture(departure);
+                }
                 newLine.addRoute(newRoute);
                 routeRelation.put("type", "route");
                 routeRelation.put("route", route.getTransportMode());

@@ -16,7 +16,6 @@ import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -24,7 +23,6 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -72,7 +70,7 @@ public class OSMDataTest {
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
-            busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, EditableTransitRoute>());
+            busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             busRouteListener.visitAll();
 	    
 	    }
@@ -99,7 +97,7 @@ public class OSMDataTest {
             }
             LayerConverter converter =  new LayerConverter(busRouteLayer);
             converter.run();
-            Scenario targetScenario = TransitScheduleExporter.convertIds(converter.getMatsimLayer().getScenario());
+            Scenario targetScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
             Assert.assertEquals("busRoute", targetScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
         }
 

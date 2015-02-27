@@ -34,7 +34,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
     private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
-	private final Map<Relation, EditableTransitRoute> relation2Route;
     private DataSet data;
     private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
@@ -58,15 +57,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     }
 
     public NetworkListener(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links,
-                           Map<Link, List<WaySegment>> link2Segments,
-                           Map<Relation, EditableTransitRoute> relation2Route)
+                           Map<Link, List<WaySegment>> link2Segments)
 			throws IllegalArgumentException {
         this.data = data;
         MATSimPlugin.addPreferenceChangedListener(this);
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
-		this.relation2Route = relation2Route;
 	}
 
     void visitAll() {
@@ -86,7 +83,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     @Override
 	public void dataChanged(DataChangedEvent dataChangedEvent) {
         visitAll();
-        removeEmptyLines();
         fireNotifyDataChanged();
     }
 
@@ -186,7 +182,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			}
 		}
         aggregatePrimitivesVisitor.finished();
-        removeEmptyLines();
         fireNotifyDataChanged();
     }
 
@@ -196,25 +191,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
         aggregatePrimitivesVisitor.visit(arg0.getRelation());
         aggregatePrimitivesVisitor.finished();
-        removeEmptyLines();
         fireNotifyDataChanged();
     }
-
-    private void removeEmptyLines() {
-        if (scenario.getConfig().scenario().isUseTransit()) {
-            // We do not create lines independently for now so we have to remove empty lines
-            Collection<TransitLine> linesToRemove = new ArrayList<>();
-            for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-                if (line.getRoutes().isEmpty()) {
-                    linesToRemove.add(line);
-                }
-            }
-            for (TransitLine transitLine : linesToRemove) {
-                scenario.getTransitSchedule().removeTransitLine(transitLine);
-            }
-        }
-    }
-
 
     @Override
 	// convert affected elements and other connected elements
@@ -254,7 +232,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 || e.getKey().equalsIgnoreCase("matsim_filterActive")
                 || e.getKey().equalsIgnoreCase("matsim_filter_hierarchy")) {
             visitAll();
-            removeEmptyLines();
         }
         fireNotifyDataChanged();
     }
@@ -274,25 +251,21 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                     || NewConverter.meetsMatsimReq(way.getKeys())
                     || (way.hasTag(NewConverter.TAG_RAILWAY, OsmConvertDefaults.getWayDefaults().keySet())))) {
                 List<Node> nodeOrder = new ArrayList<>();
-                StringBuilder nodeOrderLog = new StringBuilder();
                 for (int l = 0; l < way.getNodesCount(); l++) {
                     Node current = way.getNode(l);
                     if (l == 0 || l == way.getNodesCount() - 1 || Preferences.isKeepPaths()) {
                         nodeOrder.add(current);
-                        nodeOrderLog.append("(").append(l).append(") ");
                     } else if (current.equals(way.getNode(way.getNodesCount() - 1))) {
                         nodeOrder.add(current); // add node twice if it occurs
                                                 // twice in a loop so length
                                                 // to this node is not
                                                 // calculated wrong
-                        nodeOrderLog.append("(").append(l).append(") ");
                     } else if (current.isConnectionNode()) {
                         for (OsmPrimitive prim : current.getReferrers()) {
                             if (prim instanceof Way && !prim.equals(way)) {
                                 if (prim.hasKey(NewConverter.TAG_HIGHWAY)
                                         || NewConverter.meetsMatsimReq(prim.getKeys())) {
                                     nodeOrder.add(current);
-                                    nodeOrderLog.append("(").append(l).append(") ");
                                     break;
                                 }
                             }
@@ -519,15 +492,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             if (visited.add(relation)) {
                 if (scenario.getConfig().scenario().isUseTransit()) {
                     // convert Relation, remove previous references in the MATSim data
-                    EditableTransitRoute oldRoute = relation2Route.get(relation);
+                    EditableTransitRoute oldRoute = findRoute(relation);
                     EditableTransitRoute newRoute = createTransitRoute(relation, oldRoute);
                     if (oldRoute != null && newRoute == null) {
-                        searchAndRemoveRoute(oldRoute);
-                        relation2Route.remove(relation);
+                        oldRoute.setDeleted(true);
                     } else if (oldRoute == null && newRoute != null) {
                         TransitLine tLine = getTransitLine(relation);
                         tLine.addRoute(newRoute);
-                        relation2Route.put(relation, newRoute);
                     } else if (oldRoute != null) {
                         // The line the route is assigned to might have changed, so remove it and add it again.
                         searchAndRemoveRoute(oldRoute);
@@ -601,6 +572,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 } else {
                     // Edit the previous object in place.
                     newRoute = oldRoute;
+                    newRoute.setDeleted(false);
                 }
                 newRoute.setRoute(networkRoute);
                 newRoute.getStops().clear();
@@ -681,6 +653,18 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
         }
     }
 
+    EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
+        if (maybeRelation instanceof Relation && scenario.getConfig().scenario().isUseTransit()) {
+            for (EditableTransitLine editableTransitLine : scenario.getTransitSchedule().getEditableTransitLines().values()) {
+                for (EditableTransitRoute transitRoute : editableTransitLine.getEditableRoutes().values()) {
+                    if (transitRoute.getId().toString().equals(Long.toString(maybeRelation.getUniqueId()))) {
+                        return transitRoute;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     public Map<Way, List<Link>> getWay2Links() {
         return way2Links;
@@ -689,10 +673,5 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     public Map<Link, List<WaySegment>> getLink2Segments() {
         return link2Segments;
     }
-
-    public Map<Relation, EditableTransitRoute> getRelation2Route() {
-        return relation2Route;
-    }
-
 
 }

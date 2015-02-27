@@ -22,6 +22,7 @@ public class EditableTransitRoute implements TransitRoute {
     String description;
     String transportMode;
     NetworkRoute route;
+    boolean isDeleted = false;
 
     public EditableTransitRoute(Id<TransitRoute> id) {
         this.id = id;
@@ -96,6 +97,14 @@ public class EditableTransitRoute implements TransitRoute {
 
     public void setRealId(Id<TransitRoute> realId) {
         this.realId = realId;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
 }

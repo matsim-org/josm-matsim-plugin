@@ -11,11 +11,9 @@ import java.util.Map;
 
 import javax.swing.Action;
 
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -45,14 +43,12 @@ class MATSimLayer extends OsmDataLayer {
     public MATSimLayer(DataSet data, String name, File associatedFile,
                        EditableScenario scenario,
                        HashMap<Way, List<Link>> way2Links,
-                       Map<Link, List<WaySegment>> link2Segment,
-                       Map<Relation, EditableTransitRoute> relation2Route) {
+                       Map<Link, List<WaySegment>> link2Segment) {
 		super(data, name, associatedFile);
         this.matsimScenario = scenario;
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
-		this.relation2Route = relation2Route;
-        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment, relation2Route);
+        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment);
         data.addDataSetListener(networkListener);
     }
 

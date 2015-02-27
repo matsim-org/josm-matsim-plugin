@@ -3,7 +3,6 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkImpl;
@@ -131,7 +130,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
             if (layer instanceof MATSimLayer) {
                 osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim layers have their own network listener
             } else {
-                osmNetworkListener = new NetworkListener(layer.data, EditableScenarioUtils.createScenario(ConfigUtils.createConfig()), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, EditableTransitRoute>());
+                osmNetworkListener = new NetworkListener(layer.data, EditableScenarioUtils.createScenario(ConfigUtils.createConfig()), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
                 osmNetworkListener.visitAll();
                 layer.data.addDataSetListener(osmNetworkListener);
             }

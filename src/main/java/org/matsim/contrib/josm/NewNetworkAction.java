@@ -3,13 +3,11 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -46,8 +44,8 @@ class NewNetworkAction extends JosmAction {
         EditableScenario scenario = EditableScenarioUtils.createScenario(config);
         MATSimLayer layer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
                 scenario, new HashMap<Way, List<Link>>(),
-                new HashMap<Link, List<WaySegment>>(),
-                new HashMap<Relation, EditableTransitRoute>());
+                new HashMap<Link, List<WaySegment>>()
+        );
         Main.main.addLayer(layer);
     }
 }

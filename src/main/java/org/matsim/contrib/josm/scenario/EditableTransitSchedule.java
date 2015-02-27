@@ -33,7 +33,7 @@ public class EditableTransitSchedule implements TransitSchedule {
             EditableTransitRoute editableTransitRoute = new EditableTransitRoute(id);
             editableTransitRoute.setRoute(networkRoute);
             editableTransitRoute.getStops().addAll(list);
-            editableTransitRoute.setDescription(s);
+            editableTransitRoute.setTransportMode(s);
             return editableTransitRoute;
         }
 
