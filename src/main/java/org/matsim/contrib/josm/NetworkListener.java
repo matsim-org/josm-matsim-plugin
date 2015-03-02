@@ -243,11 +243,10 @@ class NetworkListener implements DataSetListener,
 	@Override
 	// convert affected elements and other connected elements
 	public void wayNodesChanged(WayNodesChangedEvent changed) {
-		ConvertVisitor aggregatePrimitivesVisitor = new ConvertVisitor();
+		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
 		for(Node node: changed.getChangedWay().getNodes()){
 			aggregatePrimitivesVisitor.visit(node);		
 		}
-		
 		List<Link> links = way2Links.get(changed.getChangedWay());
 		if (links != null) {
 			for (Link link : links) {
@@ -256,8 +255,8 @@ class NetworkListener implements DataSetListener,
 			}
 		}
 		
-		
-		aggregatePrimitivesVisitor.visit(changed.getChangedWay());
+		aggregatePrimitivesVisitor.finished();
+		new ConvertVisitor().visit((changed.getChangedWay()));
 		fireNotifyDataChanged();
 	}
 
@@ -454,9 +453,6 @@ class NetworkListener implements DataSetListener,
 					List<WaySegment> segs = new ArrayList<>();
 					Node nodeFrom = nodeOrder.get(k - 1);
 					Node nodeTo = nodeOrder.get(k);
-					if (nodeFrom.equals(nodeTo)) {
-						continue;
-					}
 					int fromIdx = way.getNodes().indexOf(nodeFrom);
 					int toIdx = way.getNodes().indexOf(nodeTo);
 					if (fromIdx > toIdx) { // loop, take latter occurrence

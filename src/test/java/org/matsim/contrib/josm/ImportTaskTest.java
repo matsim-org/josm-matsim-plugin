@@ -71,7 +71,7 @@ public class ImportTaskTest {
         Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
         Command delete = DeleteCommand.delete(layer, layer.data.getWays(), false, true);
         delete.executeCommand();
-        Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
+        Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
         Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
         delete.undoCommand();
         Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());

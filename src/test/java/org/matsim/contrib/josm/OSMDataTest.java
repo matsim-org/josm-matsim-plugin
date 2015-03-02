@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,6 +45,8 @@ public class OSMDataTest {
 	    private NetworkListener incompleteWayListener;
 	    private OsmDataLayer busRouteLayer;
 	    private NetworkListener busRouteListener;
+	    private OsmDataLayer intersectionsLayer;
+	    private NetworkListener intersectionsListener;
 
 	    @Before
 	    public void init() {
@@ -54,25 +55,31 @@ public class OSMDataTest {
             Main.pref.put("matsim_supportTransit", true);
 	        URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 	        URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
+	        URL urlIntersections = getClass().getResource("/test-input/OSMData/loops_intersecting_ways.osm");
 		       
 	        InputStream incompleteWayInput = null;
 	        InputStream busRouteInput = null; 
+	        InputStream intersectionsInput = null; 
 			try {
 				incompleteWayInput = Compression.getUncompressedFileInputStream(new File(urlIncompleteWay.getFile()));
 				busRouteInput = Compression.getUncompressedFileInputStream(new File(urlRoute.getFile()));
+				intersectionsInput = Compression.getUncompressedFileInputStream(new File(urlIntersections.getFile()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 	    	DataSet incompleteWayData = null;
 	    	DataSet busRouteData = null;
+	    	DataSet intersectionsData = null;
 			try {
 				incompleteWayData = OsmReader.parseDataSet(incompleteWayInput, null);
 				busRouteData = OsmReader.parseDataSet(busRouteInput, null);
+				intersectionsData = OsmReader.parseDataSet(intersectionsInput, null);
 			} catch (IllegalDataException e) {
 				e.printStackTrace();
 			}
 	    	incompleteWayLayer = new OsmDataLayer(incompleteWayData, "test", null);
 	    	busRouteLayer = new OsmDataLayer(busRouteData, "test", null);
+	    	intersectionsLayer = new OsmDataLayer(intersectionsData, "test", null);
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
@@ -81,8 +88,12 @@ public class OSMDataTest {
             busRouteListener.visitAll();
             incompleteWayListener = new NetworkListener(incompleteWayData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             incompleteWayListener.visitAll();
+            intersectionsListener = new NetworkListener(busRouteData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            Main.pref.addPreferenceChangeListener(intersectionsListener);
+            intersectionsListener.visitAll();
             busRouteData.addDataSetListener(busRouteListener);
             incompleteWayData.addDataSetListener(incompleteWayListener);
+            intersectionsData.addDataSetListener(intersectionsListener);
 	    }
 	    
 	    
@@ -126,7 +137,7 @@ public class OSMDataTest {
 	    
 
 	    @Test
-	    public void testIncompleteWay() throws InterruptedException, ExecutionException, IOException, IllegalDataException {
+	    public void testIncompleteWay() {
 	    	Assert.assertEquals(1,incompleteWayLayer.data.getWays().size());
 	    	Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getLinks().size());
 	    	Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getNodes().size());
@@ -140,7 +151,7 @@ public class OSMDataTest {
 	    }
 	    
 	    @Test
-	    public void testBusRoute() throws InterruptedException, ExecutionException, IOException, IllegalDataException {
+	    public void testBusRoute() {
             Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getLinks().size());
             Assert.assertEquals(6,busRouteListener.getScenario().getNetwork().getNodes().size());
             Assert.assertEquals(4,busRouteListener.getScenario().getTransitSchedule().getFacilities().size());
@@ -197,6 +208,12 @@ public class OSMDataTest {
             Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
            
         }
+	    
+//	    @Test
+//	    public void testIntersections() {
+//	    	 Assert.assertEquals(11,busRouteListener.getScenario().getNetwork().getLinks().size());
+//	         Assert.assertEquals(12,busRouteListener.getScenario().getNetwork().getNodes().size());
+//	    }
 
     private long countRoutes(TransitSchedule transitSchedule) {
         int result = 0;
