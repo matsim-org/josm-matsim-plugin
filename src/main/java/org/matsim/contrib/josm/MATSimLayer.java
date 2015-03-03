@@ -11,9 +11,9 @@ import java.util.Map;
 
 import javax.swing.Action;
 
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.openstreetmap.josm.actions.RenameLayerAction;
 import org.openstreetmap.josm.actions.SaveActionBase;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -32,25 +32,23 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
  * 
  */
 class MATSimLayer extends OsmDataLayer {
-    private final Scenario matsimScenario;
+    private final EditableScenario matsimScenario;
 
     // data mappings
 	private Map<Way, List<Link>> way2Links = new HashMap<>();
 	private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
-	private Map<Relation, TransitRoute> relation2Route = new HashMap<>();
+	private Map<Relation, EditableTransitRoute> relation2Route = new HashMap<>();
     private final NetworkListener networkListener;
 
     public MATSimLayer(DataSet data, String name, File associatedFile,
-                       Scenario scenario,
+                       EditableScenario scenario,
                        HashMap<Way, List<Link>> way2Links,
-                       Map<Link, List<WaySegment>> link2Segment,
-                       Map<Relation, TransitRoute> relation2Route) {
+                       Map<Link, List<WaySegment>> link2Segment) {
 		super(data, name, associatedFile);
         this.matsimScenario = scenario;
         this.way2Links = way2Links;
 		this.link2Segment = link2Segment;
-		this.relation2Route = relation2Route;
-        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment, relation2Route);
+        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment);
         data.addDataSetListener(networkListener);
     }
 
@@ -62,11 +60,11 @@ class MATSimLayer extends OsmDataLayer {
 		return link2Segment;
 	}
 
-	public Map<Relation, TransitRoute> getRelation2Route() {
+	public Map<Relation, EditableTransitRoute> getRelation2Route() {
 		return relation2Route;
 	}
 
-	public Scenario getScenario() {
+	public EditableScenario getScenario() {
 		return matsimScenario;
 	}
 

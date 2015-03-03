@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,9 +16,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
@@ -83,12 +84,12 @@ public class OSMDataTest {
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
-            busRouteListener = new NetworkListener(busRouteData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             Main.pref.addPreferenceChangeListener(busRouteListener);
             busRouteListener.visitAll();
-            incompleteWayListener = new NetworkListener(incompleteWayData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            incompleteWayListener = new NetworkListener(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             incompleteWayListener.visitAll();
-            intersectionsListener = new NetworkListener(busRouteData, ScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            intersectionsListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
             Main.pref.addPreferenceChangeListener(intersectionsListener);
             intersectionsListener.visitAll();
             busRouteData.addDataSetListener(busRouteListener);
@@ -204,7 +205,7 @@ public class OSMDataTest {
             Assert.assertEquals(10, convertedOsm.getWays().size());
             Assert.assertEquals(7, convertedOsm.getRelations().size());
             
-            Scenario simulatedExportScenario = TransitScheduleExporter.convertIds(converter.getMatsimLayer().getScenario());
+            Scenario simulatedExportScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
             Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
            
         }

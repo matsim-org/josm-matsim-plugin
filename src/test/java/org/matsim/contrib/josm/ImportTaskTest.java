@@ -86,19 +86,30 @@ public class ImportTaskTest {
         Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
         Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
         if (scenario.getConfig().scenario().isUseTransit()) {
-            Assert.assertEquals(0, layer.getScenario().getTransitSchedule().getFacilities().size());
-            Assert.assertEquals(0, layer.getScenario().getTransitSchedule().getTransitLines().size());
-            Assert.assertEquals(0, countRoutes(layer.getScenario().getTransitSchedule()));
+            Assert.assertEquals(0, TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getFacilities().size());
+            Assert.assertEquals(0, TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
+            Assert.assertEquals(0, countRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
         }
         delete.undoCommand();
         Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
         Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
         if (scenario.getConfig().scenario().isUseTransit()) {
             Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), layer.getScenario().getTransitSchedule().getFacilities().size());
-            Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), layer.getScenario().getTransitSchedule().getTransitLines().size());
-            Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(layer.getScenario().getTransitSchedule()));
-            Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(layer.getScenario().getTransitSchedule()));
+            Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
+            Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
+            Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
+            Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
         }
+    }
+
+    private int countDepartures(TransitSchedule transitSchedule) {
+        int result = 0;
+        for (TransitLine transitLine : transitSchedule.getTransitLines().values()) {
+            for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+                result += transitRoute.getDepartures().size();
+            }
+        }
+        return result;
     }
 
     private int countLinksInRoutes(TransitSchedule transitSchedule) {
