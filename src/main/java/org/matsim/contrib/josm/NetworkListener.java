@@ -10,7 +10,10 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.utils.geometry.CoordImpl;
-import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.search.SearchCompiler.Match;
 import org.openstreetmap.josm.data.osm.*;
@@ -35,7 +38,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
     private final Map<Way, List<Link>> way2Links;
 	private final Map<Link, List<WaySegment>> link2Segments;
-	private final Map<Relation, TransitRoute> relation2Route;
     private DataSet data;
     private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
@@ -65,7 +67,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
-		this.relation2Route = relation2Route;
 	}
 
     void visitAll() {
@@ -85,7 +86,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     @Override
 	public void dataChanged(DataChangedEvent dataChangedEvent) {
         visitAll();
-        removeEmptyLines();
         fireNotifyDataChanged();
     }
 
@@ -725,10 +725,5 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     public Map<Link, List<WaySegment>> getLink2Segments() {
         return link2Segments;
     }
-
-    public Map<Relation, TransitRoute> getRelation2Route() {
-        return relation2Route;
-    }
-
 
 }

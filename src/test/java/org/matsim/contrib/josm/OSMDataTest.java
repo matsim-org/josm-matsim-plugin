@@ -84,12 +84,12 @@ public class OSMDataTest {
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
             config.scenario().setUseVehicles(true);
-            busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             Main.pref.addPreferenceChangeListener(busRouteListener);
             busRouteListener.visitAll();
-            incompleteWayListener = new NetworkListener(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            incompleteWayListener = new NetworkListener(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             incompleteWayListener.visitAll();
-            intersectionsListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitRoute>());
+            intersectionsListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             Main.pref.addPreferenceChangeListener(intersectionsListener);
             intersectionsListener.visitAll();
             busRouteData.addDataSetListener(busRouteListener);
