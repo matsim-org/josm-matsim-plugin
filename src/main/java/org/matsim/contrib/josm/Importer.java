@@ -33,7 +33,6 @@ class Importer {
     private Projection projection;
     private MATSimLayer layer;
 
-    HashMap<Relation, EditableTransitRoute> relation2Route = new HashMap<>();
     HashMap<Id<TransitStopFacility>, TransitStopFacility> stops = new HashMap<>();
     HashMap<Way, List<Link>> way2Links = new HashMap<>();
     HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
@@ -272,7 +271,6 @@ class Importer {
                 routeRelation.put("ref", route.getRealId().toString());
                 dataSet.addPrimitive(routeRelation);
                 lineRelation.addMember(new RelationMember(null, routeRelation));
-                relation2Route.put(routeRelation, newRoute);
             }
             dataSet.addPrimitive(lineRelation);
             targetScenario.getTransitSchedule().addTransitLine(newLine);
