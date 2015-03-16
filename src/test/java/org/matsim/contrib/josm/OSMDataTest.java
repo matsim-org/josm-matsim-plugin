@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,14 +21,17 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.LinkImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.Command;
+import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
@@ -89,7 +94,7 @@ public class OSMDataTest {
             busRouteListener.visitAll();
             incompleteWayListener = new NetworkListener(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             incompleteWayListener.visitAll();
-            intersectionsListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
+            intersectionsListener = new NetworkListener(intersectionsData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             Main.pref.addPreferenceChangeListener(intersectionsListener);
             intersectionsListener.visitAll();
             busRouteData.addDataSetListener(busRouteListener);
@@ -210,11 +215,38 @@ public class OSMDataTest {
            
         }
 	    
-//	    @Test
-//	    public void testIntersections() {
-//	    	 Assert.assertEquals(11,busRouteListener.getScenario().getNetwork().getLinks().size());
-//	         Assert.assertEquals(12,busRouteListener.getScenario().getNetwork().getNodes().size());
-//	    }
+	    @Test
+	    public void testIntersections() {
+	    	 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
+	         Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+	        
+	         Command delete = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(14, OsmPrimitiveType.NODE)), false, true);
+	         delete.executeCommand();
+	         Assert.assertEquals(9,intersectionsListener.getScenario().getNetwork().getLinks().size());
+		     Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		     
+		     delete.undoCommand();
+		     Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
+	         Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+	           
+	         Command delete2 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(2, OsmPrimitiveType.NODE)), false, true);
+	         delete2.executeCommand();
+	         Assert.assertEquals(10,intersectionsListener.getScenario().getNetwork().getLinks().size());
+		     Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		     
+		     delete2.undoCommand();
+		     Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
+	         Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+	         
+	         Command delete3 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(3, OsmPrimitiveType.WAY)), false, true);
+	         delete3.executeCommand();
+	         Assert.assertEquals(8,intersectionsListener.getScenario().getNetwork().getLinks().size());
+		     Assert.assertEquals(9,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		     
+		     delete3.undoCommand();
+		     Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
+	         Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+	    }
 
     private long countRoutes(TransitSchedule transitSchedule) {
         int result = 0;
