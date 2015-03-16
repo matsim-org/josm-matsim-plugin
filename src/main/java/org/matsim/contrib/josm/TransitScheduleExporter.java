@@ -94,10 +94,14 @@ class TransitScheduleExporter {
                         List<TransitRouteStop> newTRStops = new ArrayList<>();
                         for (TransitRouteStop tRStop : route.getStops()) {
                             Id<TransitStopFacility> stopId = Id.create(tRStop.getStopFacility().getName(), TransitStopFacility.class);
-
-                            newTRStops.add(newSchedule.getFactory()
+                            TransitRouteStop newTRStop = newSchedule.getFactory()
                                     .createTransitRouteStop(
-                                            newSchedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                                            newSchedule.getFacilities().get(stopId), tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
+                            String awaitDepartureTime = String.valueOf(layerScenario.getTransitSchedule().getTransitStopsAttributes().getAttribute(tRStop.getStopFacility().getName()+"_"+route.getRealId(), "awaitDepartureTime"));
+                            if (awaitDepartureTime != null) {
+                            	newTRStop.setAwaitDepartureTime(Boolean.parseBoolean(awaitDepartureTime));
+                            }
+                            newTRStops.add(newTRStop);
                         }
 
                         Id<TransitRoute> routeId = route.getRealId();

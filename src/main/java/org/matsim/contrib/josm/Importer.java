@@ -230,7 +230,9 @@ class Importer {
                 for (TransitRouteStop tRStop : route.getStops()) {
                     TransitStopFacility stop = stops.get(tRStop.getStopFacility().getId());
                     Relation stopRelation = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
-                    newTransitStops.add(targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset()));
+                    TransitRouteStop newTRStop = targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
+                    targetScenario.getTransitSchedule().getTransitStopsAttributes().putAttribute(tRStop.getStopFacility().getName()+"_"+route.getId(), "awaitDepartureTime", String.valueOf(tRStop.isAwaitDepartureTime()));
+                    newTransitStops.add(newTRStop);
                     routeRelation.addMember(stopRelation.firstMember());
                 }
                 List<Id<Link>> links = new ArrayList<>();
