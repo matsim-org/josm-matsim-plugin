@@ -18,18 +18,18 @@ import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * The FileExporter that handles file output when saving. Runs
- * {@link MATSimTest} prior to the {@link ExportTask}.
+ * {@link NetworkTest} prior to the {@link ExportTask}.
  * 
  * @author Nico
  * 
  */
-final class MATSimNetworkFileExporter extends FileExporter {
+final class NetworkExporter extends FileExporter {
 
 	/**
 	 * Creates a new {@code MATSimNetworkFileExporter}. <br>
 	 * Extension used is {@code .xml}.
 	 */
-	MATSimNetworkFileExporter() {
+	NetworkExporter() {
 		super(new ExtensionFileFilter("xml", "xml",
 				"MATSim Network Files (*.xml)"));
 	}
@@ -54,7 +54,7 @@ final class MATSimNetworkFileExporter extends FileExporter {
 	 * Exports the MATSim network of the given {@code layer} into the given
 	 * {@code file}. <br>
 	 * <br>
-	 * Before exporting a {@link MATSimTest} is run, resulting in a validation
+	 * Before exporting a {@link NetworkTest} is run, resulting in a validation
 	 * layer. The export fails if severe errors are found.
 	 * 
 	 * @see ExportTask
@@ -68,7 +68,7 @@ final class MATSimNetworkFileExporter extends FileExporter {
 	@Override
 	public void exportData(File file, Layer layer) throws IOException {
 
-		MATSimTest test = new MATSimTest();
+		NetworkTest test = new NetworkTest();
 		PleaseWaitProgressMonitor progMonitor = new PleaseWaitProgressMonitor(
 				"Validation");
 

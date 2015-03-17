@@ -15,6 +15,8 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
+import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.Node;
@@ -35,7 +37,7 @@ import org.openstreetmap.josm.gui.progress.ProgressMonitor;
  * @author Nico
  * 
  */
-class MATSimTest extends Test {
+class NetworkTest extends Test {
 
 	/**
 	 * Maps ways (the links, respectively) to their id. Ways whose links share
@@ -79,7 +81,7 @@ class MATSimTest extends Test {
 	/**
 	 * Creates a new {@code MATSimTest}.
 	 */
-	public MATSimTest() {
+	public NetworkTest() {
 		super(tr("MATSimValidation"),
 				tr("Validates MATSim-related network data"));
 	}
@@ -90,14 +92,15 @@ class MATSimTest extends Test {
 	 */
 	@Override
 	public void startTest(ProgressMonitor monitor) {
-		super.startTest(monitor);
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
 		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
 			layer = (MATSimLayer) Main.main.getActiveLayer();
 			this.network = layer.getScenario().getNetwork();
 		}
+		super.startTest(monitor);
 	}
+		
 
 	/**
 	 * Visits a way and stores the Ids of the represented links. Also checks

@@ -46,7 +46,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		super(info);
 
 		// add xml exporter for matsim data
-		ExtensionFileFilter.exporters.add(0, new MATSimNetworkFileExporter());
+		ExtensionFileFilter.exporters.add(0, new NetworkExporter());
 
 		// add commands to tools list
         Main.main.menu.toolsMenu.add(new ImportAction());
