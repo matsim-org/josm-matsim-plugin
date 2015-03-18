@@ -115,6 +115,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
         @Override
         public void visit(Way way) {
+            primitives.add(way);
             // When a Way is touched, we need to look at relations (because they may
             // be transit routes which have changed now).
             // I probably have to look at the nodes (because they may not be needed anymore),
@@ -126,7 +127,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
         @Override
         public void visit(Relation relation) {
-
+            primitives.add(relation);
         }
 
         @Override
@@ -136,13 +137,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
         void finished() {
             ConvertVisitor visitor = new ConvertVisitor();
-            for (Node node : data.getNodes()) {
+            for (Node node : OsmPrimitive.getFilteredList(primitives, Node.class)) {
                 visitor.visit(node);
             }
-            for (Way way : data.getWays()) {
+            for (Way way : OsmPrimitive.getFilteredList(primitives, Way.class)) {
                 visitor.visit(way);
             }
-            for (Relation relation : data.getRelations()) {
+            for (Relation relation : OsmPrimitive.getFilteredList(primitives, Relation.class)) {
                 visitor.visit(relation);
             }
         }
@@ -204,6 +205,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		for (OsmPrimitive primitive : changed.getPrimitives()) {
 			if (primitive instanceof Way) {
                 aggregatePrimitivesVisitor.visit((Way) primitive);
+                List<Link> links = way2Links.get(primitive);
+                if (links != null) {
+                    for (Link link : links) {
+                        aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()), OsmPrimitiveType.NODE));
+                        aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()), OsmPrimitiveType.NODE));
+                    }
+                }
 			} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
                 aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
 			} else if (primitive instanceof Relation) {
@@ -219,7 +227,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	public void wayNodesChanged(WayNodesChangedEvent changed) {
 		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
 		for(Node node: changed.getChangedWay().getNodes()){
-			aggregatePrimitivesVisitor.visit(node);		
+			aggregatePrimitivesVisitor.visit(node);
 		}
 		List<Link> links = way2Links.get(changed.getChangedWay());
 		if (links != null) {
@@ -228,9 +236,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()), OsmPrimitiveType.NODE));
 			}
 		}
-		
-		aggregatePrimitivesVisitor.finished();
-		new ConvertVisitor().visit((changed.getChangedWay()));
+        aggregatePrimitivesVisitor.visit((changed.getChangedWay()));
+        aggregatePrimitivesVisitor.finished();
 		fireNotifyDataChanged();
 	}
 
