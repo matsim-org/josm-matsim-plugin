@@ -69,14 +69,7 @@ class NetworkTest extends Test {
 	 * Integer code for doubtful link attribute(s).
 	 */
 	private final static int DOUBTFUL_LINK_ATTRIBUTE = 3003;
-	/**
-	 * Integer code for unconnected route ways
-	 */
-	private final static int UNCONNECTED_WAYS = 3004;
-	/**
-	 * Integer code for routes without ways
-	 */
-	private final static int DOUBTFUL_ROUTE = 3005;
+	
 
 	/**
 	 * Creates a new {@code MATSimTest}.
@@ -145,36 +138,7 @@ class NetworkTest extends Test {
 		}
 	}
 	
-	/**
-	 * Visits a relation and checks for connected routes.
-	 */
-	public void visit (Relation r) {
-		if (r.hasTag("type", "route") && r.hasKey("route")) {
-			Way firstWay = null;
-			Way lastWay = null;
-			for (OsmPrimitive primitive: r.getMemberPrimitivesList()) {
-				if (primitive instanceof Way) {
-					if (firstWay == null) {
-						firstWay = (Way) primitive;
-					}
-					lastWay = (Way) primitive;
-				}
-			}
-			if (firstWay == null) {
-				String msg = ("Route has no ways!");
-				errors.add(new TestError(this, Severity.WARNING, msg,
-						DOUBTFUL_ROUTE, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
-			}
-			for (Way way: r.getMemberPrimitives(Way.class)) {
-				if (!(way.equals(lastWay) || way.equals(firstWay)) && !wayConnected(way, r)) {
-					String msg = ("Route is not fully connected");
-					errors.add(new TestError(this, Severity.WARNING, msg,
-							UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
-					break;
-				}
-			}
-		}
-	}
+	
 	
 	
 
@@ -193,32 +157,6 @@ class NetworkTest extends Test {
     }
 
 	
-	/**
-	 * Checks whether a {@code way} is connected to other ways of a {@code relation} (forwards and backwards)
-	 * 
-	 * @param way
-	 *            the {@code way} to be checked
-	 * @param relation
-	 *            the {@code relation} which describes the route
-	 * @return <code>true</code> if the {@code way} is connected to other ways,
-	 *         <code>false</code> otherwise
-	 */
-	private static boolean wayConnected(Way way, Relation relation) {
-		// TODO Auto-generated method stub
-		WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-		List<WayConnectionType> connections = calc.updateLinks(relation
-				.getMembers());
-
-		List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
-		int i = primitiveList.indexOf(way);
-		if (connections.get(i).linkPrev && connections.get(i).linkNext) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-
 	/**
 	 * Ends the test. Errors and warnings are created in this method.
 	 */
