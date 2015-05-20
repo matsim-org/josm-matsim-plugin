@@ -22,6 +22,7 @@ apply plugin: "eclipse"
 // For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
+    mavenLocal()
     maven {
         url 'http://dl.bintray.com/matsim/matsim'
     }
@@ -37,7 +38,7 @@ configurations {
 }
 
 dependencies {
-    zipIntoJar 'org.matsim:matsim:0.7.0-pre20150218_1'
+    zipIntoJar 'org.matsim:matsim:0.7.0-SNAPSHOT'
     // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
     // the dependency.
     // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
