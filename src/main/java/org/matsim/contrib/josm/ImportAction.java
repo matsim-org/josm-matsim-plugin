@@ -6,6 +6,7 @@ import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -36,7 +37,7 @@ public class ImportAction extends JosmAction {
                 JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
         JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+        dlg.setMinimumSize(new Dimension(1200, 600));
         dlg.setVisible(true);
         if (pane.getValue() != null) {
             if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {

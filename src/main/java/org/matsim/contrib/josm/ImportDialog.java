@@ -1,7 +1,6 @@
 package org.matsim.contrib.josm;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -16,6 +15,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
+import org.openstreetmap.josm.tools.GBC;
 
 /**
  * the import dialog
@@ -37,35 +37,35 @@ class ImportDialog extends JPanel {
 	final JButton schedulePathButton = new JButton("choose");
 
     final JComboBox<ProjectionChoice> importSystem = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[]{}));
+	private JPanel projSubPrefPanel;
+	private JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
+
 
 	public ImportDialog() {
-		GridBagConstraints c = new GridBagConstraints();
 		setLayout(new GridBagLayout());
-		c.gridwidth = 1;
-		c.weightx = 1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridy = 0;
-		add(networkPath, c);
+		add(networkPath, GBC.std());
 		
-		c.gridx=1;
-		add(networkPathButton, c);
+		add(networkPathButton, GBC.eop());
 
-		c.gridy=1;
-		c.gridx=0;
-		add(schedulePath,c);
+		add(schedulePath,GBC.std());
 
-		c.gridx=1;
-		add(schedulePathButton,c);
-
-		
-		c.gridx = 0;
-		c.gridy = 2;
+		add(schedulePathButton,GBC.eop());
 
         JLabel importSystemLabel = new JLabel("origin system:");
-        add(importSystemLabel, c);
+        add(importSystemLabel, GBC.std());
 
-		c.gridx = 1;
-		add(importSystem, c);
+		importSystem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ProjectionChoice pc = (ProjectionChoice) importSystem.getSelectedItem();
+				selectedProjectionChanged(pc);
+			}
+		});
+		add(importSystem, GBC.eop());
+
+		add(projSubPrefPanelWrapper, GBC.eop());
+
+		selectedProjectionChanged((ProjectionChoice) importSystem.getSelectedItem());
 		
 		networkPathButton.addActionListener(new ActionListener() {
 			@Override
@@ -106,4 +106,33 @@ class ImportDialog extends JPanel {
 
 		
 	}
+
+	/**
+	 * Handles all the work related to update the projection-specific
+	 * preferences
+	 * @param pc the choice class representing user selection
+	 */
+	private void selectedProjectionChanged(final ProjectionChoice pc) {
+		// Don't try to update if we're still starting up
+		int size = getComponentCount();
+		if(size < 1)
+			return;
+
+		final ActionListener listener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+//				updateMeta(pc);
+			}
+		};
+
+		// Replace old panel with new one
+		projSubPrefPanelWrapper.removeAll();
+		projSubPrefPanel = pc.getPreferencePanel(listener);
+		projSubPrefPanelWrapper.add(projSubPrefPanel, GBC.std().fill(GBC.BOTH).weight(1.0, 1.0));
+		revalidate();
+		repaint();
+//		updateMeta(pc);
+	}
+
+
 }
