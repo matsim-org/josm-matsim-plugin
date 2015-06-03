@@ -67,7 +67,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 
 	int i = 0;
 	for (JCheckBox cb : highways) {
-	    cb = new JCheckBox(tr(OsmConvertDefaults.wayTypes[i]));
+	    cb = new JCheckBox(OsmConvertDefaults.wayTypes[i]);
 	    cb.setToolTipText(tr("Select to download " + cb.getText() + " highways in the selected download area."));
 	    cb.setSelected(Main.pref.getBoolean("matsim_download_" + cb.getName(), true));
 	    cb.addActionListener(cbListener);

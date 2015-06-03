@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -18,6 +19,7 @@ import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.gui.MapFrame;
+import org.openstreetmap.josm.gui.download.DownloadSelection;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.tagging.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.TaggingPresetMenu;
@@ -52,6 +54,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
         Main.main.menu.toolsMenu.add(new ImportAction());
         Main.main.menu.toolsMenu.add(new NewNetworkAction());
         Main.main.menu.toolsMenu.add(new ConvertAction());
+        Main.main.menu.toolsMenu.add(new DownloadAction());
         TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
         Main.main.menu.toolsMenu.add(transitScheduleExportAction);
         Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
@@ -105,6 +108,11 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// load default converting parameters
 		OsmConvertDefaults.load();
 	}
+    
+    public void addDownloadSelection(List<DownloadSelection> list) {
+	
+	
+    }
 
     static void addPreferenceChangedListener(PreferenceChangedListener listener) {
         preferenceChangeListeners.add(new WeakReference<>(listener));
