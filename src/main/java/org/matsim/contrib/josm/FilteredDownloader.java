@@ -38,7 +38,12 @@ public class FilteredDownloader extends OsmServerReader {
     public DataSet parseOsm(ProgressMonitor progressMonitor) throws OsmTransferException {
 	progressMonitor.beginTask(tr("Contacting OSM Server..."), 10);
 	DataSet ds = null;
-	String predicates = getTagPredicates();
+	String highwayPredicates = getHighwayPredicates();
+	String routePredicates = getRoutePredicates();
+	
+	if(highwayPredicates == null && routePredicates == null) {
+	   return null;
+	}
 	
 	try {
 	    DataSet dsTemp = null;
@@ -47,13 +52,13 @@ public class FilteredDownloader extends OsmServerReader {
 		// meridian, so make two requests
 		DataSet ds2 = null;
 
-		try (InputStream in = getInputStream(getQuery(predicates, lon1, lat1, 180.0, lat2), progressMonitor.createSubTaskMonitor(9, false))) {
+		try (InputStream in = getInputStream(getQuery(highwayPredicates, routePredicates, lon1, lat1, 180.0, lat2), progressMonitor.createSubTaskMonitor(9, false))) {
 		    if (in == null)
 			return null;
 		    dsTemp = OsmReader.parseDataSet(in, progressMonitor.createSubTaskMonitor(1, false));
 		}
 
-		try (InputStream in = getInputStream(getQuery(predicates, -180.0, lat1, lon2, lat2), progressMonitor.createSubTaskMonitor(9, false))) {
+		try (InputStream in = getInputStream(getQuery(highwayPredicates, routePredicates, -180.0, lat1, lon2, lat2), progressMonitor.createSubTaskMonitor(9, false))) {
 		    if (in == null)
 			return null;
 		    ds2 = OsmReader.parseDataSet(in, progressMonitor.createSubTaskMonitor(1, false));
@@ -64,7 +69,7 @@ public class FilteredDownloader extends OsmServerReader {
 
 	    } else {
 		// Simple request
-		try (InputStream in = getInputStream(getQuery(predicates, lon1,
+		try (InputStream in = getInputStream(getQuery(highwayPredicates, routePredicates, lon1,
 						       lat1, lon2, lat2), progressMonitor.createSubTaskMonitor(9, false))) {
 		    if (in == null)
 			return null;
@@ -85,30 +90,69 @@ public class FilteredDownloader extends OsmServerReader {
 	return ds;
     }
 
-    private String getTagPredicates() {
-	StringBuilder highways = new StringBuilder("[\"highway\"~");
-	for (int i = 0; i <  OsmConvertDefaults.wayTypes.length; i++) {
+    private String getRoutePredicates() {
+	int counter = 0;
+	StringBuilder routes = new StringBuilder("[\"route\"~\"");
+	for (int i = 12; i < 16; i++) {
+	    String route = OsmConvertDefaults.wayTypes[i];
+	    if (Main.pref.getBoolean("matsim_download_" + route, true)) {
+		
+		routes.append(route);
+		routes.append("|");
+		counter++;
+	    }
+	}
+	
+	String route = "bus";
+	if (Main.pref.getBoolean("matsim_download_" + route, true)) {
+	    routes.append(route);
+	    routes.append("|");
+	    counter++;
+	} 
+	if (routes.lastIndexOf("|")!=-1) {
+	    routes.replace(routes.lastIndexOf("|"), routes.lastIndexOf("|")+1, "");
+	}
+	routes.append("\"]");
+	if(counter == 0) {
+	    return null;
+	}
+	return routes.toString();
+    }
+
+    private String getHighwayPredicates() {
+	int counter = 0;
+	StringBuilder highways = new StringBuilder("[\"highway\"~\"");
+	for (int i = 0; i < 12; i++) {
 	    String highway = OsmConvertDefaults.wayTypes[i];
 	    if (Main.pref.getBoolean("matsim_download_" + highway, true)) {
-		if(i==0) {
-		    highways.append("\"");
-		} else {
-		    highways.append("|");
-		    
-		}
 		highways.append(highway);
-	    }
-	    if(i==OsmConvertDefaults.wayTypes.length-1) {
-		highways.append("\"]");
-	    }
+		highways.append("|");
+		counter++;
+	    } 
+	}
+	if (highways.lastIndexOf("|")!=-1) {
+	  
+	    highways.replace(highways.lastIndexOf("|"), highways.lastIndexOf("|")+1, "");
+	}
+	highways.append("\"]");
+	if(counter == 0) {
+	    return null;
 	}
 	return highways.toString();
     }
 
-    private String getQuery(String predicates, double lon1, double lat1, double lon2, double lat2) {
+    private String getQuery(String highwayPredicates, String routePredicates, double lon1, double lat1, double lon2, double lat2) {
 	StringBuilder sb = new StringBuilder(API);
-	sb.append("(way"+predicates);
-	sb.append("(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ");>); out meta;");
+	sb.append("(");
+	if(highwayPredicates!=null) {
+	    sb.append("way"+highwayPredicates);
+	    sb.append("(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ");>;");
+	}
+	if(routePredicates!=null) {
+	    sb.append("relation"+routePredicates);
+	    sb.append("(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ");>;)");
+	}
+	sb.append("; out meta;");
 	return sb.toString();
 
     }
