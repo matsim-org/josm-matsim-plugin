@@ -601,7 +601,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
                 newRoute.getStops().clear();
                 newRoute.getStops().addAll(routeStops);
                 newRoute.setDescription(relation.get("route"));
-                newRoute.setRealId(Id.create(relation.get("ref"), TransitRoute.class));
+				String ref = relation.get("ref");
+				newRoute.setRealId(ref != null ? Id.create(ref, TransitRoute.class) : newRoute.getId());
                 return newRoute;
             } else {
                 return null; // not a route
@@ -619,8 +620,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
             }
             Relation maybeLineRelation = ((Relation) data.getPrimitiveById(Long.parseLong(transitLineId.toString()), OsmPrimitiveType.RELATION));
             if (maybeLineRelation != null) {
-                tLine.setRealId(Id.create(maybeLineRelation.get("ref"), TransitLine.class));
-            }
+				String ref = maybeLineRelation.get("ref");
+				if (ref != null) {
+					tLine.setRealId(Id.create(ref, TransitLine.class));
+				} else {
+					tLine.setRealId(tLine.getId());
+				}
+            } else {
+				tLine.setRealId(tLine.getId());
+			}
             return tLine;
         }
 
@@ -711,7 +719,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			return false;
 		}
 	}
-    
+
     EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
         if (maybeRelation instanceof Relation && scenario.getConfig().scenario().isUseTransit()) {
             for (EditableTransitLine editableTransitLine : scenario.getTransitSchedule().getEditableTransitLines().values()) {

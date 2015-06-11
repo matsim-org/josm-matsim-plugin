@@ -13,10 +13,13 @@ import org.openstreetmap.josm.Main;
 class OsmConvertDefaults {
 	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
-	static final String[] wayTypes = { "motorway", "motorway_link", "trunk",
+	static final String[] highwayTypes = { "motorway", "motorway_link", "trunk",
 			"trunk_link", "primary", "primary_link", "secondary", "tertiary",
-			"minor", "unclassified", "residential", "living_street", "rail",
-			"light_rail", "tram", "subway" };
+			"minor", "unclassified", "residential", "living_street" };
+
+	// This is an exhaustive list.
+	// See http://wiki.openstreetmap.org/wiki/Proposed_features/Public_Transport
+	static final String[] routeTypes = { "train", "subway", "monorail", "tram", "bus", "trolleybus", "aerialway", "ferry" };
 
 	static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed",
 			"freespeedFactor", "laneCapacity", "oneway" };
@@ -98,7 +101,7 @@ class OsmConvertDefaults {
 						"3;1;" + Double.toString(80 / 3.6) + ";1.0;"
 								+ Double.toString(Double.MAX_VALUE) + ";false"));
 
-		for (String type : wayTypes) {
+		for (String type : highwayTypes) {
 			String temp = values.get(type);
 			String tempArray[] = temp.split(";");
 
