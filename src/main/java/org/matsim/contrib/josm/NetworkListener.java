@@ -690,7 +690,6 @@ class NetworkListener implements DataSetListener,
 					newRoute.setDeleted(false);
 				}
 
-				checkOrderOfStops(routeStops, relation);
 
 				newRoute.setRoute(networkRoute);
 				newRoute.setTransportMode(relation.get("route"));
@@ -716,52 +715,6 @@ class NetworkListener implements DataSetListener,
 			}
 		}
 
-		private void checkOrderOfStops(List<TransitRouteStop> routeStops,
-				final Relation relation) {
-
-			Collections.sort(routeStops, new Comparator<TransitRouteStop>() {
-
-				@Override
-				public int compare(TransitRouteStop stop1,
-						TransitRouteStop stop2) {
-
-					Long id1 = Long.parseLong(stop1.getStopFacility().getId()
-							.toString());
-					OsmPrimitive prim1 = data.getPrimitiveById(id1,
-							OsmPrimitiveType.NODE);
-					if (prim1 == null) {
-						prim1 = data.getPrimitiveById(id1,
-								OsmPrimitiveType.CLOSEDWAY);
-					}
-					if (prim1 == null) {
-						throw new RuntimeException();
-					}
-					int index1 = relation.getMemberPrimitivesList().indexOf(
-							prim1);
-
-					Long id2 = Long.parseLong(stop2.getStopFacility().getId()
-							.toString());
-					OsmPrimitive prim2 = data.getPrimitiveById(id2,
-							OsmPrimitiveType.NODE);
-					if (prim2 == null) {
-						prim2 = data.getPrimitiveById(id1,
-								OsmPrimitiveType.CLOSEDWAY);
-					}
-					if (prim2 == null) {
-						throw new RuntimeException();
-					}
-					int index2 = relation.getMemberPrimitivesList().indexOf(
-							prim2);
-
-					if (index1 < index2) {
-						return -1;
-					} else {
-						return 1;
-					}
-				}
-			});
-
-		}
 
 		private TransitStopFacility findOrCreateFacilityLite(
 				OsmPrimitive primitive) {

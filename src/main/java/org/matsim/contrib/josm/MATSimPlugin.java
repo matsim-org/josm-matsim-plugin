@@ -1,5 +1,8 @@
 package org.matsim.contrib.josm;
 
+import static org.openstreetmap.josm.tools.I18n.marktr;
+
+import java.awt.event.KeyEvent;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
@@ -13,11 +16,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
+import org.matsim.contrib.osm.CreateMasterRoutesAction;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
+import org.openstreetmap.josm.gui.MainMenu;
 import org.openstreetmap.josm.gui.MapFrame;
 import org.openstreetmap.josm.gui.download.DownloadSelection;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
@@ -29,6 +34,7 @@ import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.plugins.Plugin;
 import org.openstreetmap.josm.plugins.PluginInformation;
 import org.xml.sax.SAXException;
+
 
 /**
  * This is the main class for the MATSim plugin.
@@ -49,6 +55,16 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 		// add xml exporter for matsim data
 		ExtensionFileFilter.exporters.add(0, new NetworkExporter());
+		
+		
+		
+		MainMenu menu = Main.main.menu;
+
+		   
+		JMenu jMenu = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
+		jMenu.add(new JMenuItem(new CreateMasterRoutesAction()));
+	
+		
 
 		// add commands to tools list
         Main.main.menu.toolsMenu.add(new ImportAction());
