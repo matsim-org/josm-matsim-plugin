@@ -1,6 +1,12 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.api.core.v01.Coord;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -14,8 +20,6 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
-
-import java.util.*;
 
 class NewConverter {
 
@@ -50,8 +54,6 @@ class NewConverter {
 
 	// create or update matsim node
 	static void createNode(Network network, Node node) {
-		Id<org.matsim.api.core.v01.network.Node> nodeId = Id.create(
-				node.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
 
 		EastNorth eastNorth = node.getEastNorth();
 		NodeImpl matsimNode = (NodeImpl) network.getFactory().createNode(
@@ -134,7 +136,7 @@ class NewConverter {
 			}
 		}
 		// no enclosing transit line; use route id as line id;
-		return Id.create(relation.getUniqueId(), TransitLine.class);
+		return null;
 	}
 
 	// checks for used MATSim tag scheme
