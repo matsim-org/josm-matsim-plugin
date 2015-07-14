@@ -8,6 +8,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.facilities.ActivityFacilities;
 import org.matsim.households.Households;
+import org.matsim.lanes.data.v20.LaneDefinitions20;
 import org.matsim.vehicles.Vehicles;
 
 public class EditableScenarioUtils {
@@ -77,6 +78,11 @@ public class EditableScenarioUtils {
             @Override
             public Households getHouseholds() {
                 return scenario.getHouseholds();
+            }
+
+            @Override
+            public LaneDefinitions20 getLanes() {
+                return scenario.getLanes();
             }
         };
     }

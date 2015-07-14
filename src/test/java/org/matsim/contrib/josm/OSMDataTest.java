@@ -88,7 +88,6 @@ public class OSMDataTest {
 	    	intersectionsLayer = new OsmDataLayer(intersectionsData, "test", null);
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
-            config.scenario().setUseVehicles(true);
             busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             Main.pref.addPreferenceChangeListener(busRouteListener);
             busRouteListener.visitAll();

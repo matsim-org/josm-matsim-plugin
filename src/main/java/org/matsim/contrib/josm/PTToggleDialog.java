@@ -105,7 +105,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         } else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
             Config config = ConfigUtils.createConfig();
             config.scenario().setUseTransit(true);
-            config.scenario().setUseVehicles(true);
             EditableScenario scenario = EditableScenarioUtils.createScenario(config);
             osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             osmNetworkListener.visitAll();

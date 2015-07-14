@@ -145,7 +145,6 @@ public class IOTest {
 	URL transitScheduleUrl = getClass().getResource("/test-input/pt-tutorial/transitschedule.xml");
 	Config config = ConfigUtils.createConfig();
 	config.scenario().setUseTransit(true);
-	config.scenario().setUseVehicles(true);
 	Scenario scenario = ScenarioUtils.createScenario(config);
 	new NetworkReaderMatsimV1(scenario).parse(networkUrl);
 	new TransitScheduleReader(scenario).readFile(transitScheduleUrl.getFile());

@@ -37,7 +37,6 @@ class TransitScheduleExporter {
         Config config = ConfigUtils.createConfig();
         Scenario targetScenario = ScenarioUtils.createScenario(config);
         config.scenario().setUseTransit(true);
-        config.scenario().setUseVehicles(true);
         if (layerScenario.getTransitSchedule() != null) {
             TransitSchedule oldSchedule = layerScenario.getTransitSchedule();
             TransitSchedule newSchedule = targetScenario.getTransitSchedule();

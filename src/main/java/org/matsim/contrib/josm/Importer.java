@@ -102,7 +102,6 @@ class Importer {
         Config config = ConfigUtils.createConfig();
         if (schedulePath != null) {
             config.scenario().setUseTransit(true);
-            config.scenario().setUseVehicles(true);
         }
         EditableScenario tempScenario = EditableScenarioUtils.createScenario(config);
         MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);

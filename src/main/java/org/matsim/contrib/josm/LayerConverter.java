@@ -34,7 +34,6 @@ public class LayerConverter {
 		// scenario for converted data
         Config config = ConfigUtils.createConfig();
         config.scenario().setUseTransit(Preferences.isSupportTransit());
-        config.scenario().setUseVehicles(Preferences.isSupportTransit());
         EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
 
 		// convert layer data
