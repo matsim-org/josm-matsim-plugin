@@ -229,7 +229,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			EditableTransitRoute route = (EditableTransitRoute) routes.get(rowIndex);
 			if (columnIndex == 0) {
-				return route.getRealId();
+				return route.getRealId().toString();
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {
