@@ -554,7 +554,7 @@ class NetworkListener implements DataSetListener,
 		@Override
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
-				if (scenario.getConfig().scenario().isUseTransit()) {
+				if (scenario.getConfig().transit().isUseTransit()) {
 					// convert Relation, remove previous references in the
 					// MATSim data
 					TransitLine tLine = getTransitLine(relation);
@@ -893,7 +893,7 @@ class NetworkListener implements DataSetListener,
 
 	EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
 		if (maybeRelation instanceof Relation
-				&& scenario.getConfig().scenario().isUseTransit()) {
+				&& scenario.getConfig().transit().isUseTransit()) {
 			for (EditableTransitLine editableTransitLine : scenario
 					.getTransitSchedule().getEditableTransitLines().values()) {
 				for (EditableTransitRoute transitRoute : editableTransitLine
