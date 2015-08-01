@@ -91,7 +91,7 @@ public class IOTest {
 	delete.executeCommand();
 	Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
 	Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
-	if (scenario.getConfig().scenario().isUseTransit()) {
+	if (scenario.getConfig().transit().isUseTransit()) {
 	    Assert.assertEquals(0, TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getFacilities().size());
 	    Assert.assertEquals(0, TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
 	    Assert.assertEquals(0, countRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
@@ -99,7 +99,7 @@ public class IOTest {
 	delete.undoCommand();
 	Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
 	Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
-	if (scenario.getConfig().scenario().isUseTransit()) {
+	if (scenario.getConfig().transit().isUseTransit()) {
 	    Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), layer.getScenario().getTransitSchedule().getFacilities().size());
 	    Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
 	    Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
@@ -144,8 +144,7 @@ public class IOTest {
 	URL networkUrl = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
 	URL transitScheduleUrl = getClass().getResource("/test-input/pt-tutorial/transitschedule.xml");
 	Config config = ConfigUtils.createConfig();
-	config.scenario().setUseTransit(true);
-	config.scenario().setUseVehicles(true);
+	config.transit().setUseTransit(true);
 	Scenario scenario = ScenarioUtils.createScenario(config);
 	new NetworkReaderMatsimV1(scenario).parse(networkUrl);
 	new TransitScheduleReader(scenario).readFile(transitScheduleUrl.getFile());

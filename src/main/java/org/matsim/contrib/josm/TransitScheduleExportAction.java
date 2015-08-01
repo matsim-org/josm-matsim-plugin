@@ -117,7 +117,7 @@ class TransitScheduleExportAction extends DiskAccessAction implements
     private boolean shouldBeEnabled() {
 	return getEditLayer() instanceof MATSimLayer
 		&& ((MATSimLayer) getEditLayer()).getScenario().getConfig()
-			.scenario().isUseTransit();
+			.transit().isUseTransit();
     }
 
 }

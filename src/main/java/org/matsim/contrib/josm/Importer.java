@@ -63,7 +63,7 @@ class Importer {
         }
         targetScenario = EditableScenarioUtils.createScenario(sourceScenario.getConfig());
         convertNetwork();
-        if (sourceScenario.getConfig().scenario().isUseTransit()) {
+        if (sourceScenario.getConfig().transit().isUseTransit()) {
             convertStops();
             convertLines();
         }
@@ -85,7 +85,7 @@ class Importer {
         for (Link link : sourceScenario.getNetwork().getLinks().values()) {
             ((LinkImpl) link).setOrigId(link.getId().toString());
         }
-        if (sourceScenario.getConfig().scenario().isUseTransit()) {
+        if (sourceScenario.getConfig().transit().isUseTransit()) {
             for (EditableTransitLine transitLine : sourceScenario.getTransitSchedule().getEditableTransitLines().values()) {
                 transitLine.setRealId(transitLine.getId());
                 for (EditableTransitRoute transitRoute : transitLine.getEditableRoutes().values()) {
@@ -101,8 +101,7 @@ class Importer {
     private EditableScenario readScenario() {
         Config config = ConfigUtils.createConfig();
         if (schedulePath != null) {
-            config.scenario().setUseTransit(true);
-            config.scenario().setUseVehicles(true);
+            config.transit().setUseTransit(true);
         }
         EditableScenario tempScenario = EditableScenarioUtils.createScenario(config);
         MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);

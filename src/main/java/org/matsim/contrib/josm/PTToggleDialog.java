@@ -99,13 +99,12 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         }
         OsmDataLayer layer = Main.main.getEditLayer();
         if (isShowing() && layer instanceof MATSimLayer) {
-            if (((MATSimLayer) layer).getScenario().getConfig().scenario().isUseTransit()) {
+            if (((MATSimLayer) layer).getScenario().getConfig().transit().isUseTransit()) {
                 osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim layers have their own network listener
             }
         } else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
             Config config = ConfigUtils.createConfig();
-            config.scenario().setUseTransit(true);
-            config.scenario().setUseVehicles(true);
+            config.transit().setUseTransit(true);
             EditableScenario scenario = EditableScenarioUtils.createScenario(config);
             osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
             osmNetworkListener.visitAll();
@@ -121,7 +120,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
     @Override
     public void notifyDataChanged() {
-        if (osmNetworkListener != null && osmNetworkListener.getScenario().getConfig().scenario().isUseTransit()) {
+        if (osmNetworkListener != null && osmNetworkListener.getScenario().getConfig().transit().isUseTransit()) {
             setTitle(tr(
                     "Lines: {0} / Routes: {1} / Stops: {2}",
                     countTransitLines(osmNetworkListener.getScenario()), countTransitRoutes(osmNetworkListener.getScenario()), countStopFacilities(osmNetworkListener.getScenario())));
@@ -132,7 +131,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
     }
 
     private int countStopFacilities(Scenario scenario) {
-        if (scenario.getConfig().scenario().isUseTransit()) {
+        if (scenario.getConfig().transit().isUseTransit()) {
             return scenario.getTransitSchedule().getFacilities().size();
         } else {
             return 0;
@@ -141,7 +140,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 
     private int countTransitRoutes(Scenario scenario) {
         int nRoutes = 0;
-        if (scenario.getConfig().scenario().isUseTransit()) {
+        if (scenario.getConfig().transit().isUseTransit()) {
             for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
                 nRoutes += line.getRoutes().size();
             }
@@ -150,7 +149,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
     }
 
     private int countTransitLines(Scenario scenario) {
-        if (scenario.getConfig().scenario().isUseTransit()) {
+        if (scenario.getConfig().transit().isUseTransit()) {
             return scenario.getTransitSchedule().getTransitLines().size();
         } else {
             return 0;
@@ -230,7 +229,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			EditableTransitRoute route = (EditableTransitRoute) routes.get(rowIndex);
 			if (columnIndex == 0) {
-				return route.getRealId();
+				return route.getRealId().toString();
 			} else if (columnIndex == 1) {
 				return route.getTransportMode();
 			} else if (columnIndex == 2) {

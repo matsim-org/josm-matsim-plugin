@@ -554,28 +554,11 @@ class NetworkListener implements DataSetListener,
 		@Override
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
-				if (scenario.getConfig().scenario().isUseTransit()) {
+				
+				if (scenario.getConfig().transit().isUseTransit()) {
 					// convert Relation, remove previous references in the
 					// MATSim data
 					TransitLine tLine = getTransitLine(relation);
-					if (tLine == null) {
-						return;
-					}
-					EditableTransitRoute oldRoute = findRoute(relation);
-					EditableTransitRoute newRoute = createTransitRoute(
-							relation, oldRoute);
-					if (oldRoute != null && newRoute == null) {
-						oldRoute.setDeleted(true);
-					} else if (oldRoute == null && newRoute != null) {
-
-						tLine.addRoute(newRoute);
-					} else if (oldRoute != null) {
-						// The line the route is assigned to might have changed,
-						// so remove it and add it again.
-						searchAndRemoveRoute(oldRoute);
-
-						tLine.addRoute(newRoute);
-					}
 					Id<TransitStopFacility> transitStopFacilityId = Id.create(
 							relation.getUniqueId(), TransitStopFacility.class);
 					if (scenario.getTransitSchedule().getFacilities()
@@ -595,6 +578,26 @@ class NetworkListener implements DataSetListener,
 							createStopFacility(relation);
 						}
 					}
+					
+					if (tLine == null) {
+						return;
+					}
+					EditableTransitRoute oldRoute = findRoute(relation);
+					EditableTransitRoute newRoute = createTransitRoute(
+							relation, oldRoute);
+					if (oldRoute != null && newRoute == null) {
+						oldRoute.setDeleted(true);
+					} else if (oldRoute == null && newRoute != null) {
+
+						tLine.addRoute(newRoute);
+					} else if (oldRoute != null) {
+						// The line the route is assigned to might have changed,
+						// so remove it and add it again.
+						searchAndRemoveRoute(oldRoute);
+
+						tLine.addRoute(newRoute);
+					}
+					
 				}
 			}
 		}
@@ -699,8 +702,8 @@ class NetworkListener implements DataSetListener,
 				String ref = relation.get("ref");
 						
 				String direction = "";
-				if (!relation.get("from").equals(null)
-						&& !relation.get("to").equals(null)) {
+				if (relation.hasKey("from")
+						&& relation.hasKey("to")) {
 					direction+= "_" + relation.get("from") + "_"
 							+ relation.get("to");
 				} else {
@@ -731,7 +734,17 @@ class NetworkListener implements DataSetListener,
 			}
 			EastNorth eN = null;
 			if (primitive instanceof Way) {
-				eN = Geometry.getCentroid(((Way) primitive).getNodes());
+				List<Node> nodes = ((Way) primitive).getNodes();
+				if (nodes.size() > 2) {
+					// Apparently, only 2D-things have a centroid.
+					eN = Geometry.getCentroid(nodes);
+				} else if (nodes.size() == 2) {
+					Node node0 = ((Way) primitive).getNodes().get(0);
+					Node node1 = ((Way) primitive).getNodes().get(1);
+					eN = node0.getEastNorth().getCenter(node1.getEastNorth());
+				} else {
+					throw new RuntimeException();
+				}
 			} else if (primitive instanceof Node) {
 				eN = ((Node) primitive).getEastNorth();
 			}
@@ -883,7 +896,7 @@ class NetworkListener implements DataSetListener,
 
 	EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
 		if (maybeRelation instanceof Relation
-				&& scenario.getConfig().scenario().isUseTransit()) {
+				&& scenario.getConfig().transit().isUseTransit()) {
 			for (EditableTransitLine editableTransitLine : scenario
 					.getTransitSchedule().getEditableTransitLines().values()) {
 				for (EditableTransitRoute transitRoute : editableTransitLine

@@ -29,6 +29,9 @@ repositories {
     maven {
         url 'http://download.osgeo.org/webdav/geotools'
     }
+    maven {
+        url 'http://oss.jfrog.org/artifactory/libs-snapshot'
+    }
     mavenCentral()
 }
 

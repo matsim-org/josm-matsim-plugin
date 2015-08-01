@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/matsim-org/josm-matsim-plugin.svg?branch=master)](https://travis-ci.org/matsim-org/josm-matsim-plugin)
+
 This is a plug-in for JOSM, the OpenStreetMap editor, which lets you preview, edit and save a MATSim network
 directly from the map.
 
