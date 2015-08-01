@@ -554,11 +554,28 @@ class NetworkListener implements DataSetListener,
 		@Override
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
-				
 				if (scenario.getConfig().transit().isUseTransit()) {
 					// convert Relation, remove previous references in the
 					// MATSim data
 					TransitLine tLine = getTransitLine(relation);
+					if (tLine == null) {
+						return;
+					}
+					EditableTransitRoute oldRoute = findRoute(relation);
+					EditableTransitRoute newRoute = createTransitRoute(
+							relation, oldRoute);
+					if (oldRoute != null && newRoute == null) {
+						oldRoute.setDeleted(true);
+					} else if (oldRoute == null && newRoute != null) {
+
+						tLine.addRoute(newRoute);
+					} else if (oldRoute != null) {
+						// The line the route is assigned to might have changed,
+						// so remove it and add it again.
+						searchAndRemoveRoute(oldRoute);
+
+						tLine.addRoute(newRoute);
+					}
 					Id<TransitStopFacility> transitStopFacilityId = Id.create(
 							relation.getUniqueId(), TransitStopFacility.class);
 					if (scenario.getTransitSchedule().getFacilities()
@@ -578,26 +595,6 @@ class NetworkListener implements DataSetListener,
 							createStopFacility(relation);
 						}
 					}
-					
-					if (tLine == null) {
-						return;
-					}
-					EditableTransitRoute oldRoute = findRoute(relation);
-					EditableTransitRoute newRoute = createTransitRoute(
-							relation, oldRoute);
-					if (oldRoute != null && newRoute == null) {
-						oldRoute.setDeleted(true);
-					} else if (oldRoute == null && newRoute != null) {
-
-						tLine.addRoute(newRoute);
-					} else if (oldRoute != null) {
-						// The line the route is assigned to might have changed,
-						// so remove it and add it again.
-						searchAndRemoveRoute(oldRoute);
-
-						tLine.addRoute(newRoute);
-					}
-					
 				}
 			}
 		}
@@ -702,8 +699,8 @@ class NetworkListener implements DataSetListener,
 				String ref = relation.get("ref");
 						
 				String direction = "";
-				if (relation.hasKey("from")
-						&& relation.hasKey("to")) {
+				if (relation.get("from") != null
+						&& relation.get("to") != null) {
 					direction+= "_" + relation.get("from") + "_"
 							+ relation.get("to");
 				} else {
