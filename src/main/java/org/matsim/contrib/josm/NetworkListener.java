@@ -642,7 +642,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 	private TransitStopFacility findOrCreateFacilityLite(OsmPrimitive primitive) {
 	    String name = (primitive.getName() == null ? String.valueOf(primitive.getUniqueId()) : primitive.getName()
-		    + "_" + +primitive.getId());
+		    + "_" + +primitive.getUniqueId());
 	    String id = String.valueOf(primitive.getUniqueId());
 	    Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
 	    if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
