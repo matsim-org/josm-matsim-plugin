@@ -142,18 +142,32 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
         int nRoutes = 0;
         if (scenario.getConfig().transit().isUseTransit()) {
             for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-                nRoutes += line.getRoutes().size();
+                nRoutes += countRoutes(line);
             }
         }
         return nRoutes;
     }
 
     private int countTransitLines(Scenario scenario) {
+        int nLines = 0;
         if (scenario.getConfig().transit().isUseTransit()) {
-            return scenario.getTransitSchedule().getTransitLines().size();
-        } else {
-            return 0;
+            for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+                if (countRoutes(line) > 0) {
+                    nLines++;
+                }
+            }
         }
+        return nLines;
+    }
+
+    private int countRoutes(TransitLine line) {
+        int nRoutes = 0;
+        for (TransitRoute transitRoute : line.getRoutes().values()) {
+            if (!((EditableTransitRoute) transitRoute).isDeleted()) {
+                nRoutes++;
+            }
+        }
+        return nRoutes;
     }
 
     @Override
@@ -250,8 +264,8 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
                     Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
                     for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
                         for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-                            TransitRoute route = osmNetworkListener.findRoute(maybeRelation);
-                            if (route != null) {
+                            EditableTransitRoute route = osmNetworkListener.findRoute(maybeRelation);
+                            if (route != null && !route.isDeleted()) {
                                 uniqueRoutes.add(route);
                             }
                         }

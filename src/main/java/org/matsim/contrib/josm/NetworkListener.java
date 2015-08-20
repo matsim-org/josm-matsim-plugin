@@ -535,7 +535,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						searchAndRemoveRoute(oldRoute);
 						tLine.addRoute(newRoute);
 					}
-
+					if (relation.isDeleted() && relation.hasTag("type", "route_master")) {
+						EditableTransitLine transitLine = (EditableTransitLine) scenario.getTransitSchedule().getTransitLines()
+								.get(Id.create(relation.getUniqueId(), TransitLine.class));
+						if (transitLine != null) {
+							for (EditableTransitRoute route : transitLine.getEditableRoutes().values()) {
+								route.setDeleted(true);
+							}
+						}
+					}
 				}
 			}
 		}

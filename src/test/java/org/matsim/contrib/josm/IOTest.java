@@ -100,11 +100,12 @@ public class IOTest {
 	Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
 	Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
 	if (scenario.getConfig().transit().isUseTransit()) {
-	    Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), layer.getScenario().getTransitSchedule().getFacilities().size());
-	    Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
-	    Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
-	    Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
-	    Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
+		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
+		Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), outputScenario.getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), outputScenario.getTransitSchedule().getTransitLines().size());
+	    Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(outputScenario.getTransitSchedule()));
+	    Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(outputScenario.getTransitSchedule()));
+	    Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(outputScenario.getTransitSchedule()));
 	}
     }
 
