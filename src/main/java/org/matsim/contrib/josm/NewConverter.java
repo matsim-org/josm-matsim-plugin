@@ -128,16 +128,6 @@ class NewConverter {
 		return links;
 	}
 
-	static Id<TransitLine> getTransitLineId(Relation relation) {
-		for (OsmPrimitive primitive : relation.getReferrers()) {
-			if (primitive instanceof Relation
-					&& primitive.hasTag("type", "route_master")) {
-				return Id.create(primitive.getUniqueId(), TransitLine.class);
-			}
-		}
-		// no enclosing transit line; use route id as line id;
-		return null;
-	}
 
 	// checks for used MATSim tag scheme
 	static boolean meetsMatsimReq(Map<String, String> keys) {
