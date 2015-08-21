@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
+import org.openstreetmap.josm.command.ChangeCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
@@ -32,6 +34,11 @@ class MasterRoutesTest extends Test {
 	 * same id are added up in a list.
 	 */
 	private Map<String, ArrayList<Relation>> routes;
+	
+	/**
+	 * Maps existing master routes to their ref id.
+	 */
+	private Map<String, Relation> masterRoutes;
 
 	/**
 	 * Integer code for routes without master routes.
@@ -52,6 +59,7 @@ class MasterRoutesTest extends Test {
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		this.routes = new HashMap<>();
+		this.masterRoutes = new HashMap<>();
 		super.startTest(monitor);
 	}
 
@@ -81,6 +89,8 @@ class MasterRoutesTest extends Test {
 						routes.put(String.valueOf(r.getUniqueId()), new ArrayList<Relation>());
 						routes.get(String.valueOf(r.getUniqueId())).add(r);
 					}
+				} else {
+				    masterRoutes.put(master.get("ref"), master);
 				}
 			}
 		}
@@ -112,15 +122,28 @@ class MasterRoutesTest extends Test {
 			return null;
 		}
 		if (testError.getCode() == 3009) {
-			Relation master = new Relation();
-			master.put("type", "route_master");
-			
+		    
+		    
+		    Relation master = new Relation();
+		    master.put("type", "route_master");
+			    
+		    for(OsmPrimitive route: testError.getPrimitives()) {
+			master.put("ref", route.get("ref"));
+			master.addMember(new RelationMember("", route));
+		    }
+		    
+		    if(masterRoutes.containsKey(master.get("ref"))) {
+			Relation oldMaster = masterRoutes.get(master.get("ref"));
+			Relation newMaster = new Relation(oldMaster);
 			for(OsmPrimitive route: testError.getPrimitives()) {
-				master.put("ref", route.get("ref"));
-				master.addMember(new RelationMember("", route));
+			    newMaster.addMember(new RelationMember("", route));
+				
 			}
+			newMaster.getMembers().addAll(master.getMembers());
+			return new ChangeCommand(oldMaster, newMaster);
+		    }
 			
-			return new AddCommand(master);
+		    return new AddCommand(master);
 		}
 		return null;
 	}
