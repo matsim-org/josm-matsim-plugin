@@ -39,13 +39,17 @@ class NewNetworkAction extends JosmAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        MATSimLayer layer = createMatsimLayer();
+        Main.main.addLayer(layer);
+    }
+
+    static MATSimLayer createMatsimLayer() {
         DataSet dataSet = new DataSet();
         Config config = ConfigUtils.createConfig();
         EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-        MATSimLayer layer = new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
+        return new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
                 scenario, new HashMap<Way, List<Link>>(),
                 new HashMap<Link, List<WaySegment>>()
         );
-        Main.main.addLayer(layer);
     }
 }
