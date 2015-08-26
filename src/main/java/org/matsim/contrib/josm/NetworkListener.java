@@ -169,8 +169,12 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
 	for (OsmPrimitive primitive : added.getPrimitives()) {
 	    if (primitive instanceof Way) {
-		aggregatePrimitivesVisitor.visit((Way) primitive);
-	    } else if (primitive instanceof Relation) {
+			Way way = (Way) primitive;
+			aggregatePrimitivesVisitor.visit(way);
+			for (Node node : way.getNodes()) {
+				aggregatePrimitivesVisitor.visit(node);
+			}
+		} else if (primitive instanceof Relation) {
 		aggregatePrimitivesVisitor.visit((Relation) primitive);
 	    } else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
 		aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
