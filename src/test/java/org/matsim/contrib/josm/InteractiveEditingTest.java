@@ -50,10 +50,12 @@ public class InteractiveEditingTest {
 		Main.main.addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		new AddCommand(matsimLayer, node1).executeCommand();
+		AddCommand addNode1 = new AddCommand(matsimLayer, node1);
+		addNode1.executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		new AddCommand(matsimLayer, node2).executeCommand();
+		AddCommand addNode2 = new AddCommand(matsimLayer, node2);
+		addNode2.executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
@@ -61,11 +63,16 @@ public class InteractiveEditingTest {
 		way.put("capacity", "1000.0");
 		way.put("permlanes", "1.0");
 		way.put("modes", "car");
-		AddCommand addCommand = new AddCommand(matsimLayer, way);
-		addCommand.executeCommand();
+		AddCommand addWay = new AddCommand(matsimLayer, way);
+		addWay.executeCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
-		addCommand.undoCommand();
+		Assert.assertEquals(2, matsimLayer.getScenario().getNetwork().getNodes().size());
+		addWay.undoCommand();
 		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
+		addNode2.undoCommand();
+		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getNodes().size());
+		addNode1.undoCommand();
+		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
 	}
 
 

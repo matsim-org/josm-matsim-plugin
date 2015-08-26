@@ -519,9 +519,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						link2Segments.remove(removedLink);
 					}
 				}
-				// JOSM does not set a way to deleted when it is hard-deleted (not set to deleted).
-				// But it sets the dataSet to null when it is hard-deleted, so we check for that instead.
-				if (way.isUsable() && way.getDataSet() != null) {
+				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
 				}
 			}
@@ -747,7 +745,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	}
     }
 
-    private class RelevantNodeMatch extends Match {
+	// JOSM does not set a primitive to not usable when it is hard-deleted (i.e. not set to deleted).
+	// But it sets the dataSet to null when it is hard-deleted, so we additionally check for that.
+	private boolean isUsableAndNotRemoved(OsmPrimitive osmPrimitive) {
+		return osmPrimitive.isUsable() && osmPrimitive.getDataSet() != null;
+	}
+
+	private class RelevantNodeMatch extends Match {
 
 	@Override
 	public boolean match(OsmPrimitive osm) {
@@ -757,27 +761,29 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    return false;
 	}
 
-	public boolean match(Node node) {
-	    Way junctionWay = null;
-	    for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
-		if ((way.hasKey(NewConverter.TAG_HIGHWAY) || NewConverter.meetsMatsimReq(way.getKeys()))
-			&& way.isUsable()) {
-		    if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
-			return true;
-		    } else {
-			for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
-			    if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
-				    && relation.hasTag("type", "route")) {
-				return true;
-			    }
+		public boolean match(Node node) {
+			if (isUsableAndNotRemoved(node)) {
+				Way junctionWay = null;
+				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
+					if ((way.hasKey(NewConverter.TAG_HIGHWAY) || NewConverter.meetsMatsimReq(way.getKeys()))
+							&& isUsableAndNotRemoved(way)) {
+						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
+							return true;
+						} else {
+							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
+								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
+										&& relation.hasTag("type", "route")) {
+									return true;
+								}
+							}
+						}
+						junctionWay = way;
+					}
+				}
 			}
-		    }
-		    junctionWay = way;
+			return false;
 		}
-	    }
-	    return false;
 	}
-    }
 
     EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
 	if (maybeRelation instanceof Relation && scenario.getConfig().transit().isUseTransit()) {
