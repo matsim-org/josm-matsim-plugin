@@ -226,16 +226,21 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
 	for (OsmPrimitive primitive : changed.getPrimitives()) {
 	    if (primitive instanceof Way) {
-		aggregatePrimitivesVisitor.visit((Way) primitive);
-		List<Link> links = way2Links.get(primitive);
-		if (links != null) {
-		    for (Link link : links) {
-			aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(
-				Long.parseLong(link.getFromNode().getId().toString()), OsmPrimitiveType.NODE));
-			aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(
-				Long.parseLong(link.getToNode().getId().toString()), OsmPrimitiveType.NODE));
-		    }
-		}
+			Way way = (Way) primitive;
+			aggregatePrimitivesVisitor.visit(way);
+			for (Node node : way.getNodes()) {
+				aggregatePrimitivesVisitor.visit(node);
+			}
+			aggregatePrimitivesVisitor.visit(way);
+			List<Link> links = way2Links.get(way);
+			if (links != null) {
+				for (Link link : links) {
+				aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(
+					Long.parseLong(link.getFromNode().getId().toString()), OsmPrimitiveType.NODE));
+				aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(
+					Long.parseLong(link.getToNode().getId().toString()), OsmPrimitiveType.NODE));
+				}
+			}
 	    } else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
 		aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
 	    } else if (primitive instanceof Relation) {
