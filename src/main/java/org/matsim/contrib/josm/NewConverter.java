@@ -52,22 +52,6 @@ class NewConverter {
 		return modes;
 	}
 
-	// create or update matsim node
-	static void createNode(Network network, Node node) {
-
-		EastNorth eastNorth = node.getEastNorth();
-		NodeImpl matsimNode = (NodeImpl) network.getFactory().createNode(
-				Id.create(node.getUniqueId(),
-						org.matsim.api.core.v01.network.Node.class),
-				new CoordImpl(eastNorth.getX(), eastNorth.getY()));
-		if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-			matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
-		} else {
-			matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
-		}
-		network.addNode(matsimNode);
-	}
-
 	// creates links between given nodes along the respective WaySegments.
 	// adapted from original OsmNetworkReader
 	static List<Link> createLink(final Network network, final Way way,

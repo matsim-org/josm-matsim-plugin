@@ -5,11 +5,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
 import org.matsim.core.population.routes.NetworkRoute;
@@ -17,9 +13,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
@@ -140,26 +134,16 @@ public class IOTest {
 	return result;
     }
 
-    @Test
-    public void readAndWriteNetworkWithTransit() {
-	URL networkUrl = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
-	URL transitScheduleUrl = getClass().getResource("/test-input/pt-tutorial/transitschedule.xml");
-	Config config = ConfigUtils.createConfig();
-	config.transit().setUseTransit(true);
-	Scenario scenario = ScenarioUtils.createScenario(config);
-	new NetworkReaderMatsimV1(scenario).parse(networkUrl);
-	new TransitScheduleReader(scenario).readFile(transitScheduleUrl.getFile());
-	Importer importer = new Importer(networkUrl.getFile(), transitScheduleUrl.getFile(), Main.getProjection());
-	importer.run();
-	MATSimLayer layer = importer.getLayer();
-	deleteAndUndeleteEverything(scenario, layer);
+	@Test
+	public void readAndWriteNetworkWithTransit() {
+		Scenario scenario = PtTutorialScenario.scenario();
+		MATSimLayer layer = PtTutorialScenario.layer();
+		deleteAndUndeleteEverything(scenario, layer);
+		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
+		checkAttributes(scenario, outputScenario);
+	}
 
-	Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(importer.getLayer().getScenario());
-	checkAttributes(scenario, outputScenario);
-
-    }
-
-    private void checkAttributes(Scenario scenario, Scenario outputScenario) {
+	private void checkAttributes(Scenario scenario, Scenario outputScenario) {
 	Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(outputScenario.getTransitSchedule()));
 	Assert.assertEquals(countLinksInRoutes(scenario.getTransitSchedule()), countLinksInRoutes(outputScenario.getTransitSchedule()));
 	Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(outputScenario.getTransitSchedule()));

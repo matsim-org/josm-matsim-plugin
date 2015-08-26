@@ -9,6 +9,7 @@ import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.DeleteCommand;
+import org.openstreetmap.josm.command.MoveCommand;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
@@ -155,6 +156,27 @@ public class InteractiveEditingTest {
 		new ChangePropertyCommand(way, "permlanes", "1.0").executeCommand();
 		new ChangePropertyCommand(way, "modes", "car").executeCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+	}
+
+	@Test
+	public void wiggleRoadWithTransitStop() {
+		Preferences.setTransitLite(true);
+		MATSimLayer matsimLayer = PtTutorialScenario.layer();
+		Main.main.addLayer(matsimLayer);
+		Assert.assertEquals(4, matsimLayer.getScenario().getTransitSchedule().getFacilities().size());
+
+		Node node2 = findNode2(matsimLayer);
+		new MoveCommand(node2, new LatLon(node2.getCoor().lat()+0.01, node2.getCoor().lon()+0.01)).executeCommand();
+		Assert.assertEquals(4, matsimLayer.getScenario().getTransitSchedule().getFacilities().size());
+	}
+
+	private Node findNode2(MATSimLayer matsimLayer) {
+		for (Node node : matsimLayer.data.getNodes()) {
+			if ("2".equals(node.get("id"))) {
+				return node;
+			}
+		}
+		throw new RuntimeException("Where is node 2?");
 	}
 
 }

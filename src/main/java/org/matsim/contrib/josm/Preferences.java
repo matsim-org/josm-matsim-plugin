@@ -209,6 +209,10 @@ final class Preferences extends DefaultTabPreferenceSetting {
 	return Main.pref.getBoolean("matsim_transit_lite", false);
     }
 
+	static void setTransitLite(boolean transitLite) {
+		Main.pref.put("matsim_transit_lite", true);
+	}
+
     JTabbedPane buildContentPane() {
 	JTabbedPane pane = getTabPane();
 	pane.addTab(tr("Visualization"), buildVisualizationPanel());

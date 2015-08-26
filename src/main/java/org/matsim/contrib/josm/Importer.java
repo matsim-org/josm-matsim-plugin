@@ -192,6 +192,7 @@ class Importer {
             LatLon latLon = projection.eastNorth2latlon(eastNorth);
             org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
+            platform.put("id", stop.getName());
             dataSet.addPrimitive(platform);
             Way newWay;
             Id<Link> linkId = null;
@@ -207,7 +208,7 @@ class Importer {
                 linkId = Id.createLinkId(singleLink.getId());
                 relation.addMember(new RelationMember("link", newWay));
             }
-            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
+            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(platform.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
             newStop.setName(stop.getName());
             newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
@@ -228,11 +229,11 @@ class Importer {
                 List<TransitRouteStop> newTransitStops = new ArrayList<>();
                 for (TransitRouteStop tRStop : route.getStops()) {
                     TransitStopFacility stop = stops.get(tRStop.getStopFacility().getId());
-                    Relation stopRelation = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
                     TransitRouteStop newTRStop = targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
                     targetScenario.getTransitSchedule().getTransitStopsAttributes().putAttribute(tRStop.getStopFacility().getName()+"_"+route.getId(), "awaitDepartureTime", String.valueOf(tRStop.isAwaitDepartureTime()));
                     newTransitStops.add(newTRStop);
-                    routeRelation.addMember(stopRelation.firstMember());
+                    OsmPrimitive platform = dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.NODE);
+                    routeRelation.addMember(new RelationMember("platform", platform));
                 }
                 List<Id<Link>> links = new ArrayList<>();
                 NetworkRoute networkRoute = route.getRoute();

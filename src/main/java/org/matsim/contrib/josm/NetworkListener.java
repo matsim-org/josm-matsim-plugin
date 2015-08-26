@@ -488,26 +488,36 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    way2Links.put(way, links);
 	}
 
-	void convertNode(Node node) {
-	    if (node.evaluateCondition(new RelevantNodeMatch())) {
-		NewConverter.createNode(scenario.getNetwork(), node);
-	    }
-	}
-
-	@Override
-	public void visit(Node node) {
-	    if (visited.add(node)) {
-		Id<org.matsim.api.core.v01.network.Node> id = Id.create(node.getUniqueId(),
-				org.matsim.api.core.v01.network.Node.class);
-		if (scenario.getNetwork().getNodes().containsKey(id)) {
-		    NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getNodes().get(id);
-		    scenario.getNetwork().removeNode(matsimNode.getId());
+		@Override
+		public void visit(Node node) {
+			if (visited.add(node)) {
+				scenario.getNetwork().removeNode(Id.create(node.getUniqueId(),org.matsim.api.core.v01.network.Node.class));
+				if (scenario.getConfig().transit().isUseTransit()) {
+					TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
+							.get(Id.create(String.valueOf(node.getUniqueId()), TransitStopFacility.class));
+					if (transitStopFacility != null) {
+						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
+					}
+				}
+				if (node.isDrawable()) {
+					if (node.evaluateCondition(new RelevantNodeMatch())) {
+						NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getFactory().createNode(
+								Id.create(node.getUniqueId(),
+										org.matsim.api.core.v01.network.Node.class),
+								new CoordImpl(node.getEastNorth().getX(), node.getEastNorth().getY()));
+						if (node.hasKey(ImportTask.NODE_TAG_ID)) {
+							matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
+						} else {
+							matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
+						}
+						scenario.getNetwork().addNode(matsimNode);
+					}
+					if (scenario.getConfig().transit().isUseTransit() && node.hasTag("public_transport", "platform")) {
+						createFacilityLite(node);
+					}
+				}
+			}
 		}
-		if (node.isDrawable()) {
-		    convertNode(node);
-		}
-	    }
-	}
 
 		@Override
 		public void visit(Way way) {
@@ -519,8 +529,18 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						link2Segments.remove(removedLink);
 					}
 				}
+				if (scenario.getConfig().transit().isUseTransit()) {
+					TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
+							.get(Id.create(String.valueOf(way.getUniqueId()), TransitStopFacility.class));
+					if (transitStopFacility != null) {
+						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
+					}
+				}
 				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
+					if (scenario.getConfig().transit().isUseTransit() && way.hasTag("public_transport", "platform")) {
+						createFacilityLite(way);
+					}
 				}
 			}
 		}
@@ -529,17 +549,9 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
 				if (scenario.getConfig().transit().isUseTransit()) {
-					// convert Relation, remove previous references in the
-					// MATSim data
-					Id<TransitStopFacility> transitStopFacilityId = Id.create(relation.getUniqueId(),
-							TransitStopFacility.class);
-					if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
-						scenario.getTransitSchedule().removeStopFacility(
-								scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
-					}
 					if (!relation.isDeleted()) {
 						if (relation.hasTag("matsim", "stop_relation")) {
-							createStopFacility(relation);
+							patchStopFacility(relation);
 						}
 					}
 					EditableTransitRoute oldRoute = findRoute(relation);
@@ -569,35 +581,30 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			}
 		}
 
-	private void createStopFacility(Relation relation) {
-	    Id<TransitStopFacility> transitStopFacilityId = Id
-		    .create(relation.getUniqueId(), TransitStopFacility.class);
-	    Link link = null;
-	    Node platform = null;
-	    for (RelationMember member : relation.getMembers()) {
-		if (member.isWay() && member.hasRole("link")) {
-		    Way way = member.getWay();
-		    List<Link> links = way2Links.get(way);
-		    if (links != null && !links.isEmpty()) {
-			link = links.get(links.size() - 1);
-		    }
-		} else if (member.isNode() && member.hasRole("platform")) {
-		    platform = member.getNode();
+		private void patchStopFacility(Relation relation) {
+			Link link = null;
+			Node platform = null;
+			for (RelationMember member : relation.getMembers()) {
+				if (member.isWay() && member.hasRole("link")) {
+					Way way = member.getWay();
+					List<Link> links = way2Links.get(way);
+					if (links != null && !links.isEmpty()) {
+						link = links.get(links.size() - 1);
+					}
+				} else if (member.isNode() && member.hasRole("platform")) {
+					platform = member.getNode();
+				}
+			}
+			if (platform != null) {
+				TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
+						.get(Id.create(String.valueOf(platform.getUniqueId()), TransitStopFacility.class));
+				if (transitStopFacility != null) {
+					if (link != null) {
+						transitStopFacility.setLinkId(link.getId());
+					}
+				}
+			}
 		}
-	    }
-	    if (platform != null) {
-		TransitStopFacility stop = scenario
-			.getTransitSchedule()
-			.getFactory()
-			.createTransitStopFacility(transitStopFacilityId,
-				new CoordImpl(platform.getEastNorth().getX(), platform.getEastNorth().getY()), true);
-		stop.setName(relation.get("id"));
-		if (link != null) {
-		    stop.setLinkId(link.getId());
-		}
-		scenario.getTransitSchedule().addStopFacility(stop);
-	    }
-	}
 
 	private EditableTransitRoute createTransitRoute(Relation relation, EditableTransitRoute oldRoute) {
 		if (!relation.isDeleted() && relation.hasTag("type", "route")) {
@@ -611,28 +618,19 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				}
 				RelationSorter sorter = new RelationSorter();
 				sorter.sortMembers(ways2Sort);
-				List<TransitRouteStop> routeStops = new ArrayList<TransitRouteStop>();
+				List<TransitRouteStop> routeStops = new ArrayList<>();
+				for (RelationMember member : relation.getMembers()) {
+					if (isStop(member)) {
+						TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
+								.get(Id.create(String.valueOf(member.getUniqueId()), TransitStopFacility.class));
+						if (facility != null) {
+							routeStops.add(scenario.getTransitSchedule().getFactory()
+									.createTransitRouteStop(facility, 0, 0));
+						}
+					}
+				}
 				NetworkRoute networkRoute = null;
-				if (Main.pref.getBoolean("matsim_transit_lite")) {
-					for (RelationMember member : relation.getMembers()) {
-						if (isStop(member)) {
-							TransitStopFacility facility = findOrCreateFacilityLite(member.getMember());
-							if (facility != null) {
-								routeStops.add(scenario.getTransitSchedule().getFactory()
-										.createTransitRouteStop(facility, 0, 0));
-							}
-						}
-					}
-				} else {
-					for (RelationMember member : relation.getMembers()) {
-						if (member.isNode() && member.getMember().hasTag("public_transport", "platform")) {
-							TransitStopFacility facility = findFacilityForPlatform(member.getNode());
-							if (facility != null) {
-								routeStops.add(scenario.getTransitSchedule().getFactory()
-										.createTransitRouteStop(facility, 0, 0));
-							}
-						}
-					}
+				if (! Main.pref.getBoolean("matsim_transit_lite")) {
 					networkRoute = createNetworkRoute(relation);
 				}
 				EditableTransitRoute newRoute;
@@ -658,54 +656,39 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		return null; // not a route
 	}
 
-	private TransitStopFacility findOrCreateFacilityLite(OsmPrimitive primitive) {
-	    String name = (primitive.getName() == null ? String.valueOf(primitive.getUniqueId()) : primitive.getName()
-		    + "_" + +primitive.getUniqueId());
-	    String id = String.valueOf(primitive.getUniqueId());
-	    Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
-	    if (scenario.getTransitSchedule().getFacilities().containsKey(transitStopFacilityId)) {
-		return scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId);
-	    }
-	    EastNorth eN = null;
-	    if (primitive instanceof Way) {
-		List<Node> nodes = ((Way) primitive).getNodes();
-		if (nodes.size() > 2) {
-		    // Apparently, only 2D-things have a centroid.
-		    eN = Geometry.getCentroid(nodes);
-		} else if (nodes.size() == 2) {
-		    Node node0 = ((Way) primitive).getNodes().get(0);
-		    Node node1 = ((Way) primitive).getNodes().get(1);
-		    eN = node0.getEastNorth().getCenter(node1.getEastNorth());
-		} else {
-		    throw new RuntimeException();
+		private TransitStopFacility createFacilityLite(OsmPrimitive primitive) {
+			String id = String.valueOf(primitive.getUniqueId());
+			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
+			EastNorth eN;
+			if (primitive instanceof Way) {
+				List<Node> nodes = ((Way) primitive).getNodes();
+				if (nodes.size() > 2) {
+					// Apparently, only 2D-things have a centroid.
+					eN = Geometry.getCentroid(nodes);
+				} else if (nodes.size() == 2) {
+					Node node0 = ((Way) primitive).getNodes().get(0);
+					Node node1 = ((Way) primitive).getNodes().get(1);
+					eN = node0.getEastNorth().getCenter(node1.getEastNorth());
+				} else {
+					throw new RuntimeException();
+				}
+			} else if (primitive instanceof Node) {
+				eN = ((Node) primitive).getEastNorth();
+			} else {
+				throw new RuntimeException();
+			}
+			TransitStopFacility stop = scenario.getTransitSchedule().getFactory()
+					.createTransitStopFacility(transitStopFacilityId, new CoordImpl(eN.getX(), eN.getY()), true);
+			if (primitive.get("id") != null) {
+				stop.setName(primitive.get("id"));
+			} else {
+				String name = (primitive.getName() == null ? String.valueOf(primitive.getUniqueId()) : primitive.getName()
+						+ "_" + +primitive.getUniqueId());
+				stop.setName(name);
+			}
+			scenario.getTransitSchedule().addStopFacility(stop);
+			return stop;
 		}
-	    } else if (primitive instanceof Node) {
-		eN = ((Node) primitive).getEastNorth();
-	    }
-	    if (eN == null) {
-		return null;
-	    }
-	    TransitStopFacility stop = scenario.getTransitSchedule().getFactory()
-		    .createTransitStopFacility(transitStopFacilityId, new CoordImpl(eN.getX(), eN.getY()), true);
-	    stop.setName(name);
-
-	    scenario.getTransitSchedule().addStopFacility(stop);
-	    return stop;
-	}
-
-	TransitStopFacility findFacilityForPlatform(Node node) {
-	    for (OsmPrimitive referrer : node.getReferrers()) {
-		if (referrer instanceof Relation && referrer.hasTag("matsim", "stop_relation")) {
-		    referrer.accept(this);
-		    TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
-			    .get(Id.create(referrer.getUniqueId(), TransitStopFacility.class));
-		    if (facility != null) {
-			return facility;
-		    }
-		}
-	    }
-	    return null;
-	}
 
 	private NetworkRoute createNetworkRoute(Relation relation) {
 	    List<Id<Link>> links = new ArrayList<>();

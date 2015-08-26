@@ -89,28 +89,4 @@
     <tag k='route' v='bus' />
     <tag k='type' v='route' />
   </relation>
-  <relation id='-109' action='modify' visible='true'>
-    <member type='node' ref='-28' role='platform' />
-    <member type='way' ref='-27' role='link' />
-    <tag k='id' v='4' />
-    <tag k='matsim' v='stop_relation' />
-  </relation>
-  <relation id='-99' action='modify' visible='true'>
-    <member type='way' ref='-24' role='link' />
-    <member type='node' ref='-29' role='platform' />
-    <tag k='id' v='3' />
-    <tag k='matsim' v='stop_relation' />
-  </relation>
-  <relation id='-94' action='modify' visible='true'>
-    <member type='way' ref='-16' role='link' />
-    <member type='node' ref='-31' role='platform' />
-    <tag k='id' v='2' />
-    <tag k='matsim' v='stop_relation' />
-  </relation>
-  <relation id='-89' action='modify' visible='true'>
-    <member type='node' ref='-30' role='platform' />
-    <member type='way' ref='-8' role='link' />
-    <tag k='id' v='1' />
-    <tag k='matsim' v='stop_relation' />
-  </relation>
 </osm>
