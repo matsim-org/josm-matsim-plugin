@@ -110,9 +110,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    // length may change)
 	    // and at relations (because it may be a transit stop)
 	    // which contain it.
-	    for (OsmPrimitive primitive : node.getReferrers()) {
-		primitive.accept(this);
-	    }
+
+		// Annoyingly, JOSM removes the dataSet property from primitives before calling this listener when
+		// a primitive is "hard" deleted (not flagged as deleted).
+		// So we have to check for this before asking for its referrers.
+		if (node.getDataSet() != null) {
+			for (OsmPrimitive primitive : node.getReferrers()) {
+				primitive.accept(this);
+			}
+		}
 	}
 
 	@Override
@@ -124,9 +130,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    // I probably have to look at the nodes (because they may not be
 	    // needed anymore),
 	    // but then I would probably traverse the entire net.
-	    for (OsmPrimitive primitive : way.getReferrers()) {
-		primitive.accept(this);
-	    }
+
+		// Annoyingly, JOSM removes the dataSet property from primitives before calling this listener when
+		// a primitive is "hard" deleted (not flagged as deleted).
+		// So we have to check for this before asking for its referrers.
+		if (way.getDataSet() != null) {
+			for (OsmPrimitive primitive : way.getReferrers()) {
+				primitive.accept(this);
+			}
+		}
 	}
 
 	@Override
@@ -497,21 +509,23 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    }
 	}
 
-	@Override
-	public void visit(Way way) {
-	    if (visited.add(way)) {
-		List<Link> oldLinks = way2Links.remove(way);
-		if (oldLinks != null) {
-		    for (Link link : oldLinks) {
-			Link removedLink = scenario.getNetwork().removeLink(link.getId());
-			link2Segments.remove(removedLink);
-		    }
+		@Override
+		public void visit(Way way) {
+			if (visited.add(way)) {
+				List<Link> oldLinks = way2Links.remove(way);
+				if (oldLinks != null) {
+					for (Link link : oldLinks) {
+						Link removedLink = scenario.getNetwork().removeLink(link.getId());
+						link2Segments.remove(removedLink);
+					}
+				}
+				// JOSM does not set a way to deleted when it is hard-deleted (not set to deleted).
+				// But it sets the dataSet to null when it is hard-deleted, so we check for that instead.
+				if (way.isUsable() && way.getDataSet() != null) {
+					convertWay(way);
+				}
+			}
 		}
-		if (way.isUsable()) {
-		    convertWay(way);
-		}
-	    }
-	}
 
 		@Override
 		public void visit(Relation relation) {

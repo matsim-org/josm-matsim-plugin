@@ -45,6 +45,31 @@ public class InteractiveEditingTest {
 	}
 
 	@Test
+	public void createLinkUndo() {
+		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
+		Main.main.addLayer(matsimLayer);
+		Node node1 = new Node();
+		node1.setCoor(new LatLon(0.0, 0.0));
+		new AddCommand(matsimLayer, node1).executeCommand();
+		Node node2 = new Node();
+		node2.setCoor(new LatLon(0.1, 0.1));
+		new AddCommand(matsimLayer, node2).executeCommand();
+		Way way = new Way();
+		way.addNode(node1);
+		way.addNode(node2);
+		way.put("freespeed", "10.0");
+		way.put("capacity", "1000.0");
+		way.put("permlanes", "1.0");
+		way.put("modes", "car");
+		AddCommand addCommand = new AddCommand(matsimLayer, way);
+		addCommand.executeCommand();
+		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+		addCommand.undoCommand();
+		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
+	}
+
+
+	@Test
 	public void createLinkDeleteUndoDelete() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
 		Main.main.addLayer(matsimLayer);
@@ -65,6 +90,40 @@ public class InteractiveEditingTest {
 		DeleteCommand delete = new DeleteCommand(way);
 		delete.executeCommand();
 		delete.undoCommand();
+		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+	}
+
+	@Test
+	public void createLinkDeleteWithNodesUndoDelete() {
+		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
+		Main.main.addLayer(matsimLayer);
+		Node node1 = new Node();
+		node1.setCoor(new LatLon(0.0, 0.0));
+		new AddCommand(matsimLayer, node1).executeCommand();
+		Node node2 = new Node();
+		node2.setCoor(new LatLon(0.1, 0.1));
+		new AddCommand(matsimLayer, node2).executeCommand();
+		Way way = new Way();
+		way.addNode(node1);
+		way.addNode(node2);
+		way.put("freespeed", "10.0");
+		way.put("capacity", "1000.0");
+		way.put("permlanes", "1.0");
+		way.put("modes", "car");
+		new AddCommand(matsimLayer, way).executeCommand();
+		DeleteCommand deleteWay = new DeleteCommand(way);
+		deleteWay.executeCommand();
+		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
+		DeleteCommand deleteNode1 = new DeleteCommand(node1);
+		deleteNode1.executeCommand();
+		DeleteCommand deleteNode2 = new DeleteCommand(node2);
+		deleteNode2.executeCommand();
+		deleteNode2.undoCommand();
+		deleteNode1.undoCommand();
+		// These nodes are not needed for a link yet:
+		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
+		deleteWay.undoCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
 	}
 
