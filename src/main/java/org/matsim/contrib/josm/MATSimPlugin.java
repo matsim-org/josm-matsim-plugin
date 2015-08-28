@@ -56,25 +56,23 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// add xml exporter for matsim data
 		ExtensionFileFilter.exporters.add(0, new NetworkExporter());
 		
-		
-		
 		MainMenu menu = Main.main.menu;
-
-		   
-		JMenu jMenu = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
-		jMenu.add(new JMenuItem(new CreateMasterRoutesAction()));
-	
 		
-
-		// add commands to tools list
-        Main.main.menu.toolsMenu.add(new ImportAction());
-        Main.main.menu.toolsMenu.add(new NewNetworkAction());
-        Main.main.menu.toolsMenu.add(new ConvertAction());
-        Main.main.menu.toolsMenu.add(new DownloadAction());
-        TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
-        Main.main.menu.toolsMenu.add(transitScheduleExportAction);
-        Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
-
+		JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
+		jMenu1.add(new JMenuItem(new CreateMasterRoutesAction()));
+		
+		
+		JMenu jMenu2 = menu.addMenu(marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");
+		jMenu2.add(new ImportAction());
+		jMenu2.add(new NewNetworkAction());
+		jMenu2.add(new ConvertAction());
+		jMenu2.add(new DownloadAction());
+		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
+		Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
+		jMenu2.add(transitScheduleExportAction);
+		   
+		
+	
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream(
 				"matsimPreset.xml"));
