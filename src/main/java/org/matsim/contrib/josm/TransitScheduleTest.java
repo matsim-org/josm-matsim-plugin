@@ -73,7 +73,7 @@ public class TransitScheduleTest extends Test {
 	}
 	incompleteRelations = new ArrayList<Relation>();
 	super.startTest(monitor);
-	result = TransitScheduleValidator.validateAll(layer.getScenario().getTransitSchedule(), network);
+//	result = TransitScheduleValidator.validateAll(layer.getScenario().getTransitSchedule(), network);
 
     }
 
@@ -86,26 +86,14 @@ public class TransitScheduleTest extends Test {
 	    if (r.isIncomplete()) {
 		incompleteRelations.add(r);
 	    }
-	    Way firstWay = null;
-	    Way lastWay = null;
-	    for (OsmPrimitive primitive : r.getMemberPrimitivesList()) {
-		if (primitive instanceof Way) {
-		    if (firstWay == null) {
-			firstWay = (Way) primitive;
-		    }
-		    lastWay = (Way) primitive;
-		}
-	    }
-	    if (firstWay == null) {
-		String msg = ("Route has no ways!");
+	  
+	    if (r.getMemberPrimitives(Way.class) == null) {
+		String msg = ("Route has no ways");
 		errors.add(new TestError(this, Severity.WARNING, msg, DOUBTFUL_ROUTE, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 	    }
-	    for (Way way : r.getMemberPrimitives(Way.class)) {
-		if (!(way.equals(lastWay) || way.equals(firstWay)) && !wayConnected(way, r)) {
-		    String msg = ("Route is not fully connected");
-		    errors.add(new TestError(this, Severity.WARNING, msg, UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
-		    break;
-		}
+	    if (!waysConnected(r)) {
+		String msg = ("Route is not fully connected");
+		errors.add(new TestError(this, Severity.WARNING, msg, UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 	    }
 	}
     }
@@ -121,18 +109,28 @@ public class TransitScheduleTest extends Test {
      * @return <code>true</code> if the {@code way} is connected to other ways,
      *         <code>false</code> otherwise
      */
-    private static boolean wayConnected(Way way, Relation relation) {
+    private static boolean waysConnected(Relation relation) {
 	// TODO Auto-generated method stub
 	WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
 	List<WayConnectionType> connections = calc.updateLinks(relation.getMembers());
-
 	List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
-	int i = primitiveList.indexOf(way);
-	if (connections.get(i).linkPrev && connections.get(i).linkNext) {
-	    return true;
-	} else {
-	    return false;
+	boolean firstWayFound = false;
+	boolean lastWayFound = false;
+	for (Way way: relation.getMemberPrimitives(Way.class)) {
+	    int i = primitiveList.indexOf(way);
+	    if (connections.get(i).linkPrev && connections.get(i).linkNext) {
+		continue;
+	    } else if (connections.get(i).linkPrev && lastWayFound == false){
+		lastWayFound = true;
+		continue;
+	    } else if (connections.get(i).linkNext && firstWayFound == false) {
+		firstWayFound = true;
+		continue;
+	    } else {
+		return false;
+	    }
 	}
+	return true;
     }
 
     private void analyzeTransitSchedulevalidatorResult(ValidationResult result) {
@@ -176,7 +174,7 @@ public class TransitScheduleTest extends Test {
      */
     @Override
     public void endTest() {
-	analyzeTransitSchedulevalidatorResult(result);
+//	analyzeTransitSchedulevalidatorResult(result);
 	if (!incompleteRelations.isEmpty()) {
 	    String msg = ("Route is incomplete! Auto repair to download missing elements!");
 	    errors.add(new TestError(this, Severity.WARNING, msg, INCOMPLETE_ROUTE, incompleteRelations, incompleteRelations));
