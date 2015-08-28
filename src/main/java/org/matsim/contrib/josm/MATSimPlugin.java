@@ -16,6 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
+import org.matsim.contrib.osm.CheckForIncompleteRoutesAction;
 import org.matsim.contrib.osm.CreateMasterRoutesAction;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
@@ -60,6 +61,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		
 		JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
 		jMenu1.add(new JMenuItem(new CreateMasterRoutesAction()));
+		jMenu1.add(new JMenuItem(new CheckForIncompleteRoutesAction()));
 		
 		
 		JMenu jMenu2 = menu.addMenu(marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");
