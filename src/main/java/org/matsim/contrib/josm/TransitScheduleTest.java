@@ -20,7 +20,6 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
-import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationMemberTask;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
@@ -47,12 +46,6 @@ public class TransitScheduleTest extends Test {
      * Integer code for errors emerging from {@link TransitScheduleValidator}
      */
     private final static int TRANSIT_SCHEDULE_VALIDATOR_ERROR = 3007;
-    /**
-     * Integer code for incomplete route
-     */
-    private final static int INCOMPLETE_ROUTE = 3008;
-
-    private List<Relation> incompleteRelations;
 
     /**
      * Creates a new {@code TransitScheduleTest}.
@@ -71,7 +64,6 @@ public class TransitScheduleTest extends Test {
 	    layer = (MATSimLayer) Main.main.getActiveLayer();
 	    this.network = layer.getScenario().getNetwork();
 	}
-	incompleteRelations = new ArrayList<Relation>();
 	super.startTest(monitor);
 //	result = TransitScheduleValidator.validateAll(layer.getScenario().getTransitSchedule(), network);
 
@@ -83,11 +75,8 @@ public class TransitScheduleTest extends Test {
     public void visit(Relation r) {
 
 	if (r.hasTag("type", "route") && r.hasKey("route")) {
-	    if (r.isIncomplete()) {
-		incompleteRelations.add(r);
-	    }
 	  
-	    if (r.getMemberPrimitives(Way.class) == null) {
+	    if (r.getMemberPrimitives(Way.class).isEmpty()) {
 		String msg = ("Route has no ways");
 		errors.add(new TestError(this, Severity.WARNING, msg, DOUBTFUL_ROUTE, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 	    }
@@ -175,27 +164,18 @@ public class TransitScheduleTest extends Test {
     @Override
     public void endTest() {
 //	analyzeTransitSchedulevalidatorResult(result);
-	if (!incompleteRelations.isEmpty()) {
-	    String msg = ("Route is incomplete! Auto repair to download missing elements!");
-	    errors.add(new TestError(this, Severity.WARNING, msg, INCOMPLETE_ROUTE, incompleteRelations, incompleteRelations));
-	}
 	super.endTest();
     }
 
     @Override
     public boolean isFixable(TestError testError) {
-	return testError.getCode() == INCOMPLETE_ROUTE;
+	return false;
     }
 
     @Override
     public Command fixError(TestError testError) {
 	if (!isFixable(testError)) {
 	    return null;
-	}
-	if (testError.getCode() == INCOMPLETE_ROUTE) {
-	    for (OsmPrimitive r : testError.getPrimitives()) {
-		Main.worker.submit(new DownloadRelationMemberTask((Relation) r, ((Relation) r).getIncompleteMembers(), Main.main.getEditLayer()));
-	    }
 	}
 	return null;// undoRedo handling done in mergeNodes
 
