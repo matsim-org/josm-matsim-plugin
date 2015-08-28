@@ -27,7 +27,7 @@ import org.openstreetmap.josm.gui.progress.ProgressMonitor;
  * @author Nico
  * 
  */
-class MasterRoutesTest extends Test {
+public class MasterRoutesTest extends Test {
 
 	/**
 	 * Maps routes without master routes to their ref id. Routes who share the
