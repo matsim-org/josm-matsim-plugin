@@ -499,7 +499,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
 					}
 				}
-				if (node.isDrawable()) {
+				if (isUsableAndNotRemoved(node)) {
 					if (node.evaluateCondition(new RelevantNodeMatch())) {
 						NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getFactory().createNode(
 								Id.create(node.getUniqueId(),
@@ -513,7 +513,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						scenario.getNetwork().addNode(matsimNode);
 					}
 					if (scenario.getConfig().transit().isUseTransit() && node.hasTag("public_transport", "platform")) {
-						createFacilityLite(node);
+						createTransitStopFacility(node);
 					}
 				}
 			}
@@ -539,7 +539,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
 					if (scenario.getConfig().transit().isUseTransit() && way.hasTag("public_transport", "platform")) {
-						createFacilityLite(way);
+						createTransitStopFacility(way);
 					}
 				}
 			}
@@ -620,7 +620,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				sorter.sortMembers(ways2Sort);
 				List<TransitRouteStop> routeStops = new ArrayList<>();
 				for (RelationMember member : relation.getMembers()) {
-					if (isStop(member)) {
+					if ((member.isNode() && member.getMember().hasTag("public_transport", "stop_position"))
+							|| ((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
 						TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
 								.get(Id.create(String.valueOf(member.getUniqueId()), TransitStopFacility.class));
 						if (facility != null) {
@@ -656,7 +657,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		return null; // not a route
 	}
 
-		private TransitStopFacility createFacilityLite(OsmPrimitive primitive) {
+		private TransitStopFacility createTransitStopFacility(OsmPrimitive primitive) {
 			String id = String.valueOf(primitive.getUniqueId());
 			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
 			EastNorth eN;
@@ -830,11 +831,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
     public Map<Link, List<WaySegment>> getLink2Segments() {
 	return link2Segments;
-    }
-
-    private boolean isStop(RelationMember member) {
-	return (member.isNode() && member.getMember().hasTag("public_transport", "stop_position"))
-		|| ((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"));
     }
 
 }
