@@ -620,8 +620,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				sorter.sortMembers(ways2Sort);
 				List<TransitRouteStop> routeStops = new ArrayList<>();
 				for (RelationMember member : relation.getMembers()) {
-					if ((member.isNode() && member.getMember().hasTag("public_transport", "stop_position"))
-							|| ((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
+					if (((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
 						TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
 								.get(Id.create(String.valueOf(member.getUniqueId()), TransitStopFacility.class));
 						if (facility != null) {
