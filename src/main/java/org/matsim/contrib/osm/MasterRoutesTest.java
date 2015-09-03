@@ -4,13 +4,16 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent.COMMAND;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
 import org.openstreetmap.josm.command.Command;
+import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -121,15 +124,26 @@ public class MasterRoutesTest extends Test {
 		if (!isFixable(testError)) {
 			return null;
 		}
+		List<Command> commands = new ArrayList<Command>();
 		if (testError.getCode() == 3009) {
 		    
 		    
 		    Relation master = new Relation();
 		    master.put("type", "route_master");
+		   
 			    
 		    for(OsmPrimitive route: testError.getPrimitives()) {
 			master.put("ref", route.get("ref"));
 			master.addMember(new RelationMember("", route));
+			if(route.hasKey("route")) {
+			    if(master.hasKey("route_master")) {
+				if(!master.get("route_master").contains((route.get("route")))) {
+				    master.put("route_master", master.get("route_master")+";"+route.get("route"));
+				} 
+			    } else {
+				master.put("route_master", route.get("route"));
+			    }
+			}
 		    }
 		    
 		    if(masterRoutes.containsKey(master.get("ref"))) {
@@ -137,13 +151,16 @@ public class MasterRoutesTest extends Test {
 			Relation newMaster = new Relation(oldMaster);
 			for(OsmPrimitive route: testError.getPrimitives()) {
 			    newMaster.addMember(new RelationMember("", route));
-				
+			    if(master.hasKey("route_master")) {
+				newMaster.put("route_master", master.get("route_master"));
+			    }
 			}
 			newMaster.getMembers().addAll(master.getMembers());
-			return new ChangeCommand(oldMaster, newMaster);
+			commands.add(new ChangeCommand(oldMaster, newMaster));
+		    } else {
+			commands.add(new AddCommand(master));
 		    }
-			
-		    return new AddCommand(master);
+		    return new SequenceCommand(name, commands);
 		}
 		return null;
 	}
