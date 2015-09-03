@@ -198,7 +198,6 @@ class Importer {
             Id<Link> linkId = null;
             Relation relation = new Relation();
             relation.put("matsim", "stop_relation");
-            relation.put("id", stop.getName());
             relation.addMember(new RelationMember("platform", platform));
             dataSet.addPrimitive(relation);
             if(stop.getLinkId() != null) {
