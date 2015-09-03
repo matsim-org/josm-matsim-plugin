@@ -39,6 +39,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     private final EditableScenario scenario;
 
     private final Map<Way, List<Link>> way2Links;
+	private final Map<Relation, TransitStopFacility> stopRelation2TransitStop;
     private final Map<Link, List<WaySegment>> link2Segments;
     private DataSet data;
     private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
@@ -62,12 +63,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     }
 
     public NetworkListener(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links,
-	    Map<Link, List<WaySegment>> link2Segments) throws IllegalArgumentException {
-	this.data = data;
-	MATSimPlugin.addPreferenceChangedListener(this);
-	this.scenario = scenario;
-	this.way2Links = way2Links;
-	this.link2Segments = link2Segments;
+	    Map<Link, List<WaySegment>> link2Segments, Map<Relation, TransitStopFacility> stopRelation2TransitStop) throws IllegalArgumentException {
+		this.data = data;
+		MATSimPlugin.addPreferenceChangedListener(this);
+		this.scenario = scenario;
+		this.way2Links = way2Links;
+		this.link2Segments = link2Segments;
+		this.stopRelation2TransitStop = stopRelation2TransitStop;
     }
 
     void visitAll() {
@@ -284,7 +286,24 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	fireNotifyDataChanged();
     }
 
-    private void searchAndRemoveRoute(TransitRoute route) {
+	private void patchStopFacility(Relation relation) {
+		Id<Link> maybeLinkId = getLinkIdDefinedBy(relation);
+		Node maybePlatform = getPlatformReferencedBy(relation);
+		if (maybeLinkId != null && maybePlatform != null) {
+			TransitStopFacility maybeTransitStopFacility = scenario.getTransitSchedule().getFacilities()
+					.get(Id.create(String.valueOf(maybePlatform.getUniqueId()), TransitStopFacility.class));
+			maybeTransitStopFacility.setLinkId(maybeLinkId);
+			stopRelation2TransitStop.put(relation, maybeTransitStopFacility);
+		} else {
+			TransitStopFacility maybeTransitStopFacility = stopRelation2TransitStop.get(relation);
+			if (maybeTransitStopFacility != null) {
+				maybeTransitStopFacility.setLinkId(null);
+				stopRelation2TransitStop.remove(relation);
+			}
+		}
+	}
+
+	private void searchAndRemoveRoute(TransitRoute route) {
 	// We do not know what line the route is in, so we have to search for
 	// it.
 	for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
@@ -549,10 +568,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
 				if (scenario.getConfig().transit().isUseTransit()) {
-					if (!relation.isDeleted()) {
-						if (relation.hasTag("matsim", "stop_relation")) {
-							patchStopFacility(relation);
-						}
+					if (stopRelation2TransitStop.containsKey(relation) || relation.hasTag("matsim", "stop_relation")) {
+						patchStopFacility(relation);
 					}
 					EditableTransitRoute oldRoute = findRoute(relation);
 					EditableTransitRoute newRoute = createTransitRoute(relation, oldRoute);
@@ -576,31 +593,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 								route.setDeleted(true);
 							}
 						}
-					}
-				}
-			}
-		}
-
-		private void patchStopFacility(Relation relation) {
-			Link link = null;
-			Node platform = null;
-			for (RelationMember member : relation.getMembers()) {
-				if (member.isWay() && member.hasRole("link")) {
-					Way way = member.getWay();
-					List<Link> links = way2Links.get(way);
-					if (links != null && !links.isEmpty()) {
-						link = links.get(links.size() - 1);
-					}
-				} else if (member.isNode() && member.hasRole("platform")) {
-					platform = member.getNode();
-				}
-			}
-			if (platform != null) {
-				TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
-						.get(Id.create(String.valueOf(platform.getUniqueId()), TransitStopFacility.class));
-				if (transitStopFacility != null) {
-					if (link != null) {
-						transitStopFacility.setLinkId(link.getId());
 					}
 				}
 			}
@@ -727,6 +719,32 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    }
 	}
     }
+
+	private Id<Link> getLinkIdDefinedBy(Relation relation) {
+		if (isUsableAndNotRemoved(relation)) {
+			for (RelationMember member : relation.getMembers()) {
+				if (member.isWay() && member.hasRole("link")) {
+					Way way = member.getWay();
+					List<Link> links = way2Links.get(way);
+					if (links != null && !links.isEmpty()) {
+						return links.get(links.size() - 1).getId();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private Node getPlatformReferencedBy(Relation relation) {
+		if (isUsableAndNotRemoved(relation)) {
+			for (RelationMember member : relation.getMembers()) {
+				if (member.isNode() && member.hasRole("platform")) {
+					return member.getNode();
+				}
+			}
+		}
+		return null;
+	}
 
 	// JOSM does not set a primitive to not usable when it is hard-deleted (i.e. not set to deleted).
 	// But it sets the dataSet to null when it is hard-deleted, so we additionally check for that.

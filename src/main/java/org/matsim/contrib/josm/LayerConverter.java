@@ -9,7 +9,9 @@ import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -37,7 +39,7 @@ public class LayerConverter {
         EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
 
 		// convert layer data
-        NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
+        NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
         networkListener.visitAll();
 
         // check if network should be cleaned

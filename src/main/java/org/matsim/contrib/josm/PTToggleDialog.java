@@ -9,6 +9,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.*;
@@ -106,7 +107,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
             Config config = ConfigUtils.createConfig();
             config.transit().setUseTransit(true);
             EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>());
+            osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
             osmNetworkListener.visitAll();
             layer.data.addDataSetListener(osmNetworkListener);
         } else { // empty data mappings if no data layer is active

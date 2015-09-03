@@ -142,29 +142,38 @@ public class IOTest {
 		deleteAndUndeleteEverything(scenario, layer);
 		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
 		checkAttributes(scenario, outputScenario);
-		deleteAndUndeleteStopRelations(scenario, layer);
 	}
-	
-	 private void deleteAndUndeleteStopRelations(Scenario scenario, MATSimLayer layer) {
+
+	@Test
+	public void deleteAndUndeleteStopRelations() {
+		Scenario scenario = PtTutorialScenario.scenario();
+		MATSimLayer layer = PtTutorialScenario.layer();
+		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
+		deleteAndUndeleteStopRelations(layer);
+		checkAttributes(scenario, outputScenario);
+	}
+
+	private void deleteAndUndeleteStopRelations(MATSimLayer layer) {
 		List<Command> commands = new ArrayList<>();
 		for(Relation relation: layer.data.getRelations()) {
 		    if(relation.hasTag("matsim", "stop_relation")) {
-			Command delete = DeleteCommand.delete(layer, Arrays.asList(relation), false, true);
-			delete.executeCommand();
-			commands.add(delete);
+				Command delete = DeleteCommand.delete(layer, Arrays.asList(relation), false, true);
+				delete.executeCommand();
+				commands.add(delete);
 		    }
-		    
 		}
-		for(TransitStopFacility facility: scenario.getTransitSchedule().getFacilities().values()) {
+		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
+		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 		    Assert.assertNull(facility.getLinkId());
 		}
 		for (Command command : commands) {
 		    command.undoCommand();
 		}
-		for(TransitStopFacility facility: scenario.getTransitSchedule().getFacilities().values()) {
+		outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
+		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 		    Assert.assertNotNull(facility.getLinkId());
 		}
-	    }
+	}
 
 	private void checkAttributes(Scenario scenario, Scenario outputScenario) {
 	Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(outputScenario.getTransitSchedule()));
@@ -207,6 +216,6 @@ public class IOTest {
 
     private void compareStops(Scenario outputScenario, TransitStopFacility stop) {
 	Assert.assertNotNull(outputScenario.getTransitSchedule().getFacilities().get(stop.getId()));
-	Assert.assertEquals(stop.getLinkId().toString(), outputScenario.getTransitSchedule().getFacilities().get(stop.getId()).getLinkId().toString());
+	Assert.assertEquals(stop.getLinkId(), outputScenario.getTransitSchedule().getFacilities().get(stop.getId()).getLinkId());
     }
 }

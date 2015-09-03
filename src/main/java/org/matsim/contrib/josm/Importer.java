@@ -38,6 +38,7 @@ class Importer {
     HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
     HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
     HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
+    HashMap<Relation, TransitStopFacility> stopRelation2TransitStop = new HashMap<>();
     private DataSet dataSet;
     private EditableScenario sourceScenario;
     private EditableScenario targetScenario;
@@ -73,7 +74,8 @@ class Importer {
                 networkPath==null ? null : new File(networkPath),
                 targetScenario,
                 way2Links,
-                link2Segment
+                link2Segment,
+                stopRelation2TransitStop
         );
     }
 
@@ -212,6 +214,7 @@ class Importer {
             newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
             stops.put(stop.getId(), newStop);
+            stopRelation2TransitStop.put(relation, newStop);
         }
     }
 
