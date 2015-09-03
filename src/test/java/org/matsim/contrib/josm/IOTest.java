@@ -18,6 +18,7 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
+import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 
 import java.net.URL;
@@ -141,7 +142,29 @@ public class IOTest {
 		deleteAndUndeleteEverything(scenario, layer);
 		Scenario outputScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(layer.getScenario());
 		checkAttributes(scenario, outputScenario);
+		deleteAndUndeleteStopRelations(scenario, layer);
 	}
+	
+	 private void deleteAndUndeleteStopRelations(Scenario scenario, MATSimLayer layer) {
+		List<Command> commands = new ArrayList<>();
+		for(Relation relation: layer.data.getRelations()) {
+		    if(relation.hasTag("matsim", "stop_relation")) {
+			Command delete = DeleteCommand.delete(layer, Arrays.asList(relation), false, true);
+			delete.executeCommand();
+			commands.add(delete);
+		    }
+		    
+		}
+		for(TransitStopFacility facility: scenario.getTransitSchedule().getFacilities().values()) {
+		    Assert.assertNull(facility.getLinkId());
+		}
+		for (Command command : commands) {
+		    command.undoCommand();
+		}
+		for(TransitStopFacility facility: scenario.getTransitSchedule().getFacilities().values()) {
+		    Assert.assertNotNull(facility.getLinkId());
+		}
+	    }
 
 	private void checkAttributes(Scenario scenario, Scenario outputScenario) {
 	Assert.assertEquals(countDepartures(scenario.getTransitSchedule()), countDepartures(outputScenario.getTransitSchedule()));
