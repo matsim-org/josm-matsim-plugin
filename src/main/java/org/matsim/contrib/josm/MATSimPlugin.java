@@ -19,6 +19,7 @@ import javax.swing.JSeparator;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
 import org.matsim.contrib.osm.RepairAction;
+import org.matsim.contrib.osm.UpdateStopTags;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
@@ -63,6 +64,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
 		jMenu1.add(new JMenuItem(new RepairAction("Create Master Routes", new MasterRoutesTest())));
 		jMenu1.add(new JMenuItem(new RepairAction("Check for Incomplete Routes", new IncompleteRoutesTest())));
+		jMenu1.add(new JMenuItem(new RepairAction("Update Stop Tags", new UpdateStopTags())));
 		
 		
 		JMenu jMenu2 = menu.addMenu(marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");
