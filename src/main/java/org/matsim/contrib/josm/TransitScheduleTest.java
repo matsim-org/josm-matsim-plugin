@@ -141,24 +141,26 @@ public class TransitScheduleTest extends Test {
      */
     private static boolean waysConnected(Relation relation) {
 	// TODO Auto-generated method stub
-	WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-	List<WayConnectionType> connections = calc.updateLinks(relation.getMembers());
-	List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
-	boolean firstWayFound = false;
-	boolean lastWayFound = false;
-	for (Way way: relation.getMemberPrimitives(Way.class)) {
-	    int i = primitiveList.indexOf(way);
-	    if (connections.get(i).linkPrev && connections.get(i).linkNext) {
-		continue;
-	    } else if (connections.get(i).linkPrev && lastWayFound == false){
-		lastWayFound = true;
-		continue;
-	    } else if (connections.get(i).linkNext && firstWayFound == false) {
-		firstWayFound = true;
-		continue;
-	    } else {
-		return false;
-	    }
+	if (!relation.getMembers().isEmpty()) {
+        	WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+        	List<WayConnectionType> connections = calc.updateLinks(relation.getMembers());
+        	List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
+        	boolean firstWayFound = false;
+        	boolean lastWayFound = false;
+        	for (Way way: relation.getMemberPrimitives(Way.class)) {
+        	    int i = primitiveList.indexOf(way);
+        	    if (connections.get(i).linkPrev && connections.get(i).linkNext) {
+        		continue;
+        	    } else if (connections.get(i).linkPrev && lastWayFound == false){
+        		lastWayFound = true;
+        		continue;
+        	    } else if (connections.get(i).linkNext && firstWayFound == false) {
+        		firstWayFound = true;
+        		continue;
+        	    } else {
+        		return false;
+        	    }
+        	}
 	}
 	return true;
     }
