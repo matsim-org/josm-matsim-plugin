@@ -13,6 +13,8 @@ import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.utils.CreatePseudoNetwork;
+import org.openstreetmap.josm.Main;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +30,11 @@ class TransitScheduleExporter {
 
     void run(MATSimLayer layer) {
         Scenario targetScenario = convertIdsAndFilterDeleted(layer.getScenario());
+        
+        if (! Main.pref.getBoolean("matsim_transit_lite")) {
+            CreatePseudoNetwork pseudoNetworkCreator = new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "dummy_");
+            pseudoNetworkCreator.createNetwork();
+	}
         if (targetScenario.getTransitSchedule() != null) {
             new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(scheduleFile.getPath());
         }
