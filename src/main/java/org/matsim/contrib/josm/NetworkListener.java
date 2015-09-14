@@ -39,7 +39,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
     private final EditableScenario scenario;
 
     private final Map<Way, List<Link>> way2Links;
-	private final Map<Relation, TransitStopFacility> stopRelation2TransitStop;
+    private final Map<Relation, TransitStopFacility> stopRelation2TransitStop;
     private final Map<Link, List<WaySegment>> link2Segments;
     private DataSet data;
     private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
@@ -286,22 +286,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	fireNotifyDataChanged();
     }
 
-	private void patchStopFacility(Relation relation) {
-		Id<Link> maybeLinkId = getLinkIdDefinedBy(relation);
-		Node maybePlatform = getPlatformReferencedBy(relation);
-		if (maybeLinkId != null && maybePlatform != null) {
-			TransitStopFacility maybeTransitStopFacility = scenario.getTransitSchedule().getFacilities()
-					.get(Id.create(String.valueOf(maybePlatform.getUniqueId()), TransitStopFacility.class));
-			maybeTransitStopFacility.setLinkId(maybeLinkId);
-			stopRelation2TransitStop.put(relation, maybeTransitStopFacility);
-		} else {
-			TransitStopFacility maybeTransitStopFacility = stopRelation2TransitStop.get(relation);
-			if (maybeTransitStopFacility != null) {
-				maybeTransitStopFacility.setLinkId(null);
-				stopRelation2TransitStop.remove(relation);
-			}
-		}
-	}
 
 	private void searchAndRemoveRoute(TransitRoute route) {
 	// We do not know what line the route is in, so we have to search for
@@ -531,9 +515,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						}
 						scenario.getNetwork().addNode(matsimNode);
 					}
-					if (scenario.getConfig().transit().isUseTransit() && node.hasTag("public_transport", "platform")) {
-						createTransitStopFacility(node);
-					}
 				}
 			}
 		}
@@ -557,9 +538,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				}
 				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
-					if (scenario.getConfig().transit().isUseTransit() && way.hasTag("public_transport", "platform")) {
-						createTransitStopFacility(way);
-					}
 				}
 			}
 		}
@@ -568,9 +546,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
 				if (scenario.getConfig().transit().isUseTransit()) {
-					if (stopRelation2TransitStop.containsKey(relation) || relation.hasTag("matsim", "stop_relation")) {
-						patchStopFacility(relation);
-					}
 					EditableTransitRoute oldRoute = findRoute(relation);
 					EditableTransitRoute newRoute = createTransitRoute(relation, oldRoute);
 					if (oldRoute != null && newRoute == null) {
@@ -594,6 +569,9 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 							}
 						}
 					}
+					if(relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
+					    createTransitStopFacility(relation);
+					}
 				}
 			}
 		}
@@ -613,8 +591,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				List<TransitRouteStop> routeStops = new ArrayList<>();
 				for (RelationMember member : relation.getMembers()) {
 					if (((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
-						TransitStopFacility facility = scenario.getTransitSchedule().getFacilities()
-								.get(Id.create(String.valueOf(member.getUniqueId()), TransitStopFacility.class));
+					    	TransitStopFacility facility = null;
+					    	for(OsmPrimitive referrer: member.getMember().getReferrers()) {
+					    	    if(stopRelation2TransitStop.containsKey(referrer)) {
+					    		facility = stopRelation2TransitStop.get(referrer);
+					    	    }
+					    	}
+						
 						if (facility != null) {
 							routeStops.add(scenario.getTransitSchedule().getFactory()
 									.createTransitRouteStop(facility, 0, 0));
@@ -648,38 +631,58 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		return null; // not a route
 	}
 
-		private TransitStopFacility createTransitStopFacility(OsmPrimitive primitive) {
-			String id = String.valueOf(primitive.getUniqueId());
+		private void createTransitStopFacility(Relation relation) {
+			String id = String.valueOf(relation.getUniqueId());
 			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
-			EastNorth eN;
-			if (primitive instanceof Way) {
-				List<Node> nodes = ((Way) primitive).getNodes();
-				if (nodes.size() > 2) {
-					// Apparently, only 2D-things have a centroid.
-					eN = Geometry.getCentroid(nodes);
-				} else if (nodes.size() == 2) {
-					Node node0 = ((Way) primitive).getNodes().get(0);
-					Node node1 = ((Way) primitive).getNodes().get(1);
-					eN = node0.getEastNorth().getCenter(node1.getEastNorth());
+			EastNorth eN = null;
+			Id<Link> linkId = null;
+			
+			for(RelationMember member: relation.getMembers()) {
+			    if(member.hasRole("platform")) {
+				if (member.isWay()) {
+					List<Node> nodes = member.getWay().getNodes();
+					if (nodes.size() > 2) {
+						// Apparently, only 2D-things have a centroid.
+						eN = Geometry.getCentroid(nodes);
+					} else if (nodes.size() == 2) {
+						Node node0 = member.getWay().getNodes().get(0);
+						Node node1 = member.getWay().getNodes().get(1);
+						eN = node0.getEastNorth().getCenter(node1.getEastNorth());
+					} else {
+						throw new RuntimeException();
+					}
+				} else if (member.isNode()) {
+					eN = member.getNode().getEastNorth();
 				} else {
 					throw new RuntimeException();
 				}
-			} else if (primitive instanceof Node) {
-				eN = ((Node) primitive).getEastNorth();
-			} else {
-				throw new RuntimeException();
+			    } else if( member.hasRole("matsim:link")) {
+				
+				Way way = member.getWay();
+				List<Link> links = way2Links.get(way);
+				if (links != null && !links.isEmpty()) {
+				    linkId = links.get(links.size() - 1).getId();
+				}
+			    }
 			}
+			if(eN==null) {
+			    return;
+			}
+			
+			
 			TransitStopFacility stop = scenario.getTransitSchedule().getFactory()
 					.createTransitStopFacility(transitStopFacilityId, new CoordImpl(eN.getX(), eN.getY()), true);
-			if (primitive.get("id") != null) {
-				stop.setName(primitive.get("id"));
+			if(linkId!=null) {
+			    stop.setLinkId(linkId);
+			}
+			if (relation.get("ref") != null) {
+				stop.setName(relation.get("ref"));
 			} else {
-				String name = (primitive.getName() == null ? String.valueOf(primitive.getUniqueId()) : primitive.getName()
-						+ "_" + +primitive.getUniqueId());
+				String name = (relation.getName() == null ? String.valueOf(relation.getUniqueId()) : relation.getName());
 				stop.setName(name);
 			}
 			scenario.getTransitSchedule().addStopFacility(stop);
-			return stop;
+			return;
 		}
 
 	private NetworkRoute createNetworkRoute(Relation relation) {
@@ -719,32 +722,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	    }
 	}
     }
-
-	private Id<Link> getLinkIdDefinedBy(Relation relation) {
-		if (isUsableAndNotRemoved(relation)) {
-			for (RelationMember member : relation.getMembers()) {
-				if (member.isWay() && member.hasRole("link")) {
-					Way way = member.getWay();
-					List<Link> links = way2Links.get(way);
-					if (links != null && !links.isEmpty()) {
-						return links.get(links.size() - 1).getId();
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	private Node getPlatformReferencedBy(Relation relation) {
-		if (isUsableAndNotRemoved(relation)) {
-			for (RelationMember member : relation.getMembers()) {
-				if (member.isNode() && member.hasRole("platform")) {
-					return member.getNode();
-				}
-			}
-		}
-		return null;
-	}
 
 	// JOSM does not set a primitive to not usable when it is hard-deleted (i.e. not set to deleted).
 	// But it sets the dataSet to null when it is hard-deleted, so we additionally check for that.
