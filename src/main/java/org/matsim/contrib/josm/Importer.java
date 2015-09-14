@@ -194,21 +194,24 @@ class Importer {
             LatLon latLon = projection.eastNorth2latlon(eastNorth);
             org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
             platform.put("public_transport", "platform");
-            platform.put("id", stop.getName());
+            platform.put("name", stop.getName());
             dataSet.addPrimitive(platform);
             Way newWay;
             Id<Link> linkId = null;
             Relation relation = new Relation();
-            relation.put("matsim", "stop_relation");
+            relation.put("type", "public_transport");
+            relation.put("public_transport", "stop_area");
+            relation.put("name", stop.getName());
+            relation.put("ref", stop.getId().toString());
             relation.addMember(new RelationMember("platform", platform));
-            dataSet.addPrimitive(relation);
             if(stop.getLinkId() != null) {
                 newWay = linkId2Way.get(stop.getLinkId());
                 List<Link> newWayLinks = way2Links.get(newWay);
                 Link singleLink = newWayLinks.get(0);
                 linkId = Id.createLinkId(singleLink.getId());
-                relation.addMember(new RelationMember("link", newWay));
+                relation.addMember(new RelationMember("matsim:link", newWay));
             }
+            dataSet.addPrimitive(relation);
             TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(platform.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
             newStop.setName(stop.getName());
             newStop.setLinkId(linkId);

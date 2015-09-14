@@ -570,6 +570,11 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						}
 					}
 					if(relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
+					    
+					    TransitStopFacility stop = stopRelation2TransitStop.remove(relation);
+					    if(stop!=null) {
+						scenario.getTransitSchedule().removeStopFacility(stop);
+					    }
 					    createTransitStopFacility(relation);
 					}
 				}
@@ -593,7 +598,10 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					if (((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
 					    	TransitStopFacility facility = null;
 					    	for(OsmPrimitive referrer: member.getMember().getReferrers()) {
-					    	    if(stopRelation2TransitStop.containsKey(referrer)) {
+					    	    if(referrer instanceof Relation && referrer.hasTag("type", "public_transport") && referrer.hasTag("public_transport", "stop_area")) {
+					    		if(!stopRelation2TransitStop.containsKey(referrer)) {
+					    		    createTransitStopFacility((Relation) referrer);
+					    		}
 					    		facility = stopRelation2TransitStop.get(referrer);
 					    	    }
 					    	}
@@ -638,7 +646,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			Id<Link> linkId = null;
 			
 			for(RelationMember member: relation.getMembers()) {
-			    if(member.hasRole("platform")) {
+			    if(member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")) {
 				if (member.isWay()) {
 					List<Node> nodes = member.getWay().getNodes();
 					if (nodes.size() > 2) {
@@ -682,6 +690,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				stop.setName(name);
 			}
 			scenario.getTransitSchedule().addStopFacility(stop);
+			stopRelation2TransitStop.put(relation, stop);
 			return;
 		}
 

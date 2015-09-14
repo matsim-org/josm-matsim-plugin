@@ -156,7 +156,7 @@ public class IOTest {
 	private void deleteAndUndeleteStopRelations(MATSimLayer layer) {
 		List<Command> commands = new ArrayList<>();
 		for(Relation relation: layer.data.getRelations()) {
-		    if(relation.hasTag("matsim", "stop_relation")) {
+		    if(relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
 				Command delete = DeleteCommand.delete(layer, Arrays.asList(relation), false, true);
 				delete.executeCommand();
 				commands.add(delete);
