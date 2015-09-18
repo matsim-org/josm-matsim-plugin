@@ -38,7 +38,7 @@ public class CreateStopAreas extends Test {
 	/**
 	 * Integer code for routes without master routes.
 	 */
-	private final static int PLATFORM_NO_STOP_AREA = 3009;
+	private final static int MISSING_STOP_AREA = 3009;
 
 	/**
 	 * /** Creates a new {@code MATSimTest}.
@@ -119,6 +119,31 @@ public class CreateStopAreas extends Test {
 				} else {
 				    stopAreas.put(stopArea.getName(), stopArea);
 				}
+			} else if (n.hasTag("public_transport", "stop_position")) {
+			    	Relation stopArea = null;
+				for (OsmPrimitive referrer : n.getReferrers()) {
+					if (referrer instanceof Relation
+						&& referrer.hasTag("type", "public_transport") && referrer.hasTag("public_transport", "stop_area")) {
+					    stopArea = (Relation) referrer;
+					    break;
+					}
+				}
+				if (stopArea == null) {
+				    if(n.hasKey("name")) {
+					if(stops.containsKey(n.getName())) {
+							stops.get(n.getName()).add(n);
+						} else {
+							stops.put(n.getName(), new ArrayList<OsmPrimitive>());
+							stops.get(n.getName()).add(n);
+						}
+					} else {
+						stops.put(String.valueOf(n.getUniqueId()), new ArrayList<OsmPrimitive>());
+						stops.get(String.valueOf(n.getUniqueId())).add(n);
+					}
+				} else {
+				    stopAreas.put(stopArea.getName(), stopArea);
+				}
+			    
 			}
 		}
 	}
@@ -131,16 +156,16 @@ public class CreateStopAreas extends Test {
 	public void endTest() {
 		
 		for(Entry<String, ArrayList<OsmPrimitive>> entry: stops.entrySet()) {
-			String msg = ("Platforms "+entry.getKey()+"  could be a member of a stop area");
+			String msg = ("Platform / stop position "+entry.getKey()+"  could be a member of a stop area");
 			errors.add(new TestError(this, Severity.WARNING, msg,
-					PLATFORM_NO_STOP_AREA, entry.getValue()));
+					MISSING_STOP_AREA, entry.getValue()));
 		}
 		super.endTest();
 	}
 
 	@Override
 	public boolean isFixable(TestError testError) {
-		return testError.getCode() == PLATFORM_NO_STOP_AREA;
+		return testError.getCode() == MISSING_STOP_AREA;
 	}
 
 	@Override
@@ -160,7 +185,11 @@ public class CreateStopAreas extends Test {
 		    for(OsmPrimitive stop: testError.getPrimitives()) {
 			stopArea.put("name", stop.getName());
 			stopArea.put("ref", stop.get("ref"));
-			stopArea.addMember(new RelationMember("platform", stop));
+			if(stop.get("public_transport").equals("platform")) {
+			    stopArea.addMember(new RelationMember("platform", stop));
+			} else if(stop.get("public_transport").equals("stop_position")) {
+			    stopArea.addMember(new RelationMember("stop", stop));
+			}
 		    }
 		    
 		    if(stopAreas.containsKey(stopArea.getName())) {

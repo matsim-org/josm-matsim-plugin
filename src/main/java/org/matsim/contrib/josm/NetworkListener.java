@@ -593,9 +593,11 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				}
 				RelationSorter sorter = new RelationSorter();
 				sorter.sortMembers(ways2Sort);
+				List<TransitStopFacility> stops = new ArrayList<>();
 				List<TransitRouteStop> routeStops = new ArrayList<>();
 				for (RelationMember member : relation.getMembers()) {
-					if (((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform"))) {
+					if (((member.isNode() || member.isWay()) && member.getMember().hasTag("public_transport", "platform")) 
+						|| (member.isNode() && member.getMember().hasTag("public_transport", "stop_position"))) {
 					    	TransitStopFacility facility = null;
 					    	for(OsmPrimitive referrer: member.getMember().getReferrers()) {
 					    	    if(referrer instanceof Relation && referrer.hasTag("type", "public_transport") && referrer.hasTag("public_transport", "stop_area")) {
@@ -606,12 +608,17 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					    	    }
 					    	}
 						
-						if (facility != null) {
-							routeStops.add(scenario.getTransitSchedule().getFactory()
-									.createTransitRouteStop(facility, 0, 0));
+						if (facility != null && !stops.contains(facility)) {
+							stops.add(facility);
 						}
 					}
 				}
+				
+				for(TransitStopFacility facility: stops) {
+				    	routeStops.add(scenario.getTransitSchedule().getFactory()
+				    		.createTransitRouteStop(facility, 0, 0));
+				}
+				
 				NetworkRoute networkRoute = null;
 				if (! Main.pref.getBoolean("matsim_transit_lite")) {
 					networkRoute = createNetworkRoute(relation);
