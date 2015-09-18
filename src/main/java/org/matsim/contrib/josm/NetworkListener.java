@@ -662,7 +662,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				} else if (member.isNode()) {
 					eN = member.getNode().getEastNorth();
 				} else {
-					throw new RuntimeException();
+					return;
 				}
 			    } else if( member.hasRole("matsim:link")) {
 				
@@ -683,12 +683,10 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			if(linkId!=null) {
 			    stop.setLinkId(linkId);
 			}
-			if (relation.get("ref") != null) {
-				stop.setName(relation.get("ref"));
-			} else {
-				String name = (relation.getName() == null ? String.valueOf(relation.getUniqueId()) : relation.getName());
-				stop.setName(name);
-			}
+			
+			String name = (relation.getName() == null ? String.valueOf(relation.getUniqueId()) : relation.getName());
+			stop.setName(name);
+			
 			scenario.getTransitSchedule().addStopFacility(stop);
 			stopRelation2TransitStop.put(relation, stop);
 			return;

@@ -16,6 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
+import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
 import org.matsim.contrib.osm.RepairAction;
@@ -65,6 +66,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		jMenu1.add(new JMenuItem(new RepairAction("Create Master Routes", new MasterRoutesTest())));
 		jMenu1.add(new JMenuItem(new RepairAction("Check for Incomplete Routes", new IncompleteRoutesTest())));
 		jMenu1.add(new JMenuItem(new RepairAction("Update Stop Tags", new UpdateStopTags())));
+		jMenu1.add(new JMenuItem(new RepairAction("Create Stop Areas", new CreateStopAreas())));
 		
 		
 		JMenu jMenu2 = menu.addMenu(marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");

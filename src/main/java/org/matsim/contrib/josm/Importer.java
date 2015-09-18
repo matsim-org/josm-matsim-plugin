@@ -212,7 +212,7 @@ class Importer {
                 relation.addMember(new RelationMember("matsim:link", newWay));
             }
             dataSet.addPrimitive(relation);
-            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(platform.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
+            TransitStopFacility newStop = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(), stop.getIsBlockingLane());
             newStop.setName(stop.getName());
             newStop.setLinkId(linkId);
             targetScenario.getTransitSchedule().addStopFacility(newStop);
@@ -237,8 +237,16 @@ class Importer {
                     TransitRouteStop newTRStop = targetScenario.getTransitSchedule().getFactory().createTransitRouteStop(stop, tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
                     targetScenario.getTransitSchedule().getTransitStopsAttributes().putAttribute(tRStop.getStopFacility().getName()+"_"+route.getId(), "awaitDepartureTime", String.valueOf(tRStop.isAwaitDepartureTime()));
                     newTransitStops.add(newTRStop);
-                    OsmPrimitive platform = dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.NODE);
-                    routeRelation.addMember(new RelationMember("platform", platform));
+                    Relation stopArea = (Relation) dataSet.getPrimitiveById(Long.parseLong(stop.getId().toString()), OsmPrimitiveType.RELATION);
+                    OsmPrimitive platform = null;
+                    for(RelationMember member: stopArea.getMembers()) {
+                	if(member.hasRole("platform")) {
+                	    platform = member.getMember();
+                	}
+                    }
+                    if(platform!=null) {
+                	routeRelation.addMember(new RelationMember("platform", platform));
+                    }
                 }
                 List<Id<Link>> links = new ArrayList<>();
                 NetworkRoute networkRoute = route.getRoute();

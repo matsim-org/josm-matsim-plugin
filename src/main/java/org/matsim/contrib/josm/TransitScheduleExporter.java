@@ -31,7 +31,7 @@ class TransitScheduleExporter {
     void run(MATSimLayer layer) {
         Scenario targetScenario = convertIdsAndFilterDeleted(layer.getScenario());
         
-        if (! Main.pref.getBoolean("matsim_transit_lite")) {
+        if (Main.pref.getBoolean("matsim_transit_lite")) {
             CreatePseudoNetwork pseudoNetworkCreator = new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "dummy_");
             pseudoNetworkCreator.createNetwork();
 	}

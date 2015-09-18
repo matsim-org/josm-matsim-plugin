@@ -8,24 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.contrib.josm.scenario.EditableTransitSchedule;
-import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NodeImpl;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
-import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.validation.Severity;
@@ -40,11 +34,17 @@ public class TransitScheduleTest extends Test {
     private EditableTransitSchedule schedule;
     private ValidationResult result;
     
-    	/**
-	 * Maps routes to their id. Routes that share
-	 * the same id are added up in a list.
-	 */
+    /**
+     * Maps routes to their id. Routes that share the same id are added up in a
+     * list.
+     */
     private Map<Id<TransitRoute>, ArrayList<Relation>> routeIds;
+
+    /**
+     * Maps facilities to their id. Facilities that share the same id are added up in a
+     * list.
+     */
+    private Map<Id<TransitStopFacility>, ArrayList<Relation>> facilityIds;
 
     /**
      * Integer code for unconnected route ways
@@ -66,6 +66,10 @@ public class TransitScheduleTest extends Test {
      * Integer code for duplicated id errors
      */
     private final static int DUPLICATE_ROUTE_ID  = 3008;
+    /**
+     * Integer code for duplicated id errors
+     */
+    private final static int DUPLICATE_FACILITY_ID  = 3009;
 
     /**
      * Creates a new {@code TransitScheduleTest}.
@@ -84,6 +88,7 @@ public class TransitScheduleTest extends Test {
 	     
 	    this.schedule = ((MATSimLayer) Main.main.getActiveLayer()).getScenario().getTransitSchedule();
 	    this.routeIds = new HashMap<>();
+	    this.facilityIds = new HashMap<>();
 	}
 	super.startTest(monitor);
 //	result = TransitScheduleValidator.validateAll(layer.getScenario().getTransitSchedule(), network);
@@ -124,6 +129,25 @@ public class TransitScheduleTest extends Test {
 		String msg = ("Route is not fully connected");
 		errors.add(new TestError(this, Severity.WARNING, msg, UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 	    }
+	}
+	
+	if(r.hasTag("type", "public_transport") && r.hasTag("public_transport", "stop_area")) {
+	    
+	    if (schedule != null) {
+		String id = String.valueOf(r.getUniqueId());
+		Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
+		TransitStopFacility facility = schedule.getFacilities().get(transitStopFacilityId);
+		if(facility!=null) {
+		    Id<TransitStopFacility> realId = Id.create(
+			    facility.getName(), TransitStopFacility.class);
+
+		    if (!facilityIds.containsKey(realId)) {
+			facilityIds.put(realId, new ArrayList<Relation>());
+		    }
+		    facilityIds.get(realId).add(r);
+		}
+	    }
+	    
 	}
 	
     }
@@ -219,12 +243,25 @@ public class TransitScheduleTest extends Test {
 
 		}
 	}
+	
+	for (Entry<Id<TransitStopFacility>, ArrayList<Relation>> entry : facilityIds.entrySet()) {
+		if (entry.getValue().size() > 1) {
+
+			// create warning with message
+			String msg = "Duplicated Id "
+					+ (entry.getKey() + " not allowed.");
+			TestError error = new TestError(this, Severity.ERROR, msg,
+					DUPLICATE_FACILITY_ID, entry.getValue(), entry.getValue());
+			errors.add(error);
+
+		}
+	}
 	super.endTest();
     }
 
     @Override
     public boolean isFixable(TestError testError) {
-	return testError.getCode() == DUPLICATE_ROUTE_ID;
+	return testError.getCode() == DUPLICATE_ROUTE_ID || testError.getCode() == DUPLICATE_FACILITY_ID;
     }
 
     @Override
@@ -237,20 +274,31 @@ public class TransitScheduleTest extends Test {
 	
 	// go through all affected elements and adjust id with incremental
 	// number
-	
-	for (OsmPrimitive primitive : testError.getPrimitives()) {
-	    EditableTransitRoute route = null;
-	    Id<EditableTransitRoute> id = Id.create(primitive.getUniqueId(), EditableTransitRoute.class);
-	    for (EditableTransitLine line: schedule.getEditableTransitLines().values()) {
-		if (line.getEditableRoutes().containsKey(id)) {
-		    route = line.getEditableRoutes().get(id);
+	if(testError.getCode() == DUPLICATE_ROUTE_ID) {
+	    for (OsmPrimitive primitive : testError.getPrimitives()) {
+		EditableTransitRoute route = null;
+		Id<EditableTransitRoute> id = Id.create(primitive.getUniqueId(), EditableTransitRoute.class);
+		for (EditableTransitLine line : schedule.getEditableTransitLines().values()) {
+		    if (line.getEditableRoutes().containsKey(id)) {
+			route = line.getEditableRoutes().get(id);
+		    }
+		}
+		if (route != null) {
+		    Id<TransitRoute> realId = route.getRealId();
+		    route.setRealId(Id.create(realId + "(" + j + ")", TransitRoute.class));
+		    j++;
 		}
 	    }
-	    if(route!=null) {
-		Id<TransitRoute> realId = route.getRealId();
-		route.setRealId(Id.create(realId + "(" + j + ")", TransitRoute.class));
+	}
+	
+	if(testError.getCode() == DUPLICATE_FACILITY_ID) {
+	    for (OsmPrimitive primitive : testError.getPrimitives()) {
+		Id<TransitStopFacility> id = Id.create(primitive.getUniqueId(), TransitStopFacility.class);
+		TransitStopFacility facility = schedule.getFacilities().get(id);
+		String realId = facility.getName();
+		facility.setName(realId + "(" + j + ")");
 		j++;
-	    }	
+	    }
 	}
 	
 	return null;// undoRedo handling done in mergeNodes
