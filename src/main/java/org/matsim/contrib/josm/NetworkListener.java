@@ -652,22 +652,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			EastNorth eN = null;
 			Id<Link> linkId = null;
 			
+			List<Node> nodes = new ArrayList<Node>();
 			for(RelationMember member: relation.getMembers()) {
 			    if(member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")) {
 				if (member.isWay()) {
-					List<Node> nodes = member.getWay().getNodes();
-					if (nodes.size() > 2) {
-						// Apparently, only 2D-things have a centroid.
-						eN = Geometry.getCentroid(nodes);
-					} else if (nodes.size() == 2) {
-						Node node0 = member.getWay().getNodes().get(0);
-						Node node1 = member.getWay().getNodes().get(1);
-						eN = node0.getEastNorth().getCenter(node1.getEastNorth());
-					} else {
-						throw new RuntimeException();
-					}
+					nodes.addAll(member.getWay().getNodes());
+					
+					
 				} else if (member.isNode()) {
-					eN = member.getNode().getEastNorth();
+					nodes.add(member.getNode());
 				} else {
 					return;
 				}
@@ -680,6 +673,17 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				}
 			    }
 			}
+			
+			if(nodes.size()> 2 ) {
+			    eN = Geometry.getCentroid(nodes);
+			} else if (nodes.size() == 2) {
+				Node node0 = nodes.get(0);
+				Node node1 = nodes.get(1);
+				eN = node0.getEastNorth().getCenter(node1.getEastNorth());
+			} else if (nodes.size()==1) {
+			    eN = nodes.get(0).getEastNorth();
+			}
+			
 			if(eN==null) {
 			    return;
 			}
