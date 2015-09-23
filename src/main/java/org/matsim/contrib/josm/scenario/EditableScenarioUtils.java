@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm.scenario;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Population;
@@ -18,7 +17,7 @@ public class EditableScenarioUtils {
         if (config.transit().isUseTransit()) {
             scenarioBuilder.setTransitSchedule(new EditableTransitSchedule());
         }
-        final Scenario scenario = scenarioBuilder.createScenario();
+        final Scenario scenario = scenarioBuilder.build();
         return new EditableScenario() {
             @Override
             public EditableTransitSchedule getTransitSchedule() {
@@ -38,11 +37,6 @@ public class EditableScenarioUtils {
             @Override
             public Config getConfig() {
                 return scenario.getConfig();
-            }
-
-            @Override
-            public Coord createCoord(double v, double v1) {
-                return scenario.createCoord(v, v1);
             }
 
             @Override
