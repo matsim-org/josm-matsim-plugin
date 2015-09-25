@@ -74,6 +74,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		jMenu2.add(new NewNetworkAction());
 		jMenu2.add(new ConvertAction());
 		jMenu2.add(new DownloadAction());
+		jMenu2.add(new FilteredOsmParserAction());
 		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
 		Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
 		jMenu2.add(transitScheduleExportAction);
