@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -9,7 +10,6 @@ import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
-import org.matsim.core.utils.geometry.CoordImpl;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
@@ -507,7 +507,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						NodeImpl matsimNode = (NodeImpl) scenario.getNetwork().getFactory().createNode(
 								Id.create(node.getUniqueId(),
 										org.matsim.api.core.v01.network.Node.class),
-								new CoordImpl(node.getEastNorth().getX(), node.getEastNorth().getY()));
+								new Coord(node.getEastNorth().getX(), node.getEastNorth().getY()));
 						if (node.hasKey(ImportTask.NODE_TAG_ID)) {
 							matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
 						} else {
@@ -690,7 +690,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			
 			
 			TransitStopFacility stop = scenario.getTransitSchedule().getFactory()
-					.createTransitStopFacility(transitStopFacilityId, new CoordImpl(eN.getX(), eN.getY()), true);
+					.createTransitStopFacility(transitStopFacilityId, new Coord(eN.getX(), eN.getY()), true);
 			if(linkId!=null) {
 			    stop.setLinkId(linkId);
 			}
