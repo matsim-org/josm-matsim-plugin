@@ -3,7 +3,9 @@ package org.matsim.contrib.josm;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -27,6 +30,7 @@ import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.Compression;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
+import org.openstreetmap.josm.io.OsmServerReadPostprocessor;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -53,7 +57,7 @@ public class FilteredOsmParserAction extends JosmAction {
 	                JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 	JDialog dlg = pane.createDialog(Main.parent, tr("Parse"));
 	dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-	dlg.setMinimumSize(new Dimension(1200, 600));
+	dlg.setMinimumSize(new Dimension(400, 300));
 	dlg.setVisible(true);
 	if (pane.getValue() != null) {
 	    if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
@@ -71,7 +75,8 @@ public class FilteredOsmParserAction extends JosmAction {
 		    
 		    DataSet data = null;
 		    if(stream!=null) {
-			OsmReader.registerPostprocessor(new FilteredOsmParser());
+			OsmServerReadPostprocessor postProcessor = new FilteredOsmParser();
+			OsmReader.registerPostprocessor(postProcessor);
         		try {
         		    PleaseWaitProgressMonitor progress = new PleaseWaitProgressMonitor();
         		    data = OsmReader.parseDataSet(stream, progress);
@@ -82,7 +87,9 @@ public class FilteredOsmParserAction extends JosmAction {
         			    "Import failed: "+e1.getMessage(),
         			    "Failure", JOptionPane.ERROR_MESSAGE, new
         			    ImageProvider("warning-small").setWidth(16).get());
+        		    e1.printStackTrace();
         		}
+        		OsmReader.deregisterPostprocessor(postProcessor);
         		
         		if(data!= null) {
         		    OsmDataLayer layer = new OsmDataLayer(data, file.getPath(), file);
@@ -126,6 +133,47 @@ public class FilteredOsmParserAction extends JosmAction {
 	    });
 		
 	    add(osmPathButton, GBC.eop());
+	    
+	    JPanel contentPnl = new JPanel(new GridLayout(0, 1));
+	    contentPnl.setAlignmentX(LEFT_ALIGNMENT);
+	    JPanel highwaysPnl = new JPanel(new FlowLayout());
+	    highwaysPnl.setAlignmentX(LEFT_ALIGNMENT);
+	    JPanel routesPnl = new JPanel(new FlowLayout());
+	    routesPnl.setAlignmentX(LEFT_ALIGNMENT);
+
+	    JLabel lblHighways = new JLabel("Highways:");
+	    contentPnl.add(lblHighways);
+
+	    ActionListener cbListener = new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+		    JCheckBox cb = (JCheckBox) e.getSource();
+			Main.pref.put("matsim_parse_" + cb.getText(), cb.isSelected());
+		}
+	    };
+
+	    for (String highwayType : OsmConvertDefaults.highwayTypes) {
+		JCheckBox cb = new JCheckBox(highwayType);
+		cb.setToolTipText(tr("Select to download " + cb.getText() + " highways in the selected download area."));
+		cb.setSelected(Main.pref.getBoolean("matsim_parse_" + cb.getText(), true));
+		cb.addActionListener(cbListener);
+		highwaysPnl.add(cb, GBC.std());
+	    }
+	    contentPnl.add(highwaysPnl);
+
+	    JLabel lblRoutes = new JLabel("Routes:");
+	    contentPnl.add(lblRoutes);
+
+	    for (String routeType : OsmConvertDefaults.routeTypes) {
+		JCheckBox cb = new JCheckBox(routeType);
+		cb.setToolTipText(tr("Select to download " + cb.getText() + " routes in the selected download area."));
+		cb.setSelected(Main.pref.getBoolean("matsim_parse_" + cb.getText(), true));
+		cb.addActionListener(cbListener);
+		routesPnl.add(cb, GBC.std());
+	    }
+	    contentPnl.add(routesPnl);
+	    add(contentPnl);
 	}
     }
 }

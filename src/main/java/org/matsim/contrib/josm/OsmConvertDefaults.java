@@ -1,6 +1,8 @@
 package org.matsim.contrib.josm;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.Main;
@@ -13,13 +15,13 @@ import org.openstreetmap.josm.Main;
 class OsmConvertDefaults {
 	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
-	static final String[] highwayTypes = { "motorway", "motorway_link", "trunk",
+	static final List<String> highwayTypes = Arrays.asList("motorway", "motorway_link", "trunk",
 			"trunk_link", "primary", "primary_link", "secondary", "tertiary",
-			"minor", "unclassified", "residential", "living_street" };
+			"minor", "unclassified", "residential", "living_street");
 
 	// This is an exhaustive list.
 	// See http://wiki.openstreetmap.org/wiki/Proposed_features/Public_Transport
-	static final String[] routeTypes = { "train", "subway", "monorail", "tram", "bus", "trolleybus", "aerialway", "ferry" };
+	static final List<String> routeTypes = Arrays.asList("train", "subway", "monorail", "tram", "bus", "trolleybus", "aerialway", "ferry");
 
 	static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed",
 			"freespeedFactor", "laneCapacity", "oneway" };
