@@ -48,6 +48,9 @@ class NewNetworkAction extends JosmAction {
     static MATSimLayer createMatsimLayer() {
         DataSet dataSet = new DataSet();
         Config config = ConfigUtils.createConfig();
+        if(Preferences.isSupportTransit()) {
+            config.transit().setUseTransit(true);
+        }
         EditableScenario scenario = EditableScenarioUtils.createScenario(config);
         return new MATSimLayer(dataSet, MATSimLayer.createNewName(), null,
                 scenario, new HashMap<Way, List<Link>>(),

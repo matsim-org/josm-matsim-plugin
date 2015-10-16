@@ -13,6 +13,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.contrib.josm.scenario.EditableTransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.pt.utils.TransitScheduleValidator;
@@ -39,6 +40,12 @@ public class TransitScheduleTest extends Test {
      * list.
      */
     private Map<Id<TransitRoute>, ArrayList<Relation>> routeIds;
+    
+    /**
+     * Maps routes to their id. Routes that share the same id are added up in a
+     * list.
+     */
+    private Map<Id<TransitLine>, ArrayList<Relation>> lineIds;
 
     /**
      * Maps facilities to their id. Facilities that share the same id are added up in a
@@ -70,6 +77,10 @@ public class TransitScheduleTest extends Test {
      * Integer code for duplicated id errors
      */
     private final static int DUPLICATE_FACILITY_ID  = 3009;
+    /**
+     * Integer code for duplicated id errors
+     */
+    private final static int DUPLICATE_LINE_ID  = 3010;
 
     /**
      * Creates a new {@code TransitScheduleTest}.
@@ -89,6 +100,7 @@ public class TransitScheduleTest extends Test {
 	    this.schedule = ((MATSimLayer) Main.main.getActiveLayer()).getScenario().getTransitSchedule();
 	    this.routeIds = new HashMap<>();
 	    this.facilityIds = new HashMap<>();
+	    this.lineIds = new HashMap<>();
 	}
 	super.startTest(monitor);
 //	result = TransitScheduleValidator.validateAll(layer.getScenario().getTransitSchedule(), network);
@@ -130,6 +142,22 @@ public class TransitScheduleTest extends Test {
 		errors.add(new TestError(this, Severity.WARNING, msg, UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 	    }
 	}
+	
+	if (r.hasTag("type", "route_master")) {
+	    if (schedule != null) {
+		String id = String.valueOf(r.getUniqueId());
+		Id<TransitLine> lineId = Id.create(id, TransitLine.class);
+		EditableTransitLine line = schedule.getEditableTransitLines().get(lineId);
+		if(line!=null) {
+		    Id<TransitLine> realId = line.getRealId();
+		    if (!lineIds.containsKey(realId)) {
+			lineIds.put(realId, new ArrayList<Relation>());
+		    }
+		    lineIds.get(realId).add(r);
+		}
+	    }
+	}
+	
 	
 	if(r.hasTag("type", "public_transport") && r.hasTag("public_transport", "stop_area")) {
 	    
@@ -231,6 +259,18 @@ public class TransitScheduleTest extends Test {
     @Override
     public void endTest() {
 //	analyzeTransitSchedulevalidatorResult(result);
+	for (Entry<Id<TransitLine>, ArrayList<Relation>> entry : lineIds.entrySet()) {
+		if (entry.getValue().size() > 1) {
+
+			// create warning with message
+			String msg = "Duplicated Id "
+					+ (entry.getKey() + " not allowed.");
+			TestError error = new TestError(this, Severity.ERROR, msg,
+					DUPLICATE_LINE_ID, entry.getValue(), entry.getValue());
+			errors.add(error);
+		}
+	}
+	
 	for (Entry<Id<TransitRoute>, ArrayList<Relation>> entry : routeIds.entrySet()) {
 		if (entry.getValue().size() > 1) {
 
@@ -261,7 +301,7 @@ public class TransitScheduleTest extends Test {
 
     @Override
     public boolean isFixable(TestError testError) {
-	return testError.getCode() == DUPLICATE_ROUTE_ID || testError.getCode() == DUPLICATE_FACILITY_ID;
+	return testError.getCode() == DUPLICATE_LINE_ID || testError.getCode() == DUPLICATE_ROUTE_ID || testError.getCode() == DUPLICATE_FACILITY_ID;
     }
 
     @Override
@@ -274,6 +314,16 @@ public class TransitScheduleTest extends Test {
 	
 	// go through all affected elements and adjust id with incremental
 	// number
+	if(testError.getCode() == DUPLICATE_LINE_ID) {
+	    for (OsmPrimitive primitive : testError.getPrimitives()) {
+		Id<TransitLine> id = Id.create(primitive.getUniqueId(), TransitLine.class);
+		EditableTransitLine line = schedule.getEditableTransitLines().get(id);
+		String realId = line.getRealId().toString();
+		line.setRealId(Id.create((realId + "(" + j + ")"), TransitLine.class));
+		j++;
+	    }
+	}
+	
 	if(testError.getCode() == DUPLICATE_ROUTE_ID) {
 	    for (OsmPrimitive primitive : testError.getPrimitives()) {
 		EditableTransitRoute route = null;
