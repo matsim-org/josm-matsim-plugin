@@ -61,13 +61,13 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	MainMenu menu = Main.main.menu;
 
-	JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"), KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
+	JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"),marktr("OSM Repair") , KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
 	jMenu1.add(new JMenuItem(new RepairAction("Create Master Routes", new MasterRoutesTest())));
 	jMenu1.add(new JMenuItem(new RepairAction("Check for Incomplete Routes", new IncompleteRoutesTest())));
 	jMenu1.add(new JMenuItem(new RepairAction("Update Stop Tags", new UpdateStopTags())));
 	jMenu1.add(new JMenuItem(new RepairAction("Create Stop Areas", new CreateStopAreas())));
 
-	JMenu jMenu2 = menu.addMenu(marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");
+	JMenu jMenu2 = menu.addMenu(marktr("MATSim"), marktr("MATSim"), KeyEvent.VK_DIVIDE, menu.getDefaultMenuPos(), "MATSim Tools");
 	jMenu2.add(new ImportAction());
 	jMenu2.add(new NewNetworkAction());
 	jMenu2.add(new ConvertAction());
