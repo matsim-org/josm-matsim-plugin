@@ -17,38 +17,37 @@ import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
 public class LayerConverter {
-	
-	private OsmDataLayer osmLayer;
-	private MATSimLayer matsimLayer;
-	
-	public LayerConverter (OsmDataLayer osmLayer) {
-		this.osmLayer = osmLayer;
-	}
-	
-	public MATSimLayer getMatsimLayer() {
-		return matsimLayer;
-	}
-	
-	
-	
-	public void run() {
 
-		// scenario for converted data
-        Config config = ConfigUtils.createConfig();
-        config.transit().setUseTransit(Preferences.isSupportTransit());
-        EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
+    private OsmDataLayer osmLayer;
+    private MATSimLayer matsimLayer;
 
-		// convert layer data
-        NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
-        networkListener.visitAll();
+    public LayerConverter(OsmDataLayer osmLayer) {
+	this.osmLayer = osmLayer;
+    }
 
-        // check if network should be cleaned
-		if ((!Preferences.isSupportTransit()) && Preferences.isCleanNetwork()) {
-			new NetworkCleaner().run(sourceScenario.getNetwork());
-		}
-        Importer importer = new Importer(sourceScenario, Main.getProjection());
-        importer.run();
-        matsimLayer = importer.getLayer();
+    public MATSimLayer getMatsimLayer() {
+	return matsimLayer;
+    }
+
+    public void run() {
+
+	// scenario for converted data
+	Config config = ConfigUtils.createConfig();
+	config.transit().setUseTransit(Preferences.isSupportTransit());
+	EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
+
+	// convert layer data
+	NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<Way, List<Link>>(),
+		new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+	networkListener.visitAll();
+
+	// check if network should be cleaned
+	if ((!Preferences.isSupportTransit()) && Preferences.isCleanNetwork()) {
+	    new NetworkCleaner().run(sourceScenario.getNetwork());
 	}
+	Importer importer = new Importer(sourceScenario, Main.getProjection());
+	importer.run();
+	matsimLayer = importer.getLayer();
+    }
 
 }

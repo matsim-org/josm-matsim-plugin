@@ -9,16 +9,13 @@ import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 /**
-* Open the download dialog and download the data.
-* Run in the worker thread.
-*/
+ * Open the download dialog and download the data. Run in the worker thread.
+ */
 public class DownloadMATSimOsmTask extends DownloadOsmTask {
 
     @Override
     public Future<?> download(boolean newLayer, Bounds downloadArea, ProgressMonitor progressMonitor) {
-        return download(new FilteredDownloader(downloadArea), newLayer, downloadArea, progressMonitor);
+	return download(new FilteredDownloader(downloadArea), newLayer, downloadArea, progressMonitor);
     }
-    
-    
-}
 
+}
