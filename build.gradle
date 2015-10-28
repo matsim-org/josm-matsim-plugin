@@ -23,9 +23,6 @@ repositories {
         url 'http://dl.bintray.com/matsim/matsim'
     }
     maven {
-        url 'http://download.osgeo.org/webdav/geotools'
-    }
-    maven {
         url 'http://oss.jfrog.org/artifactory/libs-snapshot'
     }
     mavenCentral()
@@ -44,6 +41,8 @@ dependencies {
     // We add it to compile, so that it becomes a dependency of our project.
     compile (configurations.zipIntoJar.dependencies) {
    		exclude group: 'org.geotools'
+        exclude group: 'kml'
+        exclude group: 'org.jfree'
     }
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
