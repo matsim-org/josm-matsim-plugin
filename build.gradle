@@ -1,5 +1,18 @@
+buildscript {
+    // Dependencies of this build script (not of the project we are building):
+    // A Gradle plug-in we will use later to download the JOSM binary.
+    // Fetch it from Maven Central.
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:1.0'
+    }
+}
+
 // We use the Java builder and the download plug-in we just fetched.
 apply plugin: "java"
+apply plugin: 'download-task'
 apply plugin: "eclipse"
 
 // For the dependencies of our project (not of this build script itself), we also need the
@@ -11,9 +24,6 @@ repositories {
     }
     maven {
         url 'http://oss.jfrog.org/artifactory/libs-snapshot'
-    }
-    maven {
-        url 'http://josm.openstreetmap.de/nexus/content/repositories/public'
     }
     mavenCentral()
 }
@@ -36,7 +46,7 @@ dependencies {
     }
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
-    compile 'org.openstreetmap.josm:josm:SNAPSHOT'
+    compile files("libs/josm-latest.jar")
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
@@ -83,6 +93,24 @@ compileJava {
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
 }
+
+// Download the JOSM binary and put it into its place.
+project.ext.josmUrl = "http://josm.openstreetmap.de/josm-latest.jar"
+task getJosm {
+    description = "Download the latest JOSM build jar from the JOSM website"
+    doLast {
+        if (!file("libs").exists()) {
+            file("libs").mkdir()
+        }
+        if (!file("libs/josm-latest.jar").exists()) {
+            download {
+                src project.ext.josmUrl
+                dest 'libs'
+            }
+        }
+    }
+}
+compileJava.dependsOn "getJosm"
 
 // Install the plug-in into the local JOSM plug-in directory.
 // You can start JOSM from your IDE and debug the plug-in, but the JOSM
