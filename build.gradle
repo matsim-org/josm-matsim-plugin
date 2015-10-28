@@ -42,7 +42,9 @@ dependencies {
     // the dependency.
     // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
     // We add it to compile, so that it becomes a dependency of our project.
-    compile configurations.zipIntoJar.dependencies
+    compile (configurations.zipIntoJar.dependencies) {
+   		exclude group: 'org.geotools'
+    }
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
     compile files("libs/josm-latest.jar")
