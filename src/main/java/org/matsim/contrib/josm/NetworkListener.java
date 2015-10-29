@@ -700,27 +700,31 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 		private NetworkRoute createNetworkRoute(Relation relation) {
 			List<Id<Link>> links = new ArrayList<>();
-			if (!relation.getMembers().isEmpty()) { // WayConnectionTypeCalculator
+			List<RelationMember> members = relation.getMembers();
+			if (!members.isEmpty()) { // WayConnectionTypeCalculator
 				// will crash otherwise
 				WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-				List<WayConnectionType> connections = calc.updateLinks(relation.getMembers());
-
-				for (Way way : relation.getMemberPrimitives(Way.class)) {
-					List<Link> wayLinks = way2Links.get(way);
-					if (wayLinks != null) {
-						int i = relation.getMemberPrimitivesList().indexOf(way);
-						if (connections.get(i).direction.equals(Direction.FORWARD)) {
-							for (Link link : wayLinks) {
-								if (!link.getId().toString().endsWith("_r")) {
-									links.add(link.getId());
+				List<WayConnectionType> connections = calc.updateLinks(members);
+				for (int i=0; i<members.size(); i++) {
+					RelationMember member = members.get(i);
+					if (member.isWay()) {
+						Way way = member.getWay();
+						List<Link> wayLinks = way2Links.get(way);
+						if (wayLinks != null) {
+							wayLinks = new ArrayList<>(wayLinks);
+							if (connections.get(i).direction.equals(Direction.FORWARD)) {
+								for (Link link : wayLinks) {
+									if (!link.getId().toString().endsWith("_r")) {
+										links.add(link.getId());
+									}
 								}
-							}
-						} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
-							// reverse order of links if backwards
-							Collections.reverse(wayLinks);
-							for (Link link : wayLinks) {
-								if (link.getId().toString().endsWith("_r")) {
-									links.add(link.getId());
+							} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
+								// reverse order of links if backwards
+								Collections.reverse(wayLinks);
+								for (Link link : wayLinks) {
+									if (link.getId().toString().endsWith("_r")) {
+										links.add(link.getId());
+									}
 								}
 							}
 						}
