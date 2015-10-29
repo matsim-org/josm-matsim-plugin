@@ -95,10 +95,10 @@
     <member type='way' ref='-138' role='' />
     <member type='way' ref='-140' role='' />
     <member type='way' ref='-142' role='' />
-    <member type='node' ref='-108' role='platform' />
-    <member type='node' ref='-106' role='platform' />
-    <member type='node' ref='-110' role='platform' />
     <member type='node' ref='-112' role='platform' />
+    <member type='node' ref='-110' role='platform' />
+    <member type='node' ref='-106' role='platform' />
+    <member type='node' ref='-108' role='platform' />
     <tag k='ref' v='4to1' />
     <tag k='route' v='bus' />
     <tag k='type' v='route' />
