@@ -12,9 +12,9 @@ import org.xml.sax.SAXException;
 /**
  * The Task that handles the convert action. Creates new OSM primitives with
  * MATSim Tag scheme
- * 
+ *
  * @author Nico
- * 
+ *
  */
 
 class ConvertTask extends PleaseWaitRunnable {
@@ -23,12 +23,12 @@ class ConvertTask extends PleaseWaitRunnable {
 
     /**
      * Creates a new Convert task
-     * 
+     *
      * @see PleaseWaitRunnable
      */
     public ConvertTask() {
-	super("Converting to MATSim Network");
-	this.converter = new LayerConverter((OsmDataLayer) Main.main.getActiveLayer());
+        super("Converting to MATSim Network");
+        this.converter = new LayerConverter((OsmDataLayer) Main.main.getActiveLayer());
     }
 
     /**
@@ -36,7 +36,7 @@ class ConvertTask extends PleaseWaitRunnable {
      */
     @Override
     protected void cancel() {
-	// TODO Auto-generated method stub
+        // TODO Auto-generated method stub
     }
 
     /**
@@ -44,7 +44,7 @@ class ConvertTask extends PleaseWaitRunnable {
      */
     @Override
     protected void realRun() throws SAXException, IOException, OsmTransferException {
-	this.converter.run();
+        this.converter.run();
     }
 
     /**
@@ -52,13 +52,13 @@ class ConvertTask extends PleaseWaitRunnable {
      */
     @Override
     protected void finish() {
-	if (converter.getMatsimLayer() != null) {
-	    // Do not zoom to full layer extent, but leave the view port where
-	    // it is.
-	    // (Perhaps I want to look at the particular are I am viewing right
-	    // now.)
-	    ProjectionBounds projectionBounds = null;
-	    Main.main.addLayer(converter.getMatsimLayer(), projectionBounds);
-	}
+        if (converter.getMatsimLayer() != null) {
+            // Do not zoom to full layer extent, but leave the view port where
+            // it is.
+            // (Perhaps I want to look at the particular are I am viewing right
+            // now.)
+            ProjectionBounds projectionBounds = null;
+            Main.main.addLayer(converter.getMatsimLayer(), projectionBounds);
+        }
     }
 }

@@ -16,11 +16,11 @@ import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 public class IncompleteRoutesTest extends Test{
 
-    	/**
+	/**
 	 * Lists incomplete routes.
 	 */
 	private ArrayList<Relation> incompleteRoutes;
-	
+
 	/**
 	 * Integer code for incomplete routes.
 	 */
@@ -48,9 +48,9 @@ public class IncompleteRoutesTest extends Test{
 	public void visit(Relation r) {
 
 		if (r.hasIncompleteMembers() && r.hasTag("type", "route")) {
-		    incompleteRoutes.add(r);
+			incompleteRoutes.add(r);
 		}
-			
+
 	}
 
 
@@ -59,7 +59,7 @@ public class IncompleteRoutesTest extends Test{
 	 */
 	@Override
 	public void endTest() {
-		
+
 		for(Relation relation: incompleteRoutes) {
 			String msg = ("Incomplete route "+relation.get("ref")+" - Auto repair to download missing elements (cannot be undone)");
 			errors.add(new TestError(this, Severity.WARNING, msg,
@@ -79,10 +79,10 @@ public class IncompleteRoutesTest extends Test{
 			return null;
 		}
 		if (testError.getCode() == 3010) {
-		    for(OsmPrimitive primitive: testError.getPrimitives()) {
-			Main.worker.submit(new DownloadRelationMemberTask((Relation) primitive, ((Relation) primitive).getIncompleteMembers(), Main.main.getEditLayer()));
-		    }
-		    
+			for(OsmPrimitive primitive: testError.getPrimitives()) {
+				Main.worker.submit(new DownloadRelationMemberTask((Relation) primitive, ((Relation) primitive).getIncompleteMembers(), Main.main.getEditLayer()));
+			}
+
 		}
 		return null;
 	}

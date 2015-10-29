@@ -7,7 +7,7 @@ import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 /**
  * The task which is executed after confirming the ImportDialog. Creates a new
  * layer showing the network data.
- * 
+ *
  * @author Nico
  */
 class ImportTask extends PleaseWaitRunnable {
@@ -27,8 +27,8 @@ class ImportTask extends PleaseWaitRunnable {
      * Creates a new Import task with the given <code>path</code>.
      */
     public ImportTask(String networkPath, String schedulePath, Projection projection) {
-	super("MATSim Import");
-	this.importer = new Importer(networkPath, schedulePath, projection);
+        super("MATSim Import");
+        this.importer = new Importer(networkPath, schedulePath, projection);
     }
 
     /**
@@ -36,7 +36,7 @@ class ImportTask extends PleaseWaitRunnable {
      */
     @Override
     protected void cancel() {
-	// TODO Auto-generated method stub
+        // TODO Auto-generated method stub
     }
 
     /**
@@ -44,13 +44,13 @@ class ImportTask extends PleaseWaitRunnable {
      */
     @Override
     protected void finish() {
-	MATSimLayer layer = importer.getLayer();
-	// layer = null happens if Exception happens during import,
-	// as Exceptions are handled only after this method is called.
-	if (layer != null) {
-	    Main.main.addLayer(layer);
-	    Main.map.mapView.setActiveLayer(layer);
-	}
+        MATSimLayer layer = importer.getLayer();
+        // layer = null happens if Exception happens during import,
+        // as Exceptions are handled only after this method is called.
+        if (layer != null) {
+            Main.main.addLayer(layer);
+            Main.map.mapView.setActiveLayer(layer);
+        }
     }
 
     /**
@@ -58,7 +58,7 @@ class ImportTask extends PleaseWaitRunnable {
      */
     @Override
     protected void realRun() {
-	importer.run();
+        importer.run();
     }
 
 }

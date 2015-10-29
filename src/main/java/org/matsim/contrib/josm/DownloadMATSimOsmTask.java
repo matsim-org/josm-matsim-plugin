@@ -15,7 +15,7 @@ public class DownloadMATSimOsmTask extends DownloadOsmTask {
 
     @Override
     public Future<?> download(boolean newLayer, Bounds downloadArea, ProgressMonitor progressMonitor) {
-	return download(new FilteredDownloader(downloadArea), newLayer, downloadArea, progressMonitor);
+        return download(new FilteredDownloader(downloadArea), newLayer, downloadArea, progressMonitor);
     }
 
 }
