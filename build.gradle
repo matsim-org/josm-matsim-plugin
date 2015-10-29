@@ -18,7 +18,6 @@ apply plugin: "eclipse"
 // For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
-    mavenLocal()
     maven {
         url 'http://dl.bintray.com/matsim/matsim'
     }

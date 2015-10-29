@@ -59,7 +59,7 @@ public class OSMDataTest {
 		Main.pref.put("matsim_supportTransit", true);
 		URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 		URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
-		URL urlIntersections = getClass().getResource("/test-input/OSMData/loops_intersecting_ways.osm");
+		URL urlIntersections = getClass().getResource("/test-input/OSMData/loops_intersecting_ways.osm.xml");
 
 		InputStream incompleteWayInput;
 		InputStream busRouteInput;

@@ -7,7 +7,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.facilities.ActivityFacilities;
 import org.matsim.households.Households;
-import org.matsim.lanes.data.v20.LaneDefinitions20;
+import org.matsim.lanes.data.v20.Lanes;
 import org.matsim.vehicles.Vehicles;
 
 public class EditableScenarioUtils {
@@ -45,11 +45,6 @@ public class EditableScenarioUtils {
             }
 
             @Override
-            public Object removeScenarioElement(String s) {
-                return scenario.removeScenarioElement(s);
-            }
-
-            @Override
             public Object getScenarioElement(String s) {
                 return scenario.getScenarioElement(s);
             }
@@ -75,7 +70,7 @@ public class EditableScenarioUtils {
             }
 
             @Override
-            public LaneDefinitions20 getLanes() {
+            public Lanes getLanes() {
                 return scenario.getLanes();
             }
         };
