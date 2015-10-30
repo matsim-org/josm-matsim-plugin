@@ -72,6 +72,7 @@
   </relation>
   <relation id='-151' action='modify' visible='true'>
     <member type='node' ref='-108' role='platform' />
+    <member type='node' ref='-132' role='stop' />
     <tag k='public_transport' v='stop_area' />
     <tag k='type' v='public_transport' />
   </relation>

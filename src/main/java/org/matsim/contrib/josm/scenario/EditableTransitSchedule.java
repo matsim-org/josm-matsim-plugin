@@ -79,7 +79,6 @@ public class EditableTransitSchedule implements TransitSchedule {
             editableTransitStopFacility.setCoord(coord);
             editableTransitStopFacility.setIsBlockingLane(b);
             return editableTransitStopFacility;
-
         }
 
         @Override

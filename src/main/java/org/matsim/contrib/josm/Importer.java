@@ -3,10 +3,7 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitLine;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
+import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
@@ -176,6 +173,7 @@ class Importer {
 			platform.put("name", stop.getName());
 			dataSet.addPrimitive(platform);
 			Way newWay;
+			Id<Node> nodeId = null;
 			Id<Link> linkId = null;
 			Relation relation = new Relation();
 			relation.put("type", "public_transport");
@@ -190,14 +188,20 @@ class Importer {
 				linkId = Id.createLinkId(singleLink.getId());
 				relation.addMember(new RelationMember("matsim:link", newWay));
 			}
+			if (((EditableTransitStopFacility) stop).getNodeId() != null) {
+				org.openstreetmap.josm.data.osm.Node node = node2OsmNode.get(sourceScenario.getNetwork().getNodes().get(((EditableTransitStopFacility) stop).getNodeId()));
+				relation.addMember(new RelationMember("stop", node));
+				nodeId = Id.createNodeId(node.getUniqueId());
+			}
 			dataSet.addPrimitive(relation);
-			TransitStopFacility newStop = targetScenario
+			EditableTransitStopFacility newStop = ((EditableTransitStopFacility) targetScenario
 					.getTransitSchedule()
 					.getFactory()
 					.createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(),
-							stop.getIsBlockingLane());
+							stop.getIsBlockingLane()));
 			newStop.setName(stop.getName());
 			newStop.setLinkId(linkId);
+			newStop.setNodeId(nodeId);
 			targetScenario.getTransitSchedule().addStopFacility(newStop);
 			stops.put(stop.getId(), newStop);
 			stopRelation2TransitStop.put(relation, newStop);

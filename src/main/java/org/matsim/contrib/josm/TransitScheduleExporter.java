@@ -3,15 +3,16 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableTransitLine;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
+import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.TransitStopFacilityImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.pt.utils.CreatePseudoNetwork;
 import org.openstreetmap.josm.Main;
@@ -47,17 +48,24 @@ class TransitScheduleExporter {
 		Scenario targetScenario = ScenarioUtils.createScenario(config);
 		config.transit().setUseTransit(true);
 		if (layerScenario.getTransitSchedule() != null) {
-			TransitSchedule oldSchedule = layerScenario.getTransitSchedule();
+			EditableTransitSchedule oldSchedule = layerScenario.getTransitSchedule();
 			TransitSchedule newSchedule = targetScenario.getTransitSchedule();
 			for (TransitStopFacility stop : oldSchedule.getFacilities().values()) {
 				Id<TransitStopFacility> id = Id.create(stop.getName(), TransitStopFacility.class);
 				TransitStopFacility newStop = newSchedule.getFactory().createTransitStopFacility(id, stop.getCoord(), stop.getIsBlockingLane());
-
 				Id<Link> linkId = stop.getLinkId();
 				if (linkId != null) {
 					Link oldLink = layerScenario.getNetwork().getLinks().get(linkId);
 					Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
 					newStop.setLinkId(newLinkId);
+				}
+				Id<Node> nodeId = ((EditableTransitStopFacility) stop).getNodeId();
+				if (nodeId != null) {
+					Node oldNode = layerScenario.getNetwork().getNodes().get(Id.createNodeId(nodeId));
+					for (Link oldInLink : oldNode.getInLinks().values()) {
+						Id<Link> newInLinkId = Id.createLinkId(((LinkImpl) oldInLink).getOrigId());
+						newStop.setLinkId(newInLinkId); // last one wins
+					}
 				}
 				newSchedule.addStopFacility(newStop);
 			}

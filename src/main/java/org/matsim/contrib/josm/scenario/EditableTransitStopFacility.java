@@ -3,6 +3,7 @@ package org.matsim.contrib.josm.scenario;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ public class EditableTransitStopFacility implements TransitStopFacility {
 
     Id<TransitStopFacility> id;
     boolean isBlockingLane;
+    Id<Node> nodeId;
     Id<Link> linkId;
     String name;
     String stopPostAreaId;
@@ -77,6 +79,14 @@ public class EditableTransitStopFacility implements TransitStopFacility {
 
     public void setIsBlockingLane(boolean isBlockingLane) {
         this.isBlockingLane = isBlockingLane;
+    }
+
+    public Id<Node> getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(Id<Node> nodeId) {
+        this.nodeId = nodeId;
     }
 
 }

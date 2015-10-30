@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
+import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
@@ -648,25 +649,23 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
 			EastNorth eN = null;
 			Id<Link> linkId = null;
-
-			List<Node> nodes = new ArrayList<Node>();
+			Node stopPosition = null;
+			List<Node> nodes = new ArrayList<>();
 			for (RelationMember member : relation.getMembers()) {
 				if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")) {
 					if (member.isWay()) {
 						nodes.addAll(member.getWay().getNodes());
-
 					} else if (member.isNode()) {
 						nodes.add(member.getNode());
-					} else {
-						return;
 					}
-				} else if (member.hasRole("matsim:link")) {
-
+				} else if (member.hasRole("matsim:link") && member.isWay()) {
 					Way way = member.getWay();
 					List<Link> links = way2Links.get(way);
 					if (links != null && !links.isEmpty()) {
 						linkId = links.get(links.size() - 1).getId();
 					}
+				} else if (member.hasRole("stop") && member.isNode()) {
+					stopPosition = member.getNode();
 				}
 			}
 
@@ -684,18 +683,17 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				return;
 			}
 
-			TransitStopFacility stop = scenario.getTransitSchedule().getFactory()
+			EditableTransitStopFacility stop = (EditableTransitStopFacility) scenario.getTransitSchedule().getFactory()
 					.createTransitStopFacility(transitStopFacilityId, new Coord(eN.getX(), eN.getY()), true);
-			if (linkId != null) {
-				stop.setLinkId(linkId);
+			stop.setLinkId(linkId);
+			if (stopPosition != null) {
+				stop.setNodeId(Id.createNodeId(stopPosition.getUniqueId()));
 			}
-
 			String name = (relation.getName() == null ? String.valueOf(relation.getUniqueId()) : relation.getName());
 			stop.setName(name);
 
 			scenario.getTransitSchedule().addStopFacility(stop);
 			stopRelation2TransitStop.put(relation, stop);
-			return;
 		}
 
 		private NetworkRoute createNetworkRoute(Relation relation) {
