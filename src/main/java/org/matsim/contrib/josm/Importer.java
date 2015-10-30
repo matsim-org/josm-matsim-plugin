@@ -190,8 +190,10 @@ class Importer {
 			}
 			if (((EditableTransitStopFacility) stop).getNodeId() != null) {
 				org.openstreetmap.josm.data.osm.Node node = node2OsmNode.get(sourceScenario.getNetwork().getNodes().get(((EditableTransitStopFacility) stop).getNodeId()));
-				relation.addMember(new RelationMember("stop", node));
-				nodeId = Id.createNodeId(node.getUniqueId());
+				if (node != null) {
+					relation.addMember(new RelationMember("stop", node));
+					nodeId = Id.createNodeId(node.getUniqueId());
+				}
 			}
 			dataSet.addPrimitive(relation);
 			EditableTransitStopFacility newStop = ((EditableTransitStopFacility) targetScenario
