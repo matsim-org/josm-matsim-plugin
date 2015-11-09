@@ -677,7 +677,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		private EastNorth decidePlatformLocation(Relation relation) {
 			List<Node> nodes = new ArrayList<>();
 			for (RelationMember member : relation.getMembers()) {
-				if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")) {
+				if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")
+						|| member.hasRole("stop")) {
 					if (member.isWay()) {
 						nodes.addAll(member.getWay().getNodes());
 					} else if (member.isNode()) {
