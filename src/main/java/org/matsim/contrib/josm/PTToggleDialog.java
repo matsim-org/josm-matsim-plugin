@@ -101,12 +101,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		if (isShowing() && layer instanceof MATSimLayer) {
 			if (((MATSimLayer) layer).getScenario().getConfig().transit().isUseTransit()) {
 				osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim
-				// layers
-				// have
-				// their
-				// own
-				// network
-				// listener
 			}
 		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
 			Config config = ConfigUtils.createConfig();

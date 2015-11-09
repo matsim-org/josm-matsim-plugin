@@ -15,20 +15,15 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
-import org.matsim.pt.utils.TransitScheduleValidator;
-import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
-import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
-import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 /**
@@ -122,7 +117,7 @@ class NetworkTest extends Test {
 	@Override
 	public void visit(Node n) {
 		if (this.network != null) {
-			org.matsim.api.core.v01.network.Node node = network.getNodes().get(Id.create(n.getUniqueId(), Node.class));
+			org.matsim.api.core.v01.network.Node node = network.getNodes().get(Id.create(n.getUniqueId(), org.matsim.api.core.v01.network.Node.class));
 			if (node != null) {
 				String origId = ((NodeImpl) node).getOrigId();
 				if (!nodeIds.containsKey(origId)) {
