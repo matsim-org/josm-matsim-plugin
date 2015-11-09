@@ -150,29 +150,19 @@ public class UpdateStopTagsTest {
 		Assert.assertEquals(0, test.getErrors().size());
 
 		Assert.assertTrue(hasTag(platform, highway_bus_stop_node));
-		Assert.assertFalse(highway_bus_stop_node.hasKey("highway"));
 		Assert.assertTrue(hasTag(stop, highway_bus_stop_nodeOnWay));
-		Assert.assertFalse(highway_bus_stop_nodeOnWay.hasKey("highway"));
 
 		Assert.assertTrue(hasTag(platform, amenity_bus_station_node));
-		Assert.assertFalse(amenity_bus_station_node.hasKey("amenity"));
 		Assert.assertTrue(hasTag(stop, amenity_bus_station_nodeOnWay));
-		Assert.assertFalse(amenity_bus_station_nodeOnWay.hasKey("amenity"));
 
 		Assert.assertTrue(hasTag(platform, highway_platform_node));
-		Assert.assertFalse(highway_platform_node.hasKey("highway"));
 		Assert.assertTrue(hasTag(platform, highway_platform_way));
-		Assert.assertFalse(highway_platform_way.hasKey("highway"));
 
 		Assert.assertTrue(hasTag(stop, railway_tram_stop_nodeOnway));
-		Assert.assertFalse(railway_tram_stop_nodeOnway.hasKey("railway"));
 		Assert.assertTrue(hasTag(stop, railway_halt_nodeOnWay));
-		Assert.assertFalse(railway_halt_nodeOnWay.hasKey("railway"));
 
 		Assert.assertTrue(hasTag(platform, railway_platform_node));
-		Assert.assertFalse(railway_platform_node.hasKey("railway"));
 		Assert.assertTrue(hasTag(platform, railway_platform_way));
-		Assert.assertFalse(railway_platform_way.hasKey("railway"));
 
 	}
 
