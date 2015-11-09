@@ -47,10 +47,6 @@ public class CreateStopAreas extends Test {
 		super(tr("CreateStopAreas"), tr("CreateStopAreas"));
 	}
 
-	/**
-	 * Starts the test. Initializes the mappings of {@link #nodeIds} and
-	 * {@link #linkIds}.
-	 */
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		this.stops = new HashMap<>();
@@ -173,7 +169,7 @@ public class CreateStopAreas extends Test {
 		if (!isFixable(testError)) {
 			return null;
 		}
-		List<Command> commands = new ArrayList<Command>();
+		List<Command> commands = new ArrayList<>();
 		if (testError.getCode() == 3009) {
 
 
