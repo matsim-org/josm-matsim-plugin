@@ -144,7 +144,7 @@ public class FilteredDownloader extends OsmServerReader {
 			sb.append(String.format("way %s %s -> .highways;", bbox, highwayPredicates));
 		}
 		if (routePredicates != null) {
-			sb.append(String.format("rel %s %s -> .routes;", bbox, routePredicates));
+			sb.append(String.format("node %s; rel(bn) %s -> .routes;", bbox, routePredicates));
 			sb.append("rel (br.routes) [type=route_master] -> .route_masters;");
 			sb.append("(.routes; rel (r.route_masters);) -> .routes;");
 			sb.append("(node(r.routes:stop)->.x; node(r.routes:platform)->.x;) -> .stops_and_platforms;");

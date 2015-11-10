@@ -687,7 +687,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 				}
 			}
 			if (nodes.size() > 2) {
-				return Geometry.getCentroid(nodes);
+				return Geometry.getCenter(nodes);
 			} else if (nodes.size() == 2) {
 				Node node0 = nodes.get(0);
 				Node node1 = nodes.get(1);

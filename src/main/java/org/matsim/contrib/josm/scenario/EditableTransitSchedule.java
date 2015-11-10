@@ -3,6 +3,7 @@ package org.matsim.contrib.josm.scenario;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.pt.transitSchedule.TransitRouteStopImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.utils.objectattributes.ObjectAttributes;
 
@@ -39,38 +40,7 @@ public class EditableTransitSchedule implements TransitSchedule {
 
         @Override
         public TransitRouteStop createTransitRouteStop(final TransitStopFacility transitStopFacility, final double arrivalDelay, final double departureDelay) {
-            return new TransitRouteStop() {
-
-                @Override
-                public TransitStopFacility getStopFacility() {
-                    return transitStopFacility;
-                }
-
-                @Override
-                public void setStopFacility(TransitStopFacility transitStopFacility) {
-                    throw new RuntimeException();
-                }
-
-                @Override
-                public double getDepartureOffset() {
-                    return departureDelay;
-                }
-
-                @Override
-                public double getArrivalOffset() {
-                    return arrivalDelay;
-                }
-
-                @Override
-                public void setAwaitDepartureTime(boolean b) {
-                    throw new RuntimeException();
-                }
-
-                @Override
-                public boolean isAwaitDepartureTime() {
-                    return false;
-                }
-            };
+            return new EditableTransitRouteStop(transitStopFacility, arrivalDelay, departureDelay);
         }
 
         @Override

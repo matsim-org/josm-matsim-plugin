@@ -38,7 +38,7 @@ import org.openstreetmap.josm.tools.Shortcut;
 public class FilteredOsmParserAction extends JosmAction {
 
 	public FilteredOsmParserAction() {
-		super(tr("Parse Osm Data for MATSim content"), null, tr("Parse Osm Data for MATSim content"), Shortcut.registerShortcut("menu:matsimParse",
+		super(tr("Read and filter OSM file ..."), null, tr("Read an OSM file, discarding everything which is not relevant for MATSim. (alpha)"), Shortcut.registerShortcut("menu:matsimParse",
 				tr("Menu: {0}", tr("Parse Osm Data for MATSim content")), KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
 	}
 
