@@ -686,6 +686,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					}
 				}
 			}
+			Iterator<Node> iterator = nodes.iterator();
+			while (iterator.hasNext()) {
+				Node next = iterator.next();
+				if (! next.isLatLonKnown()) {
+					iterator.remove();
+				}
+			}
 			if (nodes.size() > 2) {
 				return Geometry.getCenter(nodes);
 			} else if (nodes.size() == 2) {

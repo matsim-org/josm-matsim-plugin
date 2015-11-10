@@ -131,10 +131,6 @@ public class TransitScheduleTest extends Test {
 					String msg = ("Route has no ways");
 					errors.add(new TestError(this, Severity.WARNING, msg, DOUBTFUL_ROUTE, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
 				}
-				if (!waysConnected(r)) {
-					String msg = ("Route is not fully connected");
-					errors.add(new TestError(this, Severity.WARNING, msg, UNCONNECTED_WAYS, Collections.singleton(r), r.getMemberPrimitives(Way.class)));
-				}
 			}
 		}
 
@@ -165,29 +161,7 @@ public class TransitScheduleTest extends Test {
 		}
 
 	}
-
-	private static boolean waysConnected(Relation relation) {
-		if (!relation.getMembers().isEmpty()) {
-			WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-			List<WayConnectionType> connections = calc.updateLinks(relation.getMembers());
-			List<OsmPrimitive> primitiveList = relation.getMemberPrimitivesList();
-			boolean firstWayFound = false;
-			boolean lastWayFound = false;
-			for (Way way : relation.getMemberPrimitives(Way.class)) {
-				int i = primitiveList.indexOf(way);
-				if (connections.get(i).linkPrev && connections.get(i).linkNext) {
-				} else if (connections.get(i).linkPrev && lastWayFound == false) {
-					lastWayFound = true;
-				} else if (connections.get(i).linkNext && firstWayFound == false) {
-					firstWayFound = true;
-				} else {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
+	
 	/**
 	 * Ends the test. Errors and warnings are created in this method.
 	 */
