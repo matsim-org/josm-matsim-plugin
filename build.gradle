@@ -70,7 +70,7 @@ jar {
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": "v0.5.1",
+                "Plugin-Version": "v0.5.2",
                 "Plugin-Mainversion": 8882,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
