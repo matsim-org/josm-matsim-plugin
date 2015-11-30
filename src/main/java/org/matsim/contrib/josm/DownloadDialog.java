@@ -31,17 +31,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 	protected void buildMainPanelAboveDownloadSelections(JPanel pnl) {
 		pnl.removeAll();
 
-		JPanel contentPnl = new JPanel(new GridLayout(0, 1));
-		contentPnl.setAlignmentX(LEFT_ALIGNMENT);
-		JPanel highwaysPnl = new JPanel(new FlowLayout());
-		highwaysPnl.setPreferredSize(pnl.getPreferredSize());
-		highwaysPnl.setAlignmentX(LEFT_ALIGNMENT);
-		JPanel routesPnl = new JPanel(new FlowLayout());
-		routesPnl.setPreferredSize(pnl.getPreferredSize());
-		routesPnl.setAlignmentX(LEFT_ALIGNMENT);
-
-		JLabel lblHighways = new JLabel("Highways:");
-		contentPnl.add(lblHighways);
+		JPanel contentPnl = new JPanel(new GridLayout(2, 1));
 
 		ActionListener cbListener = new ActionListener() {
 			@Override
@@ -51,6 +41,8 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 			}
 		};
 
+		JPanel highwaysPnl = new JPanel(new FlowLayout());
+		highwaysPnl.add(new JLabel("Highways:"));
 		for (String highwayType : OsmConvertDefaults.highwayTypes) {
 			JCheckBox cb = new JCheckBox(highwayType);
 			cb.setToolTipText(tr("Select to download " + cb.getText() + " highways in the selected download area."));
@@ -60,9 +52,8 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 		}
 		contentPnl.add(highwaysPnl);
 
-		JLabel lblRoutes = new JLabel("Routes:");
-		contentPnl.add(lblRoutes);
-
+		JPanel routesPnl = new JPanel(new FlowLayout());
+		routesPnl.add(new JLabel("Routes:"));
 		for (String routeType : OsmConvertDefaults.routeTypes) {
 			JCheckBox cb = new JCheckBox(routeType);
 			cb.setToolTipText(tr("Select to download " + cb.getText() + " routes in the selected download area."));
