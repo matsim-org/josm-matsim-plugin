@@ -70,8 +70,8 @@ jar {
     manifest {
         attributes(
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": "v0.5.2",
-                "Plugin-Mainversion": 8882,
+                "Plugin-Version": "v0.5.3",
+                "Plugin-Mainversion": 9060,
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
                 "Author" : "Nico Kuehnel",
