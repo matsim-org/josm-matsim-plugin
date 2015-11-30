@@ -154,6 +154,7 @@ public class FilteredDownloader extends OsmServerReader {
 		sb.append("(");
 		if (highwayPredicates != null) {
 			sb.append(".highways;");
+			sb.append(".highways>;");
 		}
 		if (routePredicates != null) {
 			sb.append(".all_transit;");
