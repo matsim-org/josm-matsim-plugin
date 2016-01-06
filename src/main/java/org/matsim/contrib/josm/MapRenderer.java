@@ -11,8 +11,8 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.gui.NavigatableComponent;
-import org.openstreetmap.josm.gui.mappaint.LabelCompositionStrategy;
-import org.openstreetmap.josm.gui.mappaint.TextElement;
+import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy;
+import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -72,7 +72,7 @@ public class MapRenderer extends StyledMapRenderer {
 		if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
 			if (!way.isSelected()) {
 				if (Properties.showIds) { // draw id on path
-					drawTextOnPath(way, new TextElement(Properties.getInstance(), Properties.FONT, 0, textOffset(way), Properties.MATSIMCOLOR, 0.f,
+					drawTextOnPath(way, new TextLabel(Properties.getInstance(), Properties.FONT, 0, textOffset(way), Properties.MATSIMCOLOR, 0.f,
 							null));
 				}
 				if (way.hasTag("modes", TransportMode.pt)) { // draw
@@ -95,7 +95,7 @@ public class MapRenderer extends StyledMapRenderer {
 			} else {
 				if (Properties.showIds) { // draw ids on selected ways
 					// also
-					drawTextOnPath(way, new TextElement(Properties.getInstance(), Properties.FONT, 0, textOffset(way), selectedColor, 0.f, null));
+					drawTextOnPath(way, new TextLabel(Properties.getInstance(), Properties.FONT, 0, textOffset(way), selectedColor, 0.f, null));
 				}
 			}
 		}
