@@ -376,17 +376,6 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 							oneway = false; // may be used to overwrite  defaults
 						}
 
-						// In case trunks, primary and secondary roads are
-						// marked as
-						// oneway,
-						// the default number of lanes should be two instead
-						// of one.
-						if (wayType.equalsIgnoreCase("trunk") || wayType.equalsIgnoreCase("primary") || wayType.equalsIgnoreCase("secondary")) {
-							if (oneway && nofLanes == 1.0) {
-								nofLanes = 2.0;
-							}
-						}
-
 						String maxspeedTag = way.getKeys().get("maxspeed");
 						if (maxspeedTag != null) {
 							freespeed = NewConverter.parseDoubleIfPossible(maxspeedTag) / 3.6; // convert km/h to m/s
