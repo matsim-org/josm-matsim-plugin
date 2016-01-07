@@ -109,7 +109,7 @@ class OsmConvertDefaultsDialog extends JPanel {
 						((JTextField) input.get(i + "_" + j)).setText(value);
 						break;
 					case 1:
-						value = String.valueOf(highwayDefault.lanes);
+						value = String.valueOf(highwayDefault.lanesPerDirection);
 						((JTextField) input.get(i + "_" + j)).setText(value);
 						break;
 					case 2:

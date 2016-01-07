@@ -8,6 +8,7 @@ import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
+import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
@@ -36,6 +37,8 @@ import java.util.*;
  */
 class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
+	final static String TAG_HIGHWAY = "highway";
+	final static String TAG_RAILWAY = "railway";
 	private final EditableScenario scenario;
 
 	private final Map<Way, List<Link>> way2Links;
@@ -44,12 +47,42 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
-	public void removeListener(ScenarioDataChangedListener listener) {
-		listeners.remove(listener);
-	}
-
 	interface ScenarioDataChangedListener {
 		void notifyDataChanged();
+	}
+
+	private class RelevantNodeMatch extends Match {
+
+		@Override
+		public boolean match(OsmPrimitive osm) {
+			return osm instanceof Node && match((Node) osm);
+		}
+
+		public boolean match(Node node) {
+			if (isUsableAndNotRemoved(node)) {
+				Way junctionWay = null;
+				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
+					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
+						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
+							return true;
+						} else {
+							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
+								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
+										&& relation.hasTag("type", "route")) {
+									return true;
+								}
+							}
+						}
+						junctionWay = way;
+					}
+				}
+			}
+			return false;
+		}
+	}
+
+	public void removeListener(ScenarioDataChangedListener listener) {
+		listeners.remove(listener);
 	}
 
 	void fireNotifyDataChanged() {
@@ -312,116 +345,29 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 	class ConvertVisitor extends AbstractVisitor {
 
 		final Collection<OsmPrimitive> visited = new HashSet<>();
+		private final RelevantNodeMatch relevantNodeMatch = new RelevantNodeMatch();
 
 		void convertWay(Way way) {
-			List<Link> links = new ArrayList<>();
+			final String wayType = LinkConversionRules.getWayType(way);
+			final OsmConvertDefaults.OsmWayDefaults defaults = wayType != null ? OsmConvertDefaults.getWayDefaults().get(wayType) : null;
 
-			if (way.getNodesCount() > 1
-					&& (way.hasTag(NewConverter.TAG_HIGHWAY, OsmConvertDefaults.getWayDefaults().keySet())
-					|| NewConverter.meetsMatsimReq(way.getKeys()) || (way.hasTag(NewConverter.TAG_RAILWAY, OsmConvertDefaults
-					.getWayDefaults().keySet())))) {
+			final boolean forward = LinkConversionRules.isForward(way, defaults);
+			final boolean backward = LinkConversionRules.isBackward(way, defaults);
+			final Double freespeed = LinkConversionRules.getFreespeed(way, defaults);
+			final Double nofLanesPerDirection = LinkConversionRules.getLanesPerDirection(way, defaults, forward, backward);
+			final Double capacity = LinkConversionRules.getCapacity(way, defaults, nofLanesPerDirection);
+			final Set<String> modes = LinkConversionRules.getModes(way, defaults);
+
+			final Double taggedLength = LinkConversionRules.getTaggedLength(way);
+
+			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null) {
 				List<Node> nodeOrder = new ArrayList<>();
-
 				for (Node current : way.getNodes()) {
 					if (scenario.getNetwork().getNodes().containsKey(Id.create(current.getUniqueId(), org.matsim.api.core.v01.network.Node.class))) {
 						nodeOrder.add(current);
 					}
 				}
-
-				Double capacity = 0.;
-				Double freespeed = 0.;
-				Double nofLanes = 0.;
-				boolean oneway = true;
-				boolean onewayReverse = false;
-
-				if (way.getKeys().containsKey(NewConverter.TAG_HIGHWAY) || way.getKeys().containsKey(NewConverter.TAG_RAILWAY)) {
-
-					String wayType;
-					if (way.getKeys().containsKey(NewConverter.TAG_HIGHWAY)) {
-						wayType = way.getKeys().get(NewConverter.TAG_HIGHWAY);
-					} else if (way.getKeys().containsKey(NewConverter.TAG_RAILWAY)) {
-						wayType = way.getKeys().get(NewConverter.TAG_RAILWAY);
-					} else {
-						return;
-					}
-
-					// load defaults
-					OsmConvertDefaults.OsmWayDefaults defaults = OsmConvertDefaults.getWayDefaults().get(wayType);
-					if (defaults != null) {
-
-						if (defaults.hierarchy > Main.pref.getInteger("matsim_filter_hierarchy", 6)) {
-							return;
-						}
-						if (way.hasTag("access", "no")) {
-							return;
-						}
-						nofLanes = defaults.lanes;
-						double laneCapacity = defaults.laneCapacity;
-						freespeed = defaults.freespeed;
-						oneway = defaults.oneway;
-
-						// check if there are tags that overwrite defaults
-						// - check tag "junction"
-						if (way.hasTag("junction", "roundabout")) {
-							oneway = true;
-						}
-
-						// check tag "oneway"
-						if (way.hasTag("oneway", "yes", "true", "1")) {
-							oneway = true;
-						} else if (way.hasTag("oneway", "-1")) {
-							onewayReverse = true;
-							oneway = false;
-						} else if (way.hasTag("oneway", "no")) {
-							oneway = false; // may be used to overwrite  defaults
-						}
-
-						String maxspeedTag = way.getKeys().get("maxspeed");
-						if (maxspeedTag != null) {
-							freespeed = NewConverter.parseDoubleIfPossible(maxspeedTag) / 3.6; // convert km/h to m/s
-						}
-
-						// check tag "lanes"
-						String lanesTag = way.getKeys().get("lanes");
-						if (lanesTag != null) {
-							Double tmp = NewConverter.parseDoubleIfPossible(lanesTag);
-							if (tmp != null && tmp > 0) {
-								nofLanes = tmp;
-							}
-						}
-						// create the link(s)
-						capacity = nofLanes * laneCapacity;
-					}
-				}
-				if (way.getKeys().containsKey("capacity")) {
-					Double capacityTag = NewConverter.parseDoubleIfPossible(way.getKeys().get("capacity"));
-					if (capacityTag != null) {
-						capacity = capacityTag;
-					}
-				}
-				if (way.getKeys().containsKey("freespeed")) {
-					Double freespeedTag = NewConverter.parseDoubleIfPossible(way.getKeys().get("freespeed"));
-					if (freespeedTag != null) {
-						freespeed = freespeedTag;
-					}
-				}
-				if (way.getKeys().containsKey("permlanes")) {
-					Double permlanesTag = NewConverter.parseDoubleIfPossible(way.getKeys().get("permlanes"));
-					if (permlanesTag != null) {
-						nofLanes = permlanesTag;
-					}
-				}
-
-				Double taggedLength = null;
-				if (way.getKeys().containsKey("length")) {
-					Double temp = NewConverter.parseDoubleIfPossible(way.getKeys().get("length"));
-					if (temp != null) {
-						taggedLength = temp;
-
-					}
-				}
-				Set<String> modes = NewConverter.determineModes(way);
-
+				List<Link> links = new ArrayList<>();
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
 					List<WaySegment> segs = new ArrayList<>();
@@ -432,28 +378,58 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					if (fromIdx > toIdx) { // loop, take latter occurrence
 						toIdx = way.getNodes().lastIndexOf(nodeTo);
 					}
-					Double length = 0.;
+					Double segmentLength = 0.;
 					for (int m = fromIdx; m < toIdx; m++) {
 						segs.add(new WaySegment(way, m));
-						length += way.getNode(m).getCoor().greatCircleDistance(way.getNode(m + 1).getCoor());
+						segmentLength += way.getNode(m).getCoor().greatCircleDistance(way.getNode(m + 1).getCoor());
 					}
 					if (taggedLength != null) {
-						if (length != 0.0) {
-							length = taggedLength * length / way.getLength();
+						segmentLength = taggedLength * segmentLength / way.getLength();
+					}
+
+					// only create link, if both nodes were found, node could be null, since
+					// nodes outside a layer were dropped
+					Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(nodeFrom.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
+					Id<org.matsim.api.core.v01.network.Node> toId = Id.create(nodeTo.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
+					if (scenario.getNetwork().getNodes().get(fromId) != null && scenario.getNetwork().getNodes().get(toId) != null) {
+						String id = String.valueOf(way.getUniqueId()) + "_" + increment;
+						String origId;
+
+						if (way.hasKey(ImportTask.WAY_TAG_ID)) {
+							origId = way.get(ImportTask.WAY_TAG_ID);
 						} else {
-							length = taggedLength;
+							origId = id;
+						}
+
+						if (forward) {
+							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(fromId), scenario.getNetwork().getNodes().get(toId));
+							l.setLength(segmentLength);
+							l.setFreespeed(freespeed);
+							l.setCapacity(capacity);
+							l.setNumberOfLanes(nofLanesPerDirection);
+							l.setAllowedModes(modes);
+							((LinkImpl) l).setOrigId(origId);
+							scenario.getNetwork().addLink(l);
+							link2Segments.put(l, segs);
+							links.add(l);
+						}
+						if (backward) {
+							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id + "_r", Link.class), scenario.getNetwork().getNodes().get(toId), scenario.getNetwork().getNodes().get(fromId));
+							l.setLength(segmentLength);
+							l.setFreespeed(freespeed);
+							l.setCapacity(capacity);
+							l.setNumberOfLanes(nofLanesPerDirection);
+							l.setAllowedModes(modes);
+							((LinkImpl) l).setOrigId(origId + "_r");
+							scenario.getNetwork().addLink(l);
+							link2Segments.put(l, segs);
+							links.add(l);
 						}
 					}
-					List<Link> tempLinks = NewConverter.createLink(scenario.getNetwork(), way, nodeFrom, nodeTo, length, increment, !onewayReverse,
-							!oneway, freespeed, capacity, nofLanes, modes);
-					for (Link link : tempLinks) {
-						link2Segments.put(link, segs);
-					}
-					links.addAll(tempLinks);
 					increment++;
 				}
+				way2Links.put(way, links);
 			}
-			way2Links.put(way, links);
 		}
 
 		@Override
@@ -467,20 +443,18 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
 					}
 				}
-				if (isUsableAndNotRemoved(node)) {
-					if (node.evaluateCondition(new RelevantNodeMatch())) {
-						NodeImpl matsimNode = (NodeImpl) scenario
-								.getNetwork()
-								.getFactory()
-								.createNode(Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class),
-										new Coord(node.getEastNorth().getX(), node.getEastNorth().getY()));
-						if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-							matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
-						} else {
-							matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
-						}
-						scenario.getNetwork().addNode(matsimNode);
+				if (node.evaluateCondition(relevantNodeMatch)) {
+					NodeImpl matsimNode = (NodeImpl) scenario
+							.getNetwork()
+							.getFactory()
+							.createNode(Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class),
+									new Coord(node.getEastNorth().getX(), node.getEastNorth().getY()));
+					if (node.hasKey(ImportTask.NODE_TAG_ID)) {
+						matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
+					} else {
+						matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
 					}
+					scenario.getNetwork().addNode(matsimNode);
 				}
 			}
 		}
@@ -720,45 +694,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		}
 	}
 
+
 	// JOSM does not set a primitive to not usable when it is hard-deleted (i.e.
 	// not set to deleted).
 	// But it sets the dataSet to null when it is hard-deleted, so we
 	// additionally check for that.
 	private boolean isUsableAndNotRemoved(OsmPrimitive osmPrimitive) {
 		return osmPrimitive.isUsable() && osmPrimitive.getDataSet() != null;
-	}
-
-	private class RelevantNodeMatch extends Match {
-
-		@Override
-		public boolean match(OsmPrimitive osm) {
-			if (osm instanceof Node) {
-				return match((Node) osm);
-			}
-			return false;
-		}
-
-		public boolean match(Node node) {
-			if (isUsableAndNotRemoved(node)) {
-				Way junctionWay = null;
-				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
-					if ((way.hasKey(NewConverter.TAG_HIGHWAY) || NewConverter.meetsMatsimReq(way.getKeys())) && isUsableAndNotRemoved(way)) {
-						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
-							return true;
-						} else {
-							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
-								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
-										&& relation.hasTag("type", "route")) {
-									return true;
-								}
-							}
-						}
-						junctionWay = way;
-					}
-				}
-			}
-			return false;
-		}
 	}
 
 	EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {

@@ -95,16 +95,16 @@ class OsmConvertDefaults {
 	static class OsmWayDefaults {
 
 		public final int hierarchy;
-		public final double lanes;
+		public final double lanesPerDirection;
 		public final double freespeed;
 		public final double freespeedFactor;
 		public final double laneCapacity;
 		public final boolean oneway;
 
-		public OsmWayDefaults(final int hierarchy, final double lanes, final double freespeed, final double freespeedFactor,
+		public OsmWayDefaults(final int hierarchy, final double lanesPerDirection, final double freespeed, final double freespeedFactor,
 							  final double laneCapacity, final boolean oneway) {
 			this.hierarchy = hierarchy;
-			this.lanes = lanes;
+			this.lanesPerDirection = lanesPerDirection;
 			this.freespeed = freespeed;
 			this.freespeedFactor = freespeedFactor;
 			this.laneCapacity = laneCapacity;
