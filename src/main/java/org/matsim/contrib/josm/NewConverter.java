@@ -17,12 +17,8 @@ import org.openstreetmap.josm.data.osm.Way;
 
 class NewConverter {
 
-	final static String TAG_LANES = "lanes";
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
-	final static String TAG_MAXSPEED = "maxspeed";
-	final static String TAG_JUNCTION = "junction";
-	final static String TAG_ONEWAY = "oneway";
 
 	static Set<String> determineModes(Way way) {
 		Set<String> modes = new HashSet<>();
@@ -49,7 +45,7 @@ class NewConverter {
 	// creates links between given nodes along the respective WaySegments.
 	// adapted from original OsmNetworkReader
 	static List<Link> createLink(final Network network, final Way way, final Node fromNode, final Node toNode, double length, long increment,
-								 boolean oneway, boolean onewayReverse, Double freespeed, Double capacity, Double nofLanes, Set<String> modes) {
+								 boolean forward, boolean backward, Double freespeed, Double capacity, Double nofLanes, Set<String> modes) {
 
 		// only create link, if both nodes were found, node could be null, since
 		// nodes outside a layer were dropped
@@ -66,7 +62,7 @@ class NewConverter {
 				origId = id;
 			}
 
-			if (!onewayReverse) {
+			if (forward) {
 				Link l = network.getFactory().createLink(Id.create(id, Link.class), network.getNodes().get(fromId), network.getNodes().get(toId));
 				l.setLength(length);
 				l.setFreespeed(freespeed);
@@ -77,7 +73,7 @@ class NewConverter {
 				network.addLink(l);
 				links.add(l);
 			}
-			if (!oneway) {
+			if (backward) {
 				Link l = network.getFactory().createLink(Id.create(id + "_r", Link.class), network.getNodes().get(toId),
 						network.getNodes().get(fromId));
 				l.setLength(length);

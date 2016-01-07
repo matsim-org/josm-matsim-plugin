@@ -352,6 +352,9 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						if (defaults.hierarchy > Main.pref.getInteger("matsim_filter_hierarchy", 6)) {
 							return;
 						}
+						if (way.hasTag("access", "no")) {
+							return;
+						}
 						nofLanes = defaults.lanes;
 						double laneCapacity = defaults.laneCapacity;
 						freespeed = defaults.freespeed;
@@ -359,30 +362,18 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 						// check if there are tags that overwrite defaults
 						// - check tag "junction"
-						if ("roundabout".equals(way.getKeys().get(NewConverter.TAG_JUNCTION))) {
-							// if "junction" is not set in tags, get()
-							// returns null and
-							// equals()
-							// evaluates to false
+						if (way.hasTag("junction", "roundabout")) {
 							oneway = true;
 						}
 
 						// check tag "oneway"
-						String onewayTag = way.getKeys().get(NewConverter.TAG_ONEWAY);
-						if (onewayTag != null) {
-							if ("yes".equals(onewayTag)) {
-								oneway = true;
-							} else if ("true".equals(onewayTag)) {
-								oneway = true;
-							} else if ("1".equals(onewayTag)) {
-								oneway = true;
-							} else if ("-1".equals(onewayTag)) {
-								onewayReverse = true;
-								oneway = false;
-							} else if ("no".equals(onewayTag)) {
-								oneway = false; // may be used to overwrite
-								// defaults
-							}
+						if (way.hasTag("oneway", "yes", "true", "1")) {
+							oneway = true;
+						} else if (way.hasTag("oneway", "-1")) {
+							onewayReverse = true;
+							oneway = false;
+						} else if (way.hasTag("oneway", "no")) {
+							oneway = false; // may be used to overwrite  defaults
 						}
 
 						// In case trunks, primary and secondary roads are
@@ -396,25 +387,17 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 							}
 						}
 
-						String maxspeedTag = way.getKeys().get(NewConverter.TAG_MAXSPEED);
+						String maxspeedTag = way.getKeys().get("maxspeed");
 						if (maxspeedTag != null) {
-							try {
-								freespeed = Double.parseDouble(maxspeedTag) / 3.6; // convert
-								// km/h to
-								// m/s
-							} catch (NumberFormatException e) {
-							}
+							freespeed = NewConverter.parseDoubleIfPossible(maxspeedTag) / 3.6; // convert km/h to m/s
 						}
 
 						// check tag "lanes"
-						String lanesTag = way.getKeys().get(NewConverter.TAG_LANES);
+						String lanesTag = way.getKeys().get("lanes");
 						if (lanesTag != null) {
-							try {
-								double tmp = Double.parseDouble(lanesTag);
-								if (tmp > 0) {
-									nofLanes = tmp;
-								}
-							} catch (Exception e) {
+							Double tmp = NewConverter.parseDoubleIfPossible(lanesTag);
+							if (tmp != null && tmp > 0) {
+								nofLanes = tmp;
 							}
 						}
 						// create the link(s)
@@ -448,6 +431,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 					}
 				}
+				Set<String> modes = NewConverter.determineModes(way);
 
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
@@ -471,8 +455,8 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 							length = taggedLength;
 						}
 					}
-					List<Link> tempLinks = NewConverter.createLink(scenario.getNetwork(), way, nodeFrom, nodeTo, length, increment, oneway,
-							onewayReverse, freespeed, capacity, nofLanes, NewConverter.determineModes(way));
+					List<Link> tempLinks = NewConverter.createLink(scenario.getNetwork(), way, nodeFrom, nodeTo, length, increment, !onewayReverse,
+							!oneway, freespeed, capacity, nofLanes, modes);
 					for (Link link : tempLinks) {
 						link2Segments.put(link, segs);
 					}
