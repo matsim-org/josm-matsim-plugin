@@ -112,7 +112,7 @@ class Importer {
 
 			// set id of MATSim node as tag, as actual id of new MATSim node is
 			// set as corresponding OSM node id
-			nodeOsm.put(ImportTask.NODE_TAG_ID, ((NodeImpl) node).getOrigId());
+			nodeOsm.put(NodeConversionRules.ID, ((NodeImpl) node).getOrigId());
 			node2OsmNode.put(node, nodeOsm);
 			dataSet.addPrimitive(nodeOsm);
 			Node newNode = targetScenario.getNetwork().getFactory().createNode(Id.create(nodeOsm.getUniqueId(), Node.class), node.getCoord());
@@ -128,7 +128,7 @@ class Importer {
 			way.addNode(toNode);
 			// set id of link as tag, as actual id of new link is set as
 			// corresponding way id
-			way.put(ImportTask.WAY_TAG_ID, ((LinkImpl) link).getOrigId());
+			way.put(LinkConversionRules.ID, ((LinkImpl) link).getOrigId());
 			way.put(LinkConversionRules.FREESPEED, String.valueOf(link.getFreespeed()));
 			way.put(LinkConversionRules.CAPACITY, String.valueOf(link.getCapacity()));
 			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));

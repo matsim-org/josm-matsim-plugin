@@ -363,7 +363,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null) {
 				List<Node> nodeOrder = new ArrayList<>();
 				for (Node current : way.getNodes()) {
-					if (scenario.getNetwork().getNodes().containsKey(Id.create(current.getUniqueId(), org.matsim.api.core.v01.network.Node.class))) {
+					if (scenario.getNetwork().getNodes().containsKey(Id.create(NodeConversionRules.getId(current), org.matsim.api.core.v01.network.Node.class))) {
 						nodeOrder.add(current);
 					}
 				}
@@ -389,19 +389,12 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 
 					// only create link, if both nodes were found, node could be null, since
 					// nodes outside a layer were dropped
-					Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(nodeFrom.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
-					Id<org.matsim.api.core.v01.network.Node> toId = Id.create(nodeTo.getUniqueId(), org.matsim.api.core.v01.network.Node.class);
+					Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(NodeConversionRules.getId(nodeFrom), org.matsim.api.core.v01.network.Node.class);
+					Id<org.matsim.api.core.v01.network.Node> toId = Id.create(NodeConversionRules.getId(nodeTo), org.matsim.api.core.v01.network.Node.class);
 					if (scenario.getNetwork().getNodes().get(fromId) != null && scenario.getNetwork().getNodes().get(toId) != null) {
-						String id = String.valueOf(way.getUniqueId()) + "_" + increment;
-						String origId;
-
-						if (way.hasKey(ImportTask.WAY_TAG_ID)) {
-							origId = way.get(ImportTask.WAY_TAG_ID);
-						} else {
-							origId = id;
-						}
-
 						if (forward) {
+							String id = LinkConversionRules.getId(way, increment, false);
+							String origId = LinkConversionRules.getOrigId(way, id, false);
 							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(fromId), scenario.getNetwork().getNodes().get(toId));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
@@ -414,13 +407,15 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 							links.add(l);
 						}
 						if (backward) {
-							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id + "_r", Link.class), scenario.getNetwork().getNodes().get(toId), scenario.getNetwork().getNodes().get(fromId));
+							String id = LinkConversionRules.getId(way, increment, true);
+							String origId = LinkConversionRules.getOrigId(way, id, true);
+							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(toId), scenario.getNetwork().getNodes().get(fromId));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
 							l.setAllowedModes(modes);
-							((LinkImpl) l).setOrigId(origId + "_r");
+							((LinkImpl) l).setOrigId(origId);
 							scenario.getNetwork().addLink(l);
 							link2Segments.put(l, segs);
 							links.add(l);
@@ -435,7 +430,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		@Override
 		public void visit(Node node) {
 			if (visited.add(node)) {
-				scenario.getNetwork().removeNode(Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class));
+				scenario.getNetwork().removeNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class));
 				if (scenario.getConfig().transit().isUseTransit()) {
 					TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
 							.get(Id.create(String.valueOf(node.getUniqueId()), TransitStopFacility.class));
@@ -447,13 +442,9 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					NodeImpl matsimNode = (NodeImpl) scenario
 							.getNetwork()
 							.getFactory()
-							.createNode(Id.create(node.getUniqueId(), org.matsim.api.core.v01.network.Node.class),
+							.createNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class),
 									new Coord(node.getEastNorth().getX(), node.getEastNorth().getY()));
-					if (node.hasKey(ImportTask.NODE_TAG_ID)) {
-						matsimNode.setOrigId(node.get(ImportTask.NODE_TAG_ID));
-					} else {
-						matsimNode.setOrigId(String.valueOf(node.getUniqueId()));
-					}
+					matsimNode.setOrigId(NodeConversionRules.getOrigId(node));
 					scenario.getNetwork().addNode(matsimNode);
 				}
 			}
@@ -588,7 +579,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					stop.setLinkId(linkId);
 					Node stopPosition = determineStopPositionOsmNode(relation);
 					if (stopPosition != null) {
-						stop.setNodeId(Id.createNodeId(stopPosition.getUniqueId()));
+						stop.setNodeId(Id.createNodeId(NodeConversionRules.getId(stopPosition)));
 					}
 					String name = (relation.getName() == null ? String.valueOf(relation.getUniqueId()) : relation.getName());
 					stop.setName(name);

@@ -12,15 +12,6 @@ import org.openstreetmap.josm.gui.PleaseWaitRunnable;
  */
 class ImportTask extends PleaseWaitRunnable {
 
-    /**
-     * The String representing the id tagging-key for nodes.
-     */
-    public static final String NODE_TAG_ID = "id";
-    /**
-     * The String representing the id tagging-key for ways.
-     */
-    public static final String WAY_TAG_ID = "id";
-
     private final Importer importer;
 
     /**

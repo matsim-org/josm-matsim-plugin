@@ -11,6 +11,7 @@ import java.util.Set;
 
 class LinkConversionRules {
 
+	public static final String ID = "matsim:id";
 	public static final String FREESPEED = "matsim:freespeed";
 	public static final String PERMLANES = "matsim:permlanes";
 	public static final String CAPACITY = "matsim:capacity";
@@ -25,6 +26,20 @@ class LinkConversionRules {
 			wayType = way.getKeys().get(NetworkListener.TAG_RAILWAY);
 		}
 		return wayType;
+	}
+
+	static String getId(Way way, long increment, boolean backward) {
+		return String.valueOf(way.getUniqueId()) + "_" + increment + (backward ? "_r" : "");
+	}
+
+	static String getOrigId(Way way, String id, boolean backward) {
+		String origId;
+		if (way.hasKey(ID)) {
+			origId = way.get(ID) + (backward ? "_r" : "");
+		} else {
+			origId = id;
+		}
+		return origId;
 	}
 
 	static boolean isBackward(Way way, OsmConvertDefaults.OsmWayDefaults defaults) {
