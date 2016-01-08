@@ -129,20 +129,19 @@ class Importer {
 			// set id of link as tag, as actual id of new link is set as
 			// corresponding way id
 			way.put(ImportTask.WAY_TAG_ID, ((LinkImpl) link).getOrigId());
-			way.put("freespeed", String.valueOf(link.getFreespeed()));
-			way.put("capacity", String.valueOf(link.getCapacity()));
-			way.put("length", String.valueOf(link.getLength()));
-			way.put("permlanes", String.valueOf(link.getNumberOfLanes()));
+			way.put(LinkConversionRules.FREESPEED, String.valueOf(link.getFreespeed()));
+			way.put(LinkConversionRules.CAPACITY, String.valueOf(link.getCapacity()));
+			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));
+			way.put(LinkConversionRules.PERMLANES, String.valueOf(link.getNumberOfLanes()));
 			StringBuilder modes = new StringBuilder();
-
-			// multiple values are separated by ";"
 			for (String mode : link.getAllowedModes()) {
 				modes.append(mode);
 				if (link.getAllowedModes().size() > 1) {
+					// multiple values are separated by ";"
 					modes.append(";");
 				}
 			}
-			way.put("modes", modes.toString());
+			way.put(LinkConversionRules.MODES, modes.toString());
 
 			dataSet.addPrimitive(way);
 			Link newLink = targetScenario

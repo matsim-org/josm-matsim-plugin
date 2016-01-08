@@ -37,10 +37,10 @@ public class InteractiveEditingTest {
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
-		way.put("freespeed", "10.0");
-		way.put("capacity", "1000.0");
-		way.put("permlanes", "1.0");
-		way.put("modes", "car");
+		way.put(LinkConversionRules.FREESPEED, "10.0");
+		way.put(LinkConversionRules.CAPACITY, "1000.0");
+		way.put(LinkConversionRules.PERMLANES, "1.0");
+		way.put(LinkConversionRules.MODES, "car");
 		new AddCommand(matsimLayer, way).executeCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
 	}
@@ -60,10 +60,10 @@ public class InteractiveEditingTest {
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
-		way.put("freespeed", "10.0");
-		way.put("capacity", "1000.0");
-		way.put("permlanes", "1.0");
-		way.put("modes", "car");
+		way.put(LinkConversionRules.FREESPEED, "10.0");
+		way.put(LinkConversionRules.CAPACITY, "1000.0");
+		way.put(LinkConversionRules.PERMLANES, "1.0");
+		way.put(LinkConversionRules.MODES, "car");
 		AddCommand addWay = new AddCommand(matsimLayer, way);
 		addWay.executeCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
@@ -90,10 +90,10 @@ public class InteractiveEditingTest {
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
-		way.put("freespeed", "10.0");
-		way.put("capacity", "1000.0");
-		way.put("permlanes", "1.0");
-		way.put("modes", "car");
+		way.put(LinkConversionRules.FREESPEED, "10.0");
+		way.put(LinkConversionRules.CAPACITY, "1000.0");
+		way.put(LinkConversionRules.PERMLANES, "1.0");
+		way.put(LinkConversionRules.MODES, "car");
 		new AddCommand(matsimLayer, way).executeCommand();
 		DeleteCommand delete = new DeleteCommand(way);
 		delete.executeCommand();
@@ -114,10 +114,10 @@ public class InteractiveEditingTest {
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
-		way.put("freespeed", "10.0");
-		way.put("capacity", "1000.0");
-		way.put("permlanes", "1.0");
-		way.put("modes", "car");
+		way.put(LinkConversionRules.FREESPEED, "10.0");
+		way.put(LinkConversionRules.CAPACITY, "1000.0");
+		way.put(LinkConversionRules.PERMLANES, "1.0");
+		way.put(LinkConversionRules.MODES, "car");
 		new AddCommand(matsimLayer, way).executeCommand();
 		DeleteCommand deleteWay = new DeleteCommand(way);
 		deleteWay.executeCommand();
@@ -151,10 +151,10 @@ public class InteractiveEditingTest {
 		way.addNode(node2);
 		new AddCommand(matsimLayer, way).executeCommand();
 		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
-		new ChangePropertyCommand(way, "freespeed", "10.0").executeCommand();
-		new ChangePropertyCommand(way, "capacity", "1000.0").executeCommand();
-		new ChangePropertyCommand(way, "permlanes", "1.0").executeCommand();
-		new ChangePropertyCommand(way, "modes", "car").executeCommand();
+		new ChangePropertyCommand(way, LinkConversionRules.FREESPEED, "10.0").executeCommand();
+		new ChangePropertyCommand(way, LinkConversionRules.CAPACITY, "1000.0").executeCommand();
+		new ChangePropertyCommand(way, LinkConversionRules.PERMLANES, "1.0").executeCommand();
+		new ChangePropertyCommand(way, LinkConversionRules.MODES, "car").executeCommand();
 		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
 	}
 

@@ -10,6 +10,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 class LinkConversionRules {
+
+	public static final String FREESPEED = "matsim:freespeed";
+	public static final String PERMLANES = "matsim:permlanes";
+	public static final String CAPACITY = "matsim:capacity";
+	public static final String MODES = "matsim:modes";
+	public static final String LENGTH = "matsim:length";
+
 	static String getWayType(Way way) {
 		String wayType = null;
 		if (way.getKeys().containsKey(NetworkListener.TAG_HIGHWAY)) {
@@ -73,8 +80,8 @@ class LinkConversionRules {
 
 	static Set<String> getModes(Way way, OsmConvertDefaults.OsmWayDefaults defaults) {
 		Set<String> modes = null;
-		if (way.getKeys().containsKey("modes")) {
-			modes = new HashSet<>(Arrays.asList(way.getKeys().get("modes").split(";")));
+		if (way.getKeys().containsKey(MODES)) {
+			modes = new HashSet<>(Arrays.asList(way.getKeys().get(MODES).split(";")));
 		}
 		if (defaults != null) {
 			if (modes == null) {
@@ -92,8 +99,8 @@ class LinkConversionRules {
 
 	static Double getCapacity(Way way, OsmConvertDefaults.OsmWayDefaults defaults, Double nofLanesPerDirection) {
 		Double capacity = null;
-		if (way.getKeys().containsKey("capacity")) {
-			capacity = parseDoubleIfPossible(way.getKeys().get("capacity"));
+		if (way.getKeys().containsKey(CAPACITY)) {
+			capacity = parseDoubleIfPossible(way.getKeys().get(CAPACITY));
 		}
 		if (defaults != null) {
 			if (capacity == null) {
@@ -105,8 +112,8 @@ class LinkConversionRules {
 
 	static Double getLanesPerDirection(Way way, OsmConvertDefaults.OsmWayDefaults defaults, boolean forward, boolean backward) {
 		Double nofLanesPerDirection = null;
-		if (way.getKeys().containsKey("permlanes")) {
-			nofLanesPerDirection = parseDoubleIfPossible(way.getKeys().get("permlanes"));
+		if (way.getKeys().containsKey(PERMLANES)) {
+			nofLanesPerDirection = parseDoubleIfPossible(way.getKeys().get(PERMLANES));
 		}
 		if (defaults != null) {
 			if (nofLanesPerDirection == null) {
@@ -128,8 +135,8 @@ class LinkConversionRules {
 
 	static Double getFreespeed(Way way, OsmConvertDefaults.OsmWayDefaults defaults) {
 		Double freespeed = null;
-		if (way.getKeys().containsKey("freespeed")) {
-			freespeed = parseDoubleIfPossible(way.getKeys().get("freespeed"));
+		if (way.getKeys().containsKey(FREESPEED)) {
+			freespeed = parseDoubleIfPossible(way.getKeys().get(FREESPEED));
 		}
 		if (freespeed == null) {
 			if (defaults != null) {
@@ -161,8 +168,8 @@ class LinkConversionRules {
 
 	static Double getTaggedLength(Way way) {
 		Double taggedLength = null;
-		if (way.getKeys().containsKey("length")) {
-			taggedLength = parseDoubleIfPossible(way.getKeys().get("length"));
+		if (way.getKeys().containsKey(LENGTH)) {
+			taggedLength = parseDoubleIfPossible(way.getKeys().get(LENGTH));
 		}
 		return taggedLength;
 	}

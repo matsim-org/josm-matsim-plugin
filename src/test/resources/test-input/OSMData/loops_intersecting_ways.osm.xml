@@ -55,28 +55,28 @@
     <nd ref='13' />
     <nd ref='14' />
     <nd ref='15' />
-    <tag k='capacity' v='0.00' />
-    <tag k='freespeed' v='0.00' />
-    <tag k='modes' v='car' />
-    <tag k='permlanes' v='0.00' />
+    <tag k='matsim:capacity' v='0.00' />
+    <tag k='matsim:freespeed' v='0.00' />
+    <tag k='matsim:modes' v='car' />
+    <tag k='matsim:permlanes' v='0.00' />
   </way>
   <way id='5' version='1' action='modify' visible='true'>
     <nd ref='16' />
     <nd ref='14' />
     <nd ref='17' />
-    <tag k='capacity' v='0.00' />
-    <tag k='freespeed' v='0.00' />
-    <tag k='modes' v='car' />
-    <tag k='permlanes' v='0.00' />
+    <tag k='matsim:capacity' v='0.00' />
+    <tag k='matsim:freespeed' v='0.00' />
+    <tag k='matsim:modes' v='car' />
+    <tag k='matsim:permlanes' v='0.00' />
   </way>
   <way id='3' version='1' action='modify' visible='true'>
     <nd ref='11' />
     <nd ref='8' />
     <nd ref='12' />
-    <tag k='capacity' v='0.00' />
-    <tag k='freespeed' v='0.00' />
-    <tag k='modes' v='car' />
-    <tag k='permlanes' v='0.00' />
+    <tag k='matsim:capacity' v='0.00' />
+    <tag k='matsim:freespeed' v='0.00' />
+    <tag k='matsim:modes' v='car' />
+    <tag k='matsim:permlanes' v='0.00' />
   </way>
   <way id='2' version='1' action='modify' visible='true'>
     <nd ref='6' />
@@ -85,10 +85,10 @@
     <nd ref='9' />
     <nd ref='10' />
     <nd ref='7' />
-    <tag k='capacity' v='0.00' />
-    <tag k='freespeed' v='0.00' />
-    <tag k='modes' v='car' />
-    <tag k='permlanes' v='0.00' />
+    <tag k='matsim:capacity' v='0.00' />
+    <tag k='matsim:freespeed' v='0.00' />
+    <tag k='matsim:modes' v='car' />
+    <tag k='matsim:permlanes' v='0.00' />
   </way>
   <way id='1' version='1' action='modify' visible='true'>
     <nd ref='1' />
@@ -97,9 +97,9 @@
     <nd ref='4' />
     <nd ref='5' />
     <nd ref='2' />
-    <tag k='capacity' v='0.00' />
-    <tag k='freespeed' v='0.00' />
-    <tag k='modes' v='car' />
-    <tag k='permlanes' v='0.00' />
+    <tag k='matsim:capacity' v='0.00' />
+    <tag k='matsim:freespeed' v='0.00' />
+    <tag k='matsim:modes' v='car' />
+    <tag k='matsim:permlanes' v='0.00' />
   </way>
 </osm>
