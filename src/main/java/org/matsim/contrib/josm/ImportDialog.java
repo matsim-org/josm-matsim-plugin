@@ -37,7 +37,6 @@ class ImportDialog extends JPanel {
 	final JButton schedulePathButton = new JButton("choose");
 
 	final JComboBox<ProjectionChoice> importSystem = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[] {}));
-	private JPanel projSubPrefPanel;
 	private JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
 
 	public ImportDialog() {
@@ -121,7 +120,7 @@ class ImportDialog extends JPanel {
 
 		// Replace old panel with new one
 		projSubPrefPanelWrapper.removeAll();
-		projSubPrefPanel = pc.getPreferencePanel(listener);
+		JPanel projSubPrefPanel = pc.getPreferencePanel(listener);
 		projSubPrefPanelWrapper.add(projSubPrefPanel, GBC.std().fill(GBC.BOTH).weight(1.0, 1.0));
 		revalidate();
 		repaint();

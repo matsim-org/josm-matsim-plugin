@@ -96,7 +96,7 @@ class Importer {
 			config.transit().setUseTransit(true);
 		}
 		EditableScenario tempScenario = EditableScenarioUtils.createScenario(config);
-		MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario);
+		MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario.getNetwork());
 		reader.readFile(networkPath);
 		if (schedulePath != null) {
 			new TransitScheduleReader(tempScenario).readFile(schedulePath);

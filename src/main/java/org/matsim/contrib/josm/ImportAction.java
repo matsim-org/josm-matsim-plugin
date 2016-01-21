@@ -33,7 +33,7 @@ public class ImportAction extends JosmAction {
 		JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 		JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
 		dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		dlg.setMinimumSize(new Dimension(400, 200));
+		dlg.setMinimumSize(new Dimension(800, 600));
 		dlg.setVisible(true);
 		if (pane.getValue() != null) {
 			if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {

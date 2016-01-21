@@ -172,7 +172,7 @@ public class InteractiveEditingTest {
 
 	private Node findNode2(MATSimLayer matsimLayer) {
 		for (Node node : matsimLayer.data.getNodes()) {
-			if ("2".equals(node.get("id"))) {
+			if ("2".equals(node.get("matsim:id"))) {
 				return node;
 			}
 		}

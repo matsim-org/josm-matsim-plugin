@@ -19,7 +19,7 @@ public class PtTutorialScenario {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		Scenario scenario = ScenarioUtils.createScenario(config);
-		new NetworkReaderMatsimV1(scenario).parse(networkUrl);
+		new NetworkReaderMatsimV1(scenario.getNetwork()).parse(networkUrl);
 		new TransitScheduleReader(scenario).readFile(transitScheduleUrl.getFile());
 		return scenario;
 	}

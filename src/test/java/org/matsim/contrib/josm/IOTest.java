@@ -40,7 +40,7 @@ public class IOTest {
 	public void readNetworkWithoutTransit() {
 		URL url = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-		new NetworkReaderMatsimV1(scenario).parse(url);
+		new NetworkReaderMatsimV1(scenario.getNetwork()).parse(url);
 		Importer importer = new Importer(url.getFile(), null, Main.getProjection());
 		importer.run();
 		MATSimLayer layer = importer.getLayer();
