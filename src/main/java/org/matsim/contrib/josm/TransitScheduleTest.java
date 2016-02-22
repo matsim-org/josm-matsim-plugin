@@ -248,9 +248,9 @@ public class TransitScheduleTest extends Test {
 		if (testError.getCode() == DUPLICATE_FACILITY_ID) {
 			for (OsmPrimitive primitive : testError.getPrimitives()) {
 				Id<TransitStopFacility> id = Id.create(primitive.getUniqueId(), TransitStopFacility.class);
-				TransitStopFacility facility = scenario.getTransitSchedule().getFacilities().get(id);
-				String realId = facility.getName();
-				commands.add(new ChangePropertyCommand(primitive, "name", (realId + "(" + j + ")")));
+				EditableTransitStopFacility facility = scenario.getTransitSchedule().getEditableFacilities().get(id);
+				String realId = facility.getOrigId().toString();
+				commands.add(new ChangePropertyCommand(primitive, "ref", (realId + "(" + j + ")")));
 				j++;
 			}
 		}

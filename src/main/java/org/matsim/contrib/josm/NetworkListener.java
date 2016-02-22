@@ -581,15 +581,11 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					if (stopPosition != null) {
 						stop.setNodeId(Id.createNodeId(NodeConversionRules.getId(stopPosition)));
 					}
-					String origId;
-					if (relation.hasKey("matsim:id")) {
-						origId = relation.get("matsim:id");
-					} else if (relation.hasKey("ref")) {
-						origId = relation.get("ref");
-					} else if (relation.hasKey("name")) {
-						origId = relation.get("name");
+					Id<TransitStopFacility> origId;
+					if (relation.hasKey("ref")) {
+						origId = Id.create(relation.get("ref"), TransitStopFacility.class);
 					} else {
-						origId = String.valueOf(relation.getUniqueId());
+						origId = stop.getId();
 					}
 					stop.setOrigId(Id.create(origId, TransitStopFacility.class));
 					scenario.getTransitSchedule().addStopFacility(stop);

@@ -55,26 +55,26 @@
     <member type='node' ref='-112' role='platform' />
     <tag k='public_transport' v='stop_area' />
     <tag k='type' v='public_transport' />
-    <tag k='name' v='4' />
+    <tag k='ref' v='4' />
   </relation>
   <relation id='-174' action='modify' visible='true'>
     <member type='node' ref='-110' role='platform' />
     <tag k='public_transport' v='stop_area' />
     <tag k='type' v='public_transport' />
-    <tag k='name' v='3' />
+    <tag k='ref' v='3' />
   </relation>
   <relation id='-170' action='modify' visible='true'>
     <member type='node' ref='-106' role='platform' />
     <tag k='public_transport' v='stop_area' />
     <tag k='type' v='public_transport' />
-    <tag k='name' v='2' />
+    <tag k='ref' v='2' />
   </relation>
   <relation id='-151' action='modify' visible='true'>
     <member type='node' ref='-108' role='platform' />
     <member type='node' ref='-132' role='stop' />
     <tag k='public_transport' v='stop_area' />
     <tag k='type' v='public_transport' />
-    <tag k='name' v='1' />
+    <tag k='ref' v='1' />
   </relation>
   <relation id='-148' action='modify' visible='true'>
     <member type='way' ref='-142' role='' />

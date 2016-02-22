@@ -169,7 +169,9 @@ class Importer {
 			LatLon latLon = projection.eastNorth2latlon(eastNorth);
 			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
 			platform.put("public_transport", "platform");
-			platform.put("name", stop.getName());
+			if (stop.getName() != null) {
+				platform.put("name", stop.getName());
+			}
 			dataSet.addPrimitive(platform);
 			Way newWay;
 			Id<Node> nodeId = null;
@@ -177,8 +179,10 @@ class Importer {
 			Relation relation = new Relation();
 			relation.put("type", "public_transport");
 			relation.put("public_transport", "stop_area");
-			relation.put("name", stop.getName());
-			relation.put("matsim:id", stop.getId().toString());
+			if (stop.getName() != null) {
+				relation.put("name", stop.getName());
+			}
+			relation.put("ref", stop.getId().toString());
 			relation.addMember(new RelationMember("platform", platform));
 			if (stop.getLinkId() != null) {
 				newWay = linkId2Way.get(stop.getLinkId());

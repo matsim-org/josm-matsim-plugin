@@ -12,19 +12,19 @@
   <node id='-114' action='modify' visible='true' lat='52.51037673707' lon='13.2937524789' />
   <node id='-112' action='modify' visible='true' lat='52.50687752184' lon='13.28863208179'>
     <tag k='public_transport' v='platform' />
-    <tag k='name' v='4' />
+    <tag k='ref' v='4' />
   </node>
   <node id='-110' action='modify' visible='true' lat='52.50392484228' lon='13.32995458485'>
     <tag k='public_transport' v='platform' />
-    <tag k='name' v='3' />
+    <tag k='ref' v='3' />
   </node>
   <node id='-108' action='modify' visible='true' lat='52.53797796105' lon='13.29887287602'>
     <tag k='public_transport' v='platform' />
-    <tag k='name' v='1' />
+    <tag k='ref' v='1' />
   </node>
   <node id='-106' action='modify' visible='true' lat='52.52289508482' lon='13.36382107107'>
     <tag k='public_transport' v='platform' />
-    <tag k='name' v='2' />
+    <tag k='ref' v='2' />
   </node>
   <way id='-142' action='modify' visible='true'>
     <nd ref='-132' />
