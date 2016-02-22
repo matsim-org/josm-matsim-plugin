@@ -18,7 +18,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -167,7 +166,7 @@ public class OSMDataTest {
 			Assert.assertEquals(7, route.getRoute().getLinkIds().size());
 		}
 
-		Scenario simulatedExportScenario = TransitScheduleExporter.convertIdsAndFilterDeleted((EditableScenario) busRouteListener.getScenario());
+		Scenario simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted((EditableScenario) busRouteListener.getScenario());
 		int nStopsWithLink = 0;
 		for (TransitStopFacility transitStopFacility : simulatedExportScenario.getTransitSchedule().getFacilities().values()) {
 			if (transitStopFacility.getLinkId() != null) {
@@ -186,6 +185,11 @@ public class OSMDataTest {
 			Assert.assertEquals(4, route.getStops().size());
 			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
 		}
+
+		simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted(((EditableScenario) busRouteListener.getScenario()));
+		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
+
+
 
 		LayerConverter converter =  new LayerConverter(busRouteLayer);
 		converter.run();
@@ -206,7 +210,7 @@ public class OSMDataTest {
 		Assert.assertEquals(10, convertedOsm.getWays().size());
 		Assert.assertEquals(7, convertedOsm.getRelations().size());
 
-		simulatedExportScenario = TransitScheduleExporter.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
+		simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 	}

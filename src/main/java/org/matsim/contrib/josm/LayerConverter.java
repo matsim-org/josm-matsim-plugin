@@ -41,11 +41,13 @@ public class LayerConverter {
 				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		networkListener.visitAll();
 
+		EditableScenario exportedScenario = ExportTask.convertIdsAndFilterDeleted(sourceScenario);
+
 		// check if network should be cleaned
 		if ((!Preferences.isSupportTransit()) && Preferences.isCleanNetwork()) {
-			new NetworkCleaner().run(sourceScenario.getNetwork());
+			new NetworkCleaner().run(exportedScenario.getNetwork());
 		}
-		Importer importer = new Importer(sourceScenario, Main.getProjection());
+		Importer importer = new Importer(exportedScenario, Main.getProjection());
 		importer.run();
 		matsimLayer = importer.getLayer();
 	}

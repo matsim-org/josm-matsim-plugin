@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
+import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -52,6 +53,7 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 
 						emptyNetwork(sourceScenario);
 						fixTransitSchedule(sourceScenario);
+
 						new CreatePseudoNetwork(sourceScenario.getTransitSchedule(), sourceScenario.getNetwork(), "pt_")
 								.createNetwork();
 
@@ -89,7 +91,9 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 				// FIXME: I have to normalize the facilities here - there are referenced facility objects here which are not in the scenario.
 				// FIXME: This fact will VERY likely also lead to problems elsewhere.
 				for (TransitRouteStop transitRouteStop : transitRoute.getStops()) {
-					transitRouteStop.setStopFacility(sourceScenario.getTransitSchedule().getFacilities().get(transitRouteStop.getStopFacility().getId()));
+					TransitStopFacility stopFacility1 = transitRouteStop.getStopFacility();
+					TransitStopFacility stopFacility = sourceScenario.getTransitSchedule().getFacilities().get(stopFacility1.getId());
+					transitRouteStop.setStopFacility(stopFacility);
 				}
 			}
 		}

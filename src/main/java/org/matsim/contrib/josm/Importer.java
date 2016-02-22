@@ -57,8 +57,8 @@ class Importer {
 		dataSet = new DataSet();
 		if (sourceScenario == null) {
 			sourceScenario = readScenario();
-			copyIdsToOrigIds(sourceScenario);
 		}
+		copyIdsToOrigIds(sourceScenario);
 		targetScenario = EditableScenarioUtils.createScenario(sourceScenario.getConfig());
 		convertNetwork();
 		if (sourceScenario.getConfig().transit().isUseTransit()) {
@@ -173,7 +173,6 @@ class Importer {
 				platform.put("name", stop.getName());
 			}
 			dataSet.addPrimitive(platform);
-			Way newWay;
 			Id<Node> nodeId = null;
 			Id<Link> linkId = null;
 			Relation relation = new Relation();
@@ -185,7 +184,10 @@ class Importer {
 			relation.put("ref", stop.getId().toString());
 			relation.addMember(new RelationMember("platform", platform));
 			if (stop.getLinkId() != null) {
-				newWay = linkId2Way.get(stop.getLinkId());
+				Way newWay = linkId2Way.get(stop.getLinkId());
+				if (newWay == null) {
+					throw new RuntimeException(stop.getLinkId().toString());
+				}
 				List<Link> newWayLinks = way2Links.get(newWay);
 				Link singleLink = newWayLinks.get(0);
 				linkId = Id.createLinkId(singleLink.getId());

@@ -14,9 +14,7 @@ public class EditableScenarioUtils {
 
     public static EditableScenario createScenario(Config config) {
         ScenarioUtils.ScenarioBuilder scenarioBuilder = new ScenarioUtils.ScenarioBuilder(config);
-        if (config.transit().isUseTransit()) {
-            scenarioBuilder.setTransitSchedule(new EditableTransitSchedule());
-        }
+        scenarioBuilder.setTransitSchedule(new EditableTransitSchedule());
         final Scenario scenario = scenarioBuilder.build();
         return new EditableScenario() {
             @Override
