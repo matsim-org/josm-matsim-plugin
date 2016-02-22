@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.CreateStopAreas;
@@ -26,29 +28,27 @@ import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
-import org.openstreetmap.josm.io.Compression;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 
 
-public class CreateTransitLiteRoute {
+public class CreatePseudoTransitTest {
 
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
 
+	@org.junit.Test
+	public void createPseudoTransit() throws IllegalDataException, IOException {
 
-	public static void main (String[] args) throws IllegalDataException, IOException {
-
-		//adjust fileName for custom data conversion
-		String fileName = "/test-input/OSMData/busRoute.osm.xml";
-		File file = new File(fileName);
-		new JOSMFixture(file.getParent()).init(true);
+		new JOSMFixture(folder.getRoot().getPath()).init(true);
 		System.out.println("Fixture initialized");
 
 		System.out.println("Reading DataSet");
-		InputStream stream = Compression.getUncompressedFileInputStream(file);
+		InputStream stream = getClass().getResourceAsStream("/test-input/OSMData/busRoute-without-stop-areas.osm.xml");
 		DataSet set = OsmReader.parseDataSet(stream, null);
 		System.out.println("DataSet ready");
 
-		OsmDataLayer layer = new OsmDataLayer(set, "tmp", file);
+		OsmDataLayer layer = new OsmDataLayer(set, "tmp", folder.newFile("testdata"));
 
 		Main.pref.put("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
@@ -65,21 +65,21 @@ public class CreateTransitLiteRoute {
 		System.out.println("Layer added");
 
 		System.out.println("Starting Validations");
-		List<Test> tests = Arrays.asList(new IncompleteRoutesTest(), new UpdateStopTags(), new MasterRoutesTest(),new CreateStopAreas());
-		for (Test test: tests) {
-			System.out.println("Starting "+test.getName());
+		List<Test> tests = Arrays.asList(new IncompleteRoutesTest(), new UpdateStopTags(), new MasterRoutesTest(), new CreateStopAreas());
+		for (Test test : tests) {
+			System.out.println("Starting " + test.getName());
 
 			test.startTest(null);
 			test.visit(layer.data.allPrimitives());
 			test.endTest();
-			System.out.println(test.getErrors().size()+" errors found");
-			int i=0;
-			for(TestError error: test.getErrors()) {
+			System.out.println(test.getErrors().size() + " errors found");
+			int i = 0;
+			for (TestError error : test.getErrors()) {
 				if (error.isFixable()) {
 					final Command fixCommand = error.getFix();
 					if (fixCommand != null) {
-						if(i%50==0) {
-							System.out.println("Fixing error #"+i);
+						if (i % 50 == 0) {
+							System.out.println("Fixing error #" + i);
 						}
 						fixCommand.executeCommand();
 						i++;
@@ -89,7 +89,7 @@ public class CreateTransitLiteRoute {
 		}
 
 		System.out.println("Converting data");
-		LayerConverter converter =  new LayerConverter(layer);
+		LayerConverter converter = new LayerConverter(layer);
 		converter.run();
 		Main.main.addLayer(converter.getMatsimLayer());
 		System.out.println("Exporting data");
@@ -104,7 +104,7 @@ public class CreateTransitLiteRoute {
 		progMonitor.finishTask();
 		progMonitor.close();
 
-		for(TestError error: test.getErrors()) {
+		for (TestError error : test.getErrors()) {
 			if (error.isFixable()) {
 				final Command fixCommand = error.getFix();
 				if (fixCommand != null) {
@@ -113,7 +113,6 @@ public class CreateTransitLiteRoute {
 			}
 		}
 
-		TransitScheduleExportAction action = new TransitScheduleExportAction();
-		action.actionPerformed(null);
+		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.map.mapView.getActiveLayer());
 	}
 }
