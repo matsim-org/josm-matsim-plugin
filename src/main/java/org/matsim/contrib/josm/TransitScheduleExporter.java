@@ -50,8 +50,8 @@ class TransitScheduleExporter {
 		if (layerScenario.getTransitSchedule() != null) {
 			EditableTransitSchedule oldSchedule = layerScenario.getTransitSchedule();
 			TransitSchedule newSchedule = targetScenario.getTransitSchedule();
-			for (TransitStopFacility stop : oldSchedule.getFacilities().values()) {
-				Id<TransitStopFacility> id = Id.create(stop.getName(), TransitStopFacility.class);
+			for (EditableTransitStopFacility stop : oldSchedule.getEditableFacilities().values()) {
+				Id<TransitStopFacility> id = stop.getOrigId();
 				TransitStopFacility newStop = newSchedule.getFactory().createTransitStopFacility(id, stop.getCoord(), stop.getIsBlockingLane());
 				Id<Link> linkId = stop.getLinkId();
 				if (linkId != null) {
@@ -96,7 +96,7 @@ class TransitScheduleExporter {
 
 						List<TransitRouteStop> newTRStops = new ArrayList<>();
 						for (TransitRouteStop tRStop : route.getStops()) {
-							Id<TransitStopFacility> stopId = Id.create(tRStop.getStopFacility().getName(), TransitStopFacility.class);
+							Id<TransitStopFacility> stopId = ((EditableTransitStopFacility) tRStop.getStopFacility()).getOrigId();
 							TransitRouteStop newTRStop = newSchedule.getFactory().createTransitRouteStop(newSchedule.getFacilities().get(stopId),
 									tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
 							String awaitDepartureTime = String.valueOf(layerScenario.getTransitSchedule().getTransitStopsAttributes()

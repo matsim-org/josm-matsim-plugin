@@ -85,7 +85,7 @@ class Importer {
 				}
 			}
 			for (TransitStopFacility transitStopFacility : sourceScenario.getTransitSchedule().getFacilities().values()) {
-				transitStopFacility.setName(transitStopFacility.getId().toString());
+				((EditableTransitStopFacility) transitStopFacility).setOrigId(transitStopFacility.getId());
 			}
 		}
 	}
@@ -178,7 +178,7 @@ class Importer {
 			relation.put("type", "public_transport");
 			relation.put("public_transport", "stop_area");
 			relation.put("name", stop.getName());
-			relation.put("ref", stop.getId().toString());
+			relation.put("matsim:id", stop.getId().toString());
 			relation.addMember(new RelationMember("platform", platform));
 			if (stop.getLinkId() != null) {
 				newWay = linkId2Way.get(stop.getLinkId());
@@ -201,6 +201,7 @@ class Importer {
 					.createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(),
 							stop.getIsBlockingLane()));
 			newStop.setName(stop.getName());
+			newStop.setOrigId(((EditableTransitStopFacility) stop).getOrigId());
 			newStop.setLinkId(linkId);
 			newStop.setNodeId(nodeId);
 			targetScenario.getTransitSchedule().addStopFacility(newStop);

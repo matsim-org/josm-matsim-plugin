@@ -15,7 +15,7 @@ import java.util.Map;
 public class EditableTransitSchedule implements TransitSchedule {
 
     final Map<Id<TransitLine>, EditableTransitLine> transitLines = new HashMap<>();
-    final Map<Id<TransitStopFacility>, TransitStopFacility> facilities = new HashMap<>();
+    final Map<Id<TransitStopFacility>, EditableTransitStopFacility> facilities = new HashMap<>();
     final ObjectAttributes transitLinesAttributes = new ObjectAttributes();
     final ObjectAttributes transitStopsAttributes = new ObjectAttributes();
     final TransitScheduleFactory factory = new TransitScheduleFactory() {
@@ -73,7 +73,7 @@ public class EditableTransitSchedule implements TransitSchedule {
 
     @Override
     public void addStopFacility(TransitStopFacility transitStopFacility) {
-        facilities.put(transitStopFacility.getId(), transitStopFacility);
+        facilities.put(transitStopFacility.getId(), (EditableTransitStopFacility) transitStopFacility);
     }
 
     @Override
@@ -87,6 +87,10 @@ public class EditableTransitSchedule implements TransitSchedule {
 
     @Override
     public Map<Id<TransitStopFacility>, TransitStopFacility> getFacilities() {
+        return Collections.<Id<TransitStopFacility>, TransitStopFacility>unmodifiableMap(facilities);
+    }
+
+    public Map<Id<TransitStopFacility>, EditableTransitStopFacility> getEditableFacilities() {
         return facilities;
     }
 

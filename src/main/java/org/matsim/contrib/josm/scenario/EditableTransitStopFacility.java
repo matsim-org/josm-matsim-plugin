@@ -18,6 +18,7 @@ public class EditableTransitStopFacility implements TransitStopFacility {
     String stopPostAreaId;
     Coord coord;
     Map<String, Object> customAttributes;
+    private Id<TransitStopFacility> origId;
 
     public EditableTransitStopFacility(Id<TransitStopFacility> id) {
         this.id = id;
@@ -87,6 +88,14 @@ public class EditableTransitStopFacility implements TransitStopFacility {
 
     public void setNodeId(Id<Node> nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public Id<TransitStopFacility> getOrigId() {
+        return origId;
+    }
+
+    public void setOrigId(Id<TransitStopFacility> origId) {
+        this.origId = origId;
     }
 
 }

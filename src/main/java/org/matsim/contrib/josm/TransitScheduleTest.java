@@ -150,9 +150,9 @@ public class TransitScheduleTest extends Test {
 		if (r.hasTag("type", "public_transport") && r.hasTag("public_transport", "stop_area")) {
 			String id = String.valueOf(r.getUniqueId());
 			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
-			TransitStopFacility facility = scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId);
+			EditableTransitStopFacility facility = ((EditableTransitStopFacility) scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
 			if (facility != null) {
-				Id<TransitStopFacility> realId = Id.create(facility.getName(), TransitStopFacility.class);
+				Id<TransitStopFacility> realId = facility.getOrigId();
 				if (!facilityIds.containsKey(realId)) {
 					facilityIds.put(realId, new ArrayList<Relation>());
 				}
