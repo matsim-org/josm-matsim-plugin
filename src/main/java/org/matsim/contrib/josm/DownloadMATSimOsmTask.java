@@ -59,7 +59,9 @@ public class DownloadMATSimOsmTask extends DownloadOsmTask {
 
     static String getQuery(String highwayPredicates, String routePredicates, double lon1, double lat1, double lon2, double lat2) {
 		StringBuilder sb = new StringBuilder();
-		String bbox = "(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ")";
+        // Five minutes. Apparently, this is also parsed in OverpassDownloadReader and used as client timeout.
+        sb.append("[timeout:600];");
+        String bbox = "(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ")";
 		if (highwayPredicates != null) {
 			sb.append(String.format("way %s %s -> .highways;", bbox, highwayPredicates));
 		}
