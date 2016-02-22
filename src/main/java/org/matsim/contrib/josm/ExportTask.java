@@ -92,11 +92,15 @@ class ExportTask {
 			Id<Node> nodeId = stop.getNodeId();
 			if (nodeId != null) {
 				Node oldNode = layerScenario.getNetwork().getNodes().get(Id.createNodeId(nodeId));
+				if (oldNode == null) {
+					throw new RuntimeException("Stop references a node which is not in the scenario: "+nodeId);
+				}
 				for (Link oldInLink : oldNode.getInLinks().values()) {
 					Id<Link> newInLinkId = Id.createLinkId(((LinkImpl) oldInLink).getOrigId());
 					newStop.setLinkId(newInLinkId); // last one wins
 				}
 			}
+			newStop.setName(stop.getName());
 			newSchedule.addStopFacility(newStop);
 		}
 

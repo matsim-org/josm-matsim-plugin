@@ -3,7 +3,7 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.*;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
@@ -20,6 +20,7 @@ import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.search.SearchCompiler.Match;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.*;
+import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
@@ -579,13 +580,19 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					stop.setLinkId(linkId);
 					Node stopPosition = determineStopPositionOsmNode(relation);
 					if (stopPosition != null) {
-						stop.setNodeId(Id.createNodeId(NodeConversionRules.getId(stopPosition)));
+						Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
+						if (scenario.getNetwork().getNodes().containsKey(nodeId)) {
+							stop.setNodeId(nodeId);
+						}
 					}
 					Id<TransitStopFacility> origId;
 					if (relation.hasKey("ref")) {
 						origId = Id.create(relation.get("ref"), TransitStopFacility.class);
 					} else {
 						origId = stop.getId();
+					}
+					if (relation.hasKey("name")) {
+						stop.setName(relation.get("name"));
 					}
 					stop.setOrigId(Id.create(origId, TransitStopFacility.class));
 					scenario.getTransitSchedule().addStopFacility(stop);
