@@ -12,9 +12,11 @@ import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.io.OsmServerReader;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
+import org.openstreetmap.josm.tools.HttpClient;
 
 public class FilteredDownloader extends OsmServerReader {
 
+	private static final int TIMEOUT_S = 600;
 	/**
 	 * The boundings of the desired map data.
 	 */
@@ -92,6 +94,12 @@ public class FilteredDownloader extends OsmServerReader {
 		return ds;
 	}
 
+	@Override
+	protected void adaptRequest(HttpClient httpClient) {
+		httpClient.setConnectTimeout(TIMEOUT_S * 1000);
+		httpClient.setReadTimeout(TIMEOUT_S * 1000);
+	}
+
 	private String getRoutePredicates() {
 		int counter = 0;
 		StringBuilder routes = new StringBuilder("[\"route\"~\"");
@@ -139,6 +147,7 @@ public class FilteredDownloader extends OsmServerReader {
 
 	private String getQuery(String highwayPredicates, String routePredicates, double lon1, double lat1, double lon2, double lat2) {
 		StringBuilder sb = new StringBuilder();
+		sb.append(String.format("[timeout:%d];", TIMEOUT_S));
 		String bbox = "(" + lat1 + "," + lon1 + "," + lat2 + "," + lon2 + ")";
 		if (highwayPredicates != null) {
 			sb.append(String.format("way %s %s -> .highways;", bbox, highwayPredicates));
