@@ -42,7 +42,7 @@ public class ImportAction extends JosmAction {
 						dialog.schedulePathButton.setText(null);
 					}
 					ImportTask task = new ImportTask(dialog.networkPathButton.getText(), dialog.schedulePathButton.getText(),
-							((ProjectionChoice) dialog.importSystem.getSelectedItem()).getProjection());
+							 dialog.getSelectedProjection());
 					Main.worker.execute(task);
 				}
 			}
