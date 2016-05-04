@@ -1,21 +1,28 @@
 package org.matsim.contrib.josm;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.SystemOfMeasurement;
+import org.openstreetmap.josm.data.coor.CoordinateFormat;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.gui.preferences.projection.CodeProjectionChoice;
+import org.openstreetmap.josm.gui.preferences.projection.ListProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.GBC;
@@ -121,6 +128,10 @@ class ImportDialog extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				if((pc instanceof CodeProjectionChoice)) {
 					selectedProjection = Projections.getProjectionByCode(pc.getPreferences(projSubPrefPanel).iterator().next());
+				} else if(pc instanceof ListProjectionChoice) {
+			        Collection<String> prefs = pc.getPreferences(projSubPrefPanel);
+			        pc.setPreferences(prefs);
+			        selectedProjection = pc.getProjection();
 				}
 			}
 		};
@@ -131,10 +142,15 @@ class ImportDialog extends JPanel {
 		projSubPrefPanelWrapper.add(projSubPrefPanel, GBC.std().fill(GBC.BOTH).weight(1.0, 1.0));
 		revalidate();
 		repaint();
-		if(!(pc instanceof CodeProjectionChoice)) {
-			selectedProjection = pc.getProjection();
+		if(pc instanceof CodeProjectionChoice) {
+			selectedProjection = Projections.getProjectionByCode(pc.getPreferences(projSubPrefPanel).iterator().next());
+		} else if (pc instanceof ListProjectionChoice) {
+			Collection<String> prefs = pc.getPreferences(projSubPrefPanel);
+			pc.setPreferences(prefs);
 		}
+		selectedProjection = pc.getProjection();
 	}
+	
 	
 	public Projection getSelectedProjection() {
 		return selectedProjection;
