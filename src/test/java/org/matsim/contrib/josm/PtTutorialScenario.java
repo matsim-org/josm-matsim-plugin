@@ -8,6 +8,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.openstreetmap.josm.Main;
 
+import java.io.File;
 import java.net.URL;
 
 public class PtTutorialScenario {
@@ -25,7 +26,7 @@ public class PtTutorialScenario {
 	}
 
 	public static MATSimLayer layer() {
-		Importer importer = new Importer(networkUrl.getFile(), transitScheduleUrl.getFile(), Main.getProjection());
+		Importer importer = new Importer(new File(networkUrl.getFile()), new File(transitScheduleUrl.getFile()), Main.getProjection());
 		importer.run();
 		return importer.getLayer();
 	}

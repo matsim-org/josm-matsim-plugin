@@ -1,5 +1,7 @@
 package org.matsim.contrib.josm;
 
+import java.io.File;
+
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -17,9 +19,9 @@ class ImportTask extends PleaseWaitRunnable {
     /**
      * Creates a new Import task with the given <code>path</code>.
      */
-    public ImportTask(String networkPath, String schedulePath, Projection projection) {
+    public ImportTask(File network, File schedule, Projection projection) {
         super("MATSim Import");
-        this.importer = new Importer(networkPath, schedulePath, projection);
+        this.importer = new Importer(network, schedule, projection);
     }
 
     /**

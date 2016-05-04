@@ -1,24 +1,26 @@
 package org.matsim.contrib.josm;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Collection;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.SystemOfMeasurement;
-import org.openstreetmap.josm.data.coor.CoordinateFormat;
 import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.data.projection.Projections;
 import org.openstreetmap.josm.gui.preferences.projection.CodeProjectionChoice;
@@ -26,6 +28,7 @@ import org.openstreetmap.josm.gui.preferences.projection.ListProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.GBC;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * the import dialog
@@ -35,34 +38,53 @@ import org.openstreetmap.josm.tools.GBC;
  */
 @SuppressWarnings("serial")
 class ImportDialog extends JPanel {
-	// the JOptionPane that contains this dialog. required for the closeDialog()
-	// method.
 
 	/**
 	 * Holds the path of the import file
 	 */
-	final JLabel networkPath = new JLabel("network");
-	final JButton networkPathButton = new JButton("choose");
-	final JLabel schedulePath = new JLabel("transit schedule");
-	final JButton schedulePathButton = new JButton("choose");
+	final JLabel networkHeading = new JLabel("Network:");
+	final JLabel networkPath = new JLabel("...");
+	final JButton networkPathButton = new JButton(new ImageProvider("open.png").getResource().getImageIcon(new Dimension(10, 10)));
+	final JLabel schedulePathHeading = new JLabel("Transit Schedule:");
+	final JLabel schedulePath = new JLabel("...");
+	final JButton schedulePathButton = new JButton(new ImageProvider("open.png").getResource().getImageIcon(new Dimension(10, 10)));
+	final JLabel importSystemLabel = new JLabel("Origin System:");
 
 	final JComboBox<ProjectionChoice> importSystemCB = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[] {}));
 	private Projection selectedProjection;
 	private JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
 	private JPanel projSubPrefPanel;
+	
+	private File networkFile = null;
+	private File scheduleFile = null;
 
 	public ImportDialog() {
+		
+		networkHeading.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
+		schedulePathHeading.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
+		importSystemLabel.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
+		networkPath.setBorder(BorderFactory.createEtchedBorder());
+		schedulePath.setBorder(BorderFactory.createEtchedBorder());
+		
 		setLayout(new GridBagLayout());
-		add(networkPath, GBC.std());
-
+		
+		add(networkHeading, GBC.eop());
+		add(networkPath, GBC.eop().fill(GridBagConstraints.HORIZONTAL) );
 		add(networkPathButton, GBC.eop());
+		
+		JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+		sep.setPreferredSize(new Dimension(400,3));
+		add(sep, GBC.eop());
 
-		add(schedulePath, GBC.std());
-
+		add(schedulePathHeading, GBC.eop());
+		add(schedulePath, GBC.eop().fill(GridBagConstraints.HORIZONTAL) );
 		add(schedulePathButton, GBC.eop());
+		
+		JSeparator sep2 = new JSeparator(SwingConstants.HORIZONTAL);
+		sep2.setPreferredSize(new Dimension(400,3));
+		add(sep2, GBC.eop());
 
-		JLabel importSystemLabel = new JLabel("origin system:");
-		add(importSystemLabel, GBC.std());
+		add(importSystemLabel, GBC.eop());
 
 		importSystemCB.addActionListener(new ActionListener() {
 			@Override
@@ -80,14 +102,20 @@ class ImportDialog extends JPanel {
 		networkPathButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
+				JFileChooser chooser;
+				if(networkFile == null) {
+					chooser = new JFileChooser(System.getProperty("user.home"));
+				} else {
+					chooser = new JFileChooser(networkFile.getAbsolutePath());
+				}
 				chooser.setApproveButtonText("Import");
 				chooser.setDialogTitle("MATSim-Import");
 				FileFilter filter = new FileNameExtensionFilter("Network-XML", "xml");
 				chooser.setFileFilter(filter);
 				int result = chooser.showOpenDialog(Main.parent);
 				if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile().getAbsolutePath() != null) {
-					networkPathButton.setText(chooser.getSelectedFile().getAbsolutePath());
+					networkFile = new File(chooser.getSelectedFile().getAbsolutePath());
+					networkPath.setText(networkFile.getName());
 				}
 			}
 		});
@@ -96,14 +124,20 @@ class ImportDialog extends JPanel {
 		schedulePathButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
+				JFileChooser chooser;
+				if(scheduleFile == null) {
+					chooser = new JFileChooser(System.getProperty("user.home"));
+				} else {
+					chooser = new JFileChooser(networkFile.getAbsolutePath());
+				}
 				chooser.setApproveButtonText("Import");
 				chooser.setDialogTitle("MATSim-Import");
 				FileFilter filter = new FileNameExtensionFilter("TransitSchedule-XML", "xml");
 				chooser.setFileFilter(filter);
 				int result = chooser.showOpenDialog(Main.parent);
 				if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile().getAbsolutePath() != null) {
-					schedulePathButton.setText(chooser.getSelectedFile().getAbsolutePath());
+					scheduleFile = new File(chooser.getSelectedFile().getAbsolutePath());
+					schedulePath.setText(scheduleFile.getName());
 				}
 			}
 		});
@@ -132,6 +166,7 @@ class ImportDialog extends JPanel {
 			        Collection<String> prefs = pc.getPreferences(projSubPrefPanel);
 			        pc.setPreferences(prefs);
 			        selectedProjection = pc.getProjection();
+			        System.out.println(pc.toString()+" "+pc.getProjection().toCode());
 				}
 			}
 		};
@@ -154,6 +189,14 @@ class ImportDialog extends JPanel {
 	
 	public Projection getSelectedProjection() {
 		return selectedProjection;
+	}
+	
+	public File getNetworkFile() {
+		return networkFile;
+	}
+	
+	public File getScheduleFile() {
+		return scheduleFile;
 	}
 	
 
