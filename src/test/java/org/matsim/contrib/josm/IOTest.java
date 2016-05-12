@@ -21,6 +21,7 @@ import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +42,7 @@ public class IOTest {
 		URL url = getClass().getResource("/test-input/pt-tutorial/multimodalnetwork.xml");
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		new NetworkReaderMatsimV1(scenario.getNetwork()).parse(url);
-		Importer importer = new Importer(url.getFile(), null, Main.getProjection());
+		Importer importer = new Importer(new File(url.getFile()), null, Main.getProjection());
 		importer.run();
 		MATSimLayer layer = importer.getLayer();
 		deleteAndUndeleteLinksOneByOne(scenario, layer);

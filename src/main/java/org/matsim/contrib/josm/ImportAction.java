@@ -31,17 +31,15 @@ public class ImportAction extends JosmAction {
 
 		ImportDialog dialog = new ImportDialog();
 		JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		
 		JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
 		dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		dlg.setMinimumSize(new Dimension(800, 600));
+		dlg.setMinimumSize(new Dimension(400, 600));
 		dlg.setVisible(true);
 		if (pane.getValue() != null) {
 			if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-				if (!dialog.networkPathButton.getText().equals("choose")) {
-					if (dialog.schedulePathButton.getText().equals("choose")) {
-						dialog.schedulePathButton.setText(null);
-					}
-					ImportTask task = new ImportTask(dialog.networkPathButton.getText(), dialog.schedulePathButton.getText(),
+				if (dialog.getNetworkFile()!=null) {
+					ImportTask task = new ImportTask(dialog.getNetworkFile(), dialog.getScheduleFile(),
 							 dialog.getSelectedProjection());
 					Main.worker.execute(task);
 				}

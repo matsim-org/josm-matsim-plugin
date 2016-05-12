@@ -25,8 +25,8 @@ import java.util.List;
 
 class Importer {
 
-	private final String networkPath;
-	private final String schedulePath;
+	private final File network;
+	private final File schedule;
 	private Projection projection;
 	private MATSimLayer layer;
 
@@ -40,17 +40,17 @@ class Importer {
 	private EditableScenario sourceScenario;
 	private EditableScenario targetScenario;
 
-	public Importer(String networkPath, String schedulePath, Projection projection) {
-		this.networkPath = networkPath;
-		this.schedulePath = schedulePath;
+	public Importer(File network, File schedule, Projection projection) {
+		this.network = network;
+		this.schedule = schedule;
 		this.projection = projection;
 	}
 
 	public Importer(EditableScenario scenario, Projection projection) {
 		this.sourceScenario = scenario;
 		this.projection = projection;
-		this.networkPath = null;
-		this.schedulePath = null;
+		this.network = null;
+		this.schedule = null;
 	}
 
 	void run() {
@@ -65,8 +65,7 @@ class Importer {
 			convertStops();
 			convertLines();
 		}
-		layer = new MATSimLayer(dataSet, networkPath == null ? MATSimLayer.createNewName() : networkPath, networkPath == null ? null : new File(
-				networkPath), targetScenario, way2Links, link2Segment, stopRelation2TransitStop);
+		layer = new MATSimLayer(dataSet, network == null ? MATSimLayer.createNewName() : network.getName(), network == null ? null : network, targetScenario, way2Links, link2Segment, stopRelation2TransitStop);
 	}
 
 	// Abuse fields in MATSim data structures to hold the "real" object ids.
@@ -92,14 +91,14 @@ class Importer {
 
 	private EditableScenario readScenario() {
 		Config config = ConfigUtils.createConfig();
-		if (schedulePath != null) {
+		if (schedule != null) {
 			config.transit().setUseTransit(true);
 		}
 		EditableScenario tempScenario = EditableScenarioUtils.createScenario(config);
 		MatsimNetworkReader reader = new MatsimNetworkReader(tempScenario.getNetwork());
-		reader.readFile(networkPath);
-		if (schedulePath != null) {
-			new TransitScheduleReader(tempScenario).readFile(schedulePath);
+		reader.readFile(network.getAbsolutePath());
+		if (schedule != null) {
+			new TransitScheduleReader(tempScenario).readFile(schedule.getAbsolutePath());
 		}
 		return tempScenario;
 	}
