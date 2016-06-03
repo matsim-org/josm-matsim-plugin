@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import javax.swing.*;
@@ -39,8 +40,13 @@ public class ImportAction extends JosmAction {
 		if (pane.getValue() != null) {
 			if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
 				if (dialog.getNetworkFile()!=null) {
-					ImportTask task = new ImportTask(dialog.getNetworkFile(), dialog.getScheduleFile(),
-							 dialog.getSelectedProjection());
+					
+					ProjectionChoice pc = (ProjectionChoice) dialog.getProjectionChoice();
+
+				        String id = pc.getId();
+				        ProjectionPreference.setProjection(id, dialog.getPrefs());
+					
+					ImportTask task = new ImportTask(dialog.getNetworkFile(), dialog.getScheduleFile());
 					Main.worker.execute(task);
 				}
 			}

@@ -21,10 +21,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.projection.Projection;
-import org.openstreetmap.josm.data.projection.Projections;
-import org.openstreetmap.josm.gui.preferences.projection.CodeProjectionChoice;
-import org.openstreetmap.josm.gui.preferences.projection.ListProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.GBC;
@@ -51,9 +47,11 @@ class ImportDialog extends JPanel {
 	final JLabel importSystemLabel = new JLabel("Origin System:");
 
 	final JComboBox<ProjectionChoice> importSystemCB = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[] {}));
-	private Projection selectedProjection;
 	private JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
 	private JPanel projSubPrefPanel;
+	
+	private ProjectionChoice projectionChoice = null;
+	private Collection<String> prefs = null;
 	
 	private File networkFile = null;
 	private File scheduleFile = null;
@@ -152,6 +150,7 @@ class ImportDialog extends JPanel {
 	 *            the choice class representing user selection
 	 */
 	private void selectedProjectionChanged(final ProjectionChoice pc) {
+
 		// Don't try to update if we're still starting up
 		int size = getComponentCount();
 		if (size < 1)
@@ -160,14 +159,7 @@ class ImportDialog extends JPanel {
 		final ActionListener listener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if((pc instanceof CodeProjectionChoice)) {
-					selectedProjection = Projections.getProjectionByCode(pc.getPreferences(projSubPrefPanel).iterator().next());
-				} else if(pc instanceof ListProjectionChoice) {
-			        Collection<String> prefs = pc.getPreferences(projSubPrefPanel);
-			        pc.setPreferences(prefs);
-			        selectedProjection = pc.getProjection();
-			        System.out.println(pc.toString()+" "+pc.getProjection().toCode());
-				}
+				prefs = pc.getPreferences(projSubPrefPanel);
 			}
 		};
 
@@ -177,18 +169,16 @@ class ImportDialog extends JPanel {
 		projSubPrefPanelWrapper.add(projSubPrefPanel, GBC.std().fill(GBC.BOTH).weight(1.0, 1.0));
 		revalidate();
 		repaint();
-		if(pc instanceof CodeProjectionChoice) {
-			selectedProjection = Projections.getProjectionByCode(pc.getPreferences(projSubPrefPanel).iterator().next());
-		} else if (pc instanceof ListProjectionChoice) {
-			Collection<String> prefs = pc.getPreferences(projSubPrefPanel);
-			pc.setPreferences(prefs);
-		}
-		selectedProjection = pc.getProjection();
+		projectionChoice = pc;
 	}
 	
 	
-	public Projection getSelectedProjection() {
-		return selectedProjection;
+	public ProjectionChoice getProjectionChoice() {
+		return projectionChoice;
+	}
+	
+	public Collection<String> getPrefs() {
+		return prefs;
 	}
 	
 	public File getNetworkFile() {

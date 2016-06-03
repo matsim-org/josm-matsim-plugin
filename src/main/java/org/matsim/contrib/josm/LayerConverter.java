@@ -47,7 +47,7 @@ public class LayerConverter {
 		if ((!Preferences.isSupportTransit()) && Preferences.isCleanNetwork()) {
 			new NetworkCleaner().run(exportedScenario.getNetwork());
 		}
-		Importer importer = new Importer(exportedScenario, Main.getProjection());
+		Importer importer = new Importer(exportedScenario);
 		importer.run();
 		matsimLayer = importer.getLayer();
 	}

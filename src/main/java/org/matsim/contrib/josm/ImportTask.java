@@ -19,9 +19,9 @@ class ImportTask extends PleaseWaitRunnable {
     /**
      * Creates a new Import task with the given <code>path</code>.
      */
-    public ImportTask(File network, File schedule, Projection projection) {
+    public ImportTask(File network, File schedule) {
         super("MATSim Import");
-        this.importer = new Importer(network, schedule, projection);
+        this.importer = new Importer(network, schedule);
     }
 
     /**

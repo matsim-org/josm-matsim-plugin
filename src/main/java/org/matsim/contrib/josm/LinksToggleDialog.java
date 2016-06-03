@@ -15,6 +15,8 @@ import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
+import org.openstreetmap.josm.data.projection.Projection;
+import org.openstreetmap.josm.data.projection.ProjectionChangeListener;
 import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.Layer;
@@ -43,7 +45,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 
 @SuppressWarnings("serial")
-class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
+class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener, NetworkListener.ScenarioDataChangedListener, ProjectionChangeListener {
 	private final JTable table_links;
 	private final MATSimTableModel_links tableModel_links = new MATSimTableModel_links();
 
@@ -82,6 +84,7 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 	LinksToggleDialog() {
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
+		Main.addProjectionChangeListener(this);
 
 		// table for link data
 		table_links = new JTable();
@@ -352,6 +355,13 @@ class LinksToggleDialog extends ToggleDialog implements MapView.EditLayerChangeL
 					((NetworkImpl) ((MATSimLayer) layer).getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
 				}
 			}
+		}
+	}
+
+	@Override
+	public void projectionChanged(Projection oldValue, Projection newValue) {
+		if(osmNetworkListener!=null) {
+			this.osmNetworkListener.visitAll();
 		}
 	}
 

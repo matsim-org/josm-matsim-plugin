@@ -57,7 +57,7 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 						new CreatePseudoNetwork(sourceScenario.getTransitSchedule(), sourceScenario.getNetwork(), "pt_")
 								.createNetwork();
 
-						Importer importer = new Importer(sourceScenario, Main.getProjection());
+						Importer importer = new Importer(sourceScenario);
 						importer.run();
 						ProjectionBounds projectionBounds = null;
 

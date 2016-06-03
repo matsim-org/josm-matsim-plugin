@@ -12,6 +12,7 @@ import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.*;
@@ -27,7 +28,6 @@ class Importer {
 
 	private final File network;
 	private final File schedule;
-	private Projection projection;
 	private MATSimLayer layer;
 
 	HashMap<Id<TransitStopFacility>, TransitStopFacility> stops = new HashMap<>();
@@ -40,15 +40,13 @@ class Importer {
 	private EditableScenario sourceScenario;
 	private EditableScenario targetScenario;
 
-	public Importer(File network, File schedule, Projection projection) {
+	public Importer(File network, File schedule) {
 		this.network = network;
 		this.schedule = schedule;
-		this.projection = projection;
 	}
 
-	public Importer(EditableScenario scenario, Projection projection) {
+	public Importer(EditableScenario scenario) {
 		this.sourceScenario = scenario;
-		this.projection = projection;
 		this.network = null;
 		this.schedule = null;
 	}
@@ -106,7 +104,7 @@ class Importer {
 	private void convertNetwork() {
 		for (Node node : sourceScenario.getNetwork().getNodes().values()) {
 			EastNorth eastNorth = new EastNorth(node.getCoord().getX(), node.getCoord().getY());
-			LatLon latLon = projection.eastNorth2latlon(eastNorth);
+			LatLon latLon = Main.getProjection().eastNorth2latlon(eastNorth);
 			org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(latLon);
 
 			// set id of MATSim node as tag, as actual id of new MATSim node is
@@ -165,7 +163,7 @@ class Importer {
 	private void convertStops() {
 		for (TransitStopFacility stop : sourceScenario.getTransitSchedule().getFacilities().values()) {
 			EastNorth eastNorth = new EastNorth(stop.getCoord().getX(), stop.getCoord().getY());
-			LatLon latLon = projection.eastNorth2latlon(eastNorth);
+			LatLon latLon = Main.getProjection().eastNorth2latlon(eastNorth);
 			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
 			platform.put("public_transport", "platform");
 			if (stop.getName() != null) {

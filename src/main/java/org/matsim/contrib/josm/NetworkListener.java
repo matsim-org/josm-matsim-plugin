@@ -440,11 +440,12 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 					}
 				}
 				if (node.evaluateCondition(relevantNodeMatch)) {
+					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
 					NodeImpl matsimNode = (NodeImpl) scenario
 							.getNetwork()
 							.getFactory()
 							.createNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class),
-									new Coord(node.getEastNorth().getX(), node.getEastNorth().getY()));
+									new Coord(eN.getX(), eN.getY()));
 					matsimNode.setOrigId(NodeConversionRules.getOrigId(node));
 					scenario.getNetwork().addNode(matsimNode);
 				}
