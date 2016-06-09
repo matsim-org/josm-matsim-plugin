@@ -3,7 +3,6 @@ package org.matsim.contrib.josm;
 import java.io.File;
 
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.projection.Projection;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 
 /**
