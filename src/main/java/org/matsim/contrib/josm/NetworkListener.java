@@ -24,6 +24,8 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
+import org.openstreetmap.josm.data.projection.Projection;
+import org.openstreetmap.josm.data.projection.ProjectionChangeListener;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
@@ -36,7 +38,7 @@ import java.util.*;
  *
  *
  */
-class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
+class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
 
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
@@ -100,6 +102,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 						   Map<Relation, TransitStopFacility> stopRelation2TransitStop) throws IllegalArgumentException {
 		this.data = data;
 		MATSimPlugin.addPreferenceChangedListener(this);
+		Main.addProjectionChangeListener(this);
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
@@ -338,6 +341,13 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		}
 		fireNotifyDataChanged();
 	}
+	
+	@Override
+	public void projectionChanged(Projection oldValue, Projection newValue) {
+		visitAll();
+		fireNotifyDataChanged();
+	}
+
 
 	public Scenario getScenario() {
 		return scenario;
