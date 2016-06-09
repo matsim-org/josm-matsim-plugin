@@ -33,7 +33,7 @@ configurations {
 }
 
 dependencies {
-    zipIntoJar 'org.matsim:matsim:0.8.0-SNAPSHOT'
+    zipIntoJar 'org.matsim:matsim:0.8.0'
     // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
     // the dependency.
     // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
