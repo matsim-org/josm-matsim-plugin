@@ -32,7 +32,7 @@ import org.openstreetmap.josm.gui.progress.ProgressMonitor;
  * @author Nico
  *
  */
-class NetworkTest extends Test {
+public class NetworkTest extends Test {
 
 	/**
 	 * Maps ways (the links, respectively) to their id. Ways whose links share

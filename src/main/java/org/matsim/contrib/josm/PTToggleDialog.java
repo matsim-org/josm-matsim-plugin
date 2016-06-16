@@ -40,8 +40,9 @@ import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
+import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 
@@ -53,7 +54,7 @@ import org.openstreetmap.josm.gui.util.HighlightHelper;
  */
 
 @SuppressWarnings("serial")
-class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
+class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
 	private final JTable table_pt;
 	private NetworkListener osmNetworkListener;
 
@@ -75,7 +76,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 	public void showNotify() {
 		DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
-		MapView.addEditLayerChangeListener(this);
+		Main.getLayerManager().addActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
 
@@ -83,7 +84,7 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 	public void hideNotify() {
 		DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
 		SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
-		MapView.removeEditLayerChangeListener(this);
+		Main.getLayerManager().addActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
 
@@ -182,19 +183,6 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 		return nRoutes;
 	}
 
-	@Override
-	// react to active layer (active data set) changes by setting the current
-	// data mappings
-	// MATSim layers contain data mappings while OsmDataLayers must first be
-	// converted
-	// also adjusts standard file export formats
-	public void editLayerChanged(OsmDataLayer oldLayer, OsmDataLayer newLayer) {
-		// clear old data set listeners
-		if (osmNetworkListener != null && oldLayer != null) {
-			oldLayer.data.removeDataSetListener(osmNetworkListener);
-		}
-		notifyEverythingChanged();
-	}
 
 	private class MATSimTableRenderer extends DefaultTableCellRenderer {
 		@Override
@@ -298,6 +286,20 @@ class PTToggleDialog extends ToggleDialog implements MapView.EditLayerChangeList
 				Main.map.mapView.repaint();
 			}
 		}
+	}
+
+	// react to active layer (active data set) changes by setting the current
+	// data mappings
+	// MATSim layers contain data mappings while OsmDataLayers must first be
+	// converted
+	// also adjusts standard file export formats
+	@Override
+	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
+			// clear old data set listeners
+		if (osmNetworkListener != null && e.getPreviousEditLayer() != null) {
+			e.getPreviousEditDataSet().removeDataSetListener(osmNetworkListener);
+		}
+		notifyEverythingChanged();
 	}
 
 }

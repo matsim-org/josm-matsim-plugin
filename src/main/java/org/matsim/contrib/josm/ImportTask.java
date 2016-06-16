@@ -41,7 +41,7 @@ class ImportTask extends PleaseWaitRunnable {
         // as Exceptions are handled only after this method is called.
         if (layer != null) {
             Main.main.addLayer(layer);
-            Main.map.mapView.setActiveLayer(layer);
+            Main.getLayerManager().setActiveLayer(layer);
         }
     }
 
