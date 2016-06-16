@@ -18,7 +18,8 @@ import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 
 
 public class ProjectionHandlingTest {
-	
+
+	static final double DELTA = 0.0001;
 	Map<Id<Node>, Coord> nodeCoords = new HashMap<>();
 	MATSimLayer matsimLayer;
 
@@ -47,8 +48,8 @@ public class ProjectionHandlingTest {
 		
 		for(Entry<Id<Node>, Coord> entry: nodeCoords.entrySet()) {
 			Node node = matsimLayer.getNetworkListener().getScenario().getNetwork().getNodes().get(entry.getKey());
-			Assert.assertNotEquals(entry.getValue().getX(), node.getCoord().getX(), 0);
-			Assert.assertNotEquals(entry.getValue().getY(), node.getCoord().getY(), 0);
+			Assert.assertNotEquals(entry.getValue().getX(), node.getCoord().getX(), DELTA);
+			Assert.assertNotEquals(entry.getValue().getY(), node.getCoord().getY(), DELTA);
 		}
 		
 		Main.setProjection(ProjectionPreference.mercator.getProjection());
@@ -56,8 +57,8 @@ public class ProjectionHandlingTest {
 		
 		for(Entry<Id<Node>, Coord> entry: nodeCoords.entrySet()) {
 			Node node = matsimLayer.getNetworkListener().getScenario().getNetwork().getNodes().get(entry.getKey());
-			Assert.assertEquals(entry.getValue().getX(), node.getCoord().getX(),1);
-			Assert.assertEquals(entry.getValue().getY(), node.getCoord().getY(),1);
+			Assert.assertEquals(entry.getValue().getX(), node.getCoord().getX(), DELTA);
+			Assert.assertEquals(entry.getValue().getY(), node.getCoord().getY(), DELTA);
 		}
 		
 	}
