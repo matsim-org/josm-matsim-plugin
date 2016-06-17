@@ -84,7 +84,7 @@ class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, 
 	public void hideNotify() {
 		DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
 		SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
-		Main.getLayerManager().addActiveLayerChangeListener(this);
+		Main.getLayerManager().removeActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
 
