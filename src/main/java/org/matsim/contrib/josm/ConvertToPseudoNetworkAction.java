@@ -19,10 +19,14 @@ import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.gui.PleaseWaitRunnable;
+import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.Shortcut;
+import org.xml.sax.SAXException;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,43 +43,56 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (isEnabled()) {
-			Main.worker.submit(new Runnable() {
+			Main.worker.submit(new PleaseWaitRunnable(tr("Convert to transit pseudo-network")) {
 				@Override
-				public void run() {
-					try {
-						Config config = ConfigUtils.createConfig();
-						config.transit().setUseTransit(Preferences.isSupportTransit());
-						EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
+				protected void cancel() {
 
-						NetworkListener networkListener = new NetworkListener(getEditLayer().data, sourceScenario, new HashMap<Way, List<Link>>(),
-								new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
-						networkListener.visitAll();
+				}
 
-						emptyNetwork(sourceScenario);
-						fixTransitSchedule(sourceScenario);
+				@Override
+				protected void realRun() throws SAXException, IOException, OsmTransferException {
+					ProjectionBounds projectionBounds = null;
+					Main.main.addLayer(convertToPseudoNetwork(), projectionBounds);
+				}
 
-						new CreatePseudoNetwork(sourceScenario.getTransitSchedule(), sourceScenario.getNetwork(), "pt_")
-								.createNetwork();
+				@Override
+				protected void finish() {
 
-						Importer importer = new Importer(sourceScenario);
-						importer.run();
-						ProjectionBounds projectionBounds = null;
-
-						Main.main.addLayer(importer.getLayer(), projectionBounds);
-					} catch (Exception e) {
-						Main.error(e);
-					}
 				}
 			});
 		}
 	}
 
-	private void emptyNetwork(EditableScenario sourceScenario) {
+	static MATSimLayer convertToPseudoNetwork() {
+		Config config = ConfigUtils.createConfig();
+		config.transit().setUseTransit(Preferences.isSupportTransit());
+		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
+
+		NetworkListener networkListener = new NetworkListener(getEditLayer().data, sourceScenario, new HashMap<Way, List<Link>>(),
+				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		networkListener.visitAll();
+
+		emptyNetwork(sourceScenario);
+		fixTransitSchedule(sourceScenario);
+		EditableScenario targetScenario = ExportTask.convertIdsAndFilterDeleted(sourceScenario);
+
+		new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "pt_")
+				.createNetwork();
+
+		Importer importer = new Importer(targetScenario);
+		importer.run();
+		return importer.getLayer();
+	}
+
+	private static void emptyNetwork(EditableScenario sourceScenario) {
 		for (Id<Link> linkId : new ArrayList<>(sourceScenario.getNetwork().getLinks().keySet())) {
 			sourceScenario.getNetwork().removeLink(linkId);
 		}
 		for (Id<Node> nodeId : new ArrayList<>(sourceScenario.getNetwork().getNodes().keySet())) {
 			sourceScenario.getNetwork().removeNode(nodeId);
+		}
+		for (EditableTransitStopFacility transitStopFacility : sourceScenario.getTransitSchedule().getEditableFacilities().values()) {
+			transitStopFacility.setNodeId(null);
 		}
 		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
 			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
@@ -84,7 +101,7 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 		}
 	}
 
-	private void fixTransitSchedule(EditableScenario sourceScenario) {
+	private static void fixTransitSchedule(EditableScenario sourceScenario) {
 		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
 			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				transitRoute.setRoute(null);

@@ -1,5 +1,12 @@
 package org.matsim.contrib.josm;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.network.Link;
@@ -24,15 +31,8 @@ import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
-
-public class CreatePseudoTransitTest {
+public class CreateTransitTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -112,7 +112,7 @@ public class CreatePseudoTransitTest {
 				}
 			}
 		}
-		MATSimLayer matSimLayer = ConvertToPseudoNetworkAction.convertToPseudoNetwork();
-		new TransitScheduleExporter(new File("transitSchedule.xml")).run(matSimLayer);
+
+		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.map.mapView.getActiveLayer());
 	}
 }
