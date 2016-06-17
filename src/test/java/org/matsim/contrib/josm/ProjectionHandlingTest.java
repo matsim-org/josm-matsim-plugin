@@ -9,26 +9,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Node;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 
 public class ProjectionHandlingTest {
+	
+	@Rule
+	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	static final double DELTA = 0.0001;
 	Map<Id<Node>, Coord> nodeCoords = new HashMap<>();
 	MATSimLayer matsimLayer;
 
-	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
-
 	@Before
 	public void init() {
-		new JOSMFixture(folder.getRoot().getPath()).init(true);
 		Main.setProjection(ProjectionPreference.mercator.getProjection());
 		matsimLayer = PtTutorialScenario.layer();
 	       
@@ -40,7 +39,7 @@ public class ProjectionHandlingTest {
 	@Test
 	public void test() {
 		
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		
 		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), Main.getProjection().toCode());
 		Main.setProjection(ProjectionPreference.wgs84.getProjection());

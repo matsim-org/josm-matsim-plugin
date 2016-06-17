@@ -43,8 +43,8 @@ public class RepairAction extends JosmAction {
 		// set up validator layer
 		OsmValidator.initializeErrorLayer();
 		Main.map.validatorDialog.unfurlDialog();
-		Main.main.getEditLayer().validationErrors.clear();
-		Main.main.getEditLayer().validationErrors.addAll(test.getErrors());
+		Main.getLayerManager().getEditLayer().validationErrors.clear();
+		Main.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
 		Main.map.validatorDialog.tree.setErrors(test.getErrors());
 	}
 

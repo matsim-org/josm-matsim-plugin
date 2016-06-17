@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenario;
@@ -38,13 +37,14 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.Compression;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 
 public class OSMDataTest {
 
 
 	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
+	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	private OsmDataLayer incompleteWayLayer;
 	private NetworkListener incompleteWayListener;
@@ -55,7 +55,6 @@ public class OSMDataTest {
 
 	@Before
 	public void init() throws IOException, IllegalDataException {
-		new JOSMFixture(folder.getRoot().getPath()).init(false);
 		OsmConvertDefaults.load();
 		Main.pref.put("matsim_supportTransit", true);
 		URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");

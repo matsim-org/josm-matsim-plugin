@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.CreateStopAreas;
@@ -30,25 +29,25 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 
 public class CreatePseudoTransitTest {
 
+	
 	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
+	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	@org.junit.Test
 	public void createPseudoTransit() throws IllegalDataException, IOException {
-
-		new JOSMFixture(folder.getRoot().getPath()).init(true);
-		System.out.println("Fixture initialized");
 
 		System.out.println("Reading DataSet");
 		InputStream stream = getClass().getResourceAsStream("/test-input/OSMData/busRoute-without-stop-areas.osm.xml");
 		DataSet set = OsmReader.parseDataSet(stream, null);
 		System.out.println("DataSet ready");
-
-		OsmDataLayer layer = new OsmDataLayer(set, "tmp", folder.newFile("testdata"));
+		Main main = Main.main;
+		System.out.println(main);
+		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
 		Main.pref.put("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
@@ -61,7 +60,8 @@ public class CreatePseudoTransitTest {
 		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
 		set.addDataSetListener(listener);
-		Main.main.addLayer(layer);
+		Main.getLayerManager().addLayer(layer);
+		Main.getLayerManager().setActiveLayer(layer);
 		System.out.println("Layer added");
 
 		System.out.println("Starting Validations");
@@ -91,7 +91,7 @@ public class CreatePseudoTransitTest {
 		System.out.println("Converting data");
 		LayerConverter converter = new LayerConverter(layer);
 		converter.run();
-		Main.main.addLayer(converter.getMatsimLayer());
+		Main.getLayerManager().addLayer(converter.getMatsimLayer());
 		System.out.println("Exporting data");
 
 		TransitScheduleTest test = new TransitScheduleTest();
@@ -99,7 +99,7 @@ public class CreatePseudoTransitTest {
 				PleaseWaitProgressMonitor("Validation");
 		// run validator tests
 		test.startTest(progMonitor);
-		test.visit(Main.main.getCurrentDataSet().allPrimitives());
+		test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
 		test.endTest();
 		progMonitor.finishTask();
 		progMonitor.close();
@@ -113,6 +113,6 @@ public class CreatePseudoTransitTest {
 			}
 		}
 
-		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.map.mapView.getActiveLayer());
+		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.getLayerManager().getActiveLayer());
 	}
 }

@@ -1,10 +1,14 @@
 package org.matsim.contrib.josm;
 
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
@@ -15,27 +19,16 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
-
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 public class IOTest {
 
 	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
-
-	@Before
-	public void init() {
-		new JOSMFixture(folder.getRoot().getPath()).init(false);
-	}
+	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	@Test
 	public void readNetworkWithoutTransit() {

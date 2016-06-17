@@ -8,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.UpdateStopTags;
@@ -27,11 +26,12 @@ import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 public class UpdateStopTagsTest {
 
 	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
+ 	public JOSMTestRules test = new JOSMTestRules().preferences();;
 
 	private OsmDataLayer layer;
 	private NetworkListener listener;
@@ -52,7 +52,6 @@ public class UpdateStopTagsTest {
 
 	@Before
 	public void init() {
-		new JOSMFixture(folder.getRoot().getPath()).init(true);
 		OsmConvertDefaults.load();
 		Main.pref.put("matsim_supportTransit", true);
 		DataSet data = new DataSet();
@@ -65,7 +64,7 @@ public class UpdateStopTagsTest {
 		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
 		data.addDataSetListener(listener);
-		Main.main.addLayer(layer);
+		Main.getLayerManager().addLayer(layer);
 	}
 
 	private void initializeDataSet(DataSet data) {

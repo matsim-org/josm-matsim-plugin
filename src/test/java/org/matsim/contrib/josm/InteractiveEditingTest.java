@@ -1,10 +1,8 @@
 package org.matsim.contrib.josm;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
@@ -13,21 +11,18 @@ import org.openstreetmap.josm.command.MoveCommand;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 public class InteractiveEditingTest {
 
 	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
-
-	@Before
-	public void init() {
-		new JOSMFixture(folder.getRoot().getPath()).init(true);
-	}
+	public JOSMTestRules test = new JOSMTestRules().preferences();
+	
 
 	@Test
 	public void createLink() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
 		new AddCommand(matsimLayer, node1).executeCommand();
@@ -48,7 +43,7 @@ public class InteractiveEditingTest {
 	@Test
 	public void createLinkUndo() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
 		AddCommand addNode1 = new AddCommand(matsimLayer, node1);
@@ -80,7 +75,7 @@ public class InteractiveEditingTest {
 	@Test
 	public void createLinkDeleteUndoDelete() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
 		new AddCommand(matsimLayer, node1).executeCommand();
@@ -104,7 +99,7 @@ public class InteractiveEditingTest {
 	@Test
 	public void createLinkDeleteWithNodesUndoDelete() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
 		new AddCommand(matsimLayer, node1).executeCommand();
@@ -139,7 +134,7 @@ public class InteractiveEditingTest {
 	@Test
 	public void createLinkThenSetMatsimAttribtues() {
 		MATSimLayer matsimLayer = NewNetworkAction.createMatsimLayer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
 		new AddCommand(matsimLayer, node1).executeCommand();
@@ -162,7 +157,7 @@ public class InteractiveEditingTest {
 	public void wiggleRoadWithTransitStop() {
 		Preferences.setTransitLite(true);
 		MATSimLayer matsimLayer = PtTutorialScenario.layer();
-		Main.main.addLayer(matsimLayer);
+		Main.getLayerManager().addLayer(matsimLayer);
 		Assert.assertEquals(4, matsimLayer.getScenario().getTransitSchedule().getFacilities().size());
 
 		Node node2 = findNode2(matsimLayer);

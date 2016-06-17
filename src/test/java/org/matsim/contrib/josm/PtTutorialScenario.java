@@ -1,15 +1,14 @@
 package org.matsim.contrib.josm;
 
+import java.io.File;
+import java.net.URL;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
-import org.openstreetmap.josm.Main;
-
-import java.io.File;
-import java.net.URL;
 
 public class PtTutorialScenario {
 

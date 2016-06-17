@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
 import org.openstreetmap.josm.command.Command;
@@ -195,9 +196,9 @@ public class CreateStopAreas extends Test {
 					newStopArea.addMember(new RelationMember("platform", stop));
 				}
 				newStopArea.getMembers().addAll(stopArea.getMembers());
-				commands.add(new ChangeCommand(oldStopArea, newStopArea));
+				commands.add(new ChangeCommand(Main.getLayerManager().getEditLayer(), oldStopArea, newStopArea));
 			} else {
-				commands.add(new AddCommand(stopArea));
+				commands.add(new AddCommand(Main.getLayerManager().getEditLayer(), stopArea));
 			}
 			return new SequenceCommand(name, commands);
 		}

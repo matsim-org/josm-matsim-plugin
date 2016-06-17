@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
 import org.openstreetmap.josm.command.Command;
@@ -152,9 +153,9 @@ public class MasterRoutesTest extends Test {
 					}
 				}
 				newMaster.getMembers().addAll(master.getMembers());
-				commands.add(new ChangeCommand(oldMaster, newMaster));
+				commands.add(new ChangeCommand(Main.getLayerManager().getEditLayer(), oldMaster, newMaster));
 			} else {
-				commands.add(new AddCommand(master));
+				commands.add(new AddCommand(Main.getLayerManager().getEditLayer(), master));
 			}
 			return new SequenceCommand(name, commands);
 		}

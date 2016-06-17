@@ -80,7 +80,7 @@ public class IncompleteRoutesTest extends Test{
 		}
 		if (testError.getCode() == 3010) {
 			for(OsmPrimitive primitive: testError.getPrimitives()) {
-				Main.worker.submit(new DownloadRelationMemberTask((Relation) primitive, ((Relation) primitive).getIncompleteMembers(), Main.main.getEditLayer()));
+				Main.worker.submit(new DownloadRelationMemberTask((Relation) primitive, ((Relation) primitive).getIncompleteMembers(), Main.getLayerManager().getEditLayer()));
 			}
 
 		}
