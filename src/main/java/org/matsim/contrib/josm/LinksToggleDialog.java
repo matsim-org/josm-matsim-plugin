@@ -46,6 +46,8 @@ import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
+import org.openstreetmap.josm.data.validation.OsmValidator;
+import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
@@ -370,6 +372,21 @@ class LinksToggleDialog extends ToggleDialog implements ActiveLayerChangeListene
 		// clear old data set listeners
 		if (osmNetworkListener != null && e.getPreviousActiveLayer() != null) {
 			e.getPreviousEditDataSet().removeDataSetListener(osmNetworkListener);
+		}
+		if(Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
+			for(Test test: OsmValidator.getTests()) {
+				if(test instanceof NetworkTest) {
+					test.enabled = true;
+				} else {
+					test.enabled = false;
+				}
+			}
+		} else {
+			for(Test test: OsmValidator.getTests()) {
+				test.enabled = true;
+			}
+			//Apply prefs
+			OsmValidator.getAllTestsMap();
 		}
 		notifyEverythingChanged();
 

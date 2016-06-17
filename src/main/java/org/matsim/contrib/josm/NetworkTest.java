@@ -179,6 +179,7 @@ public class NetworkTest extends Test {
 			}
 		}
 		super.endTest();
+		network = null;
 		linkIds = null;
 		nodeIds = null;
 	}
