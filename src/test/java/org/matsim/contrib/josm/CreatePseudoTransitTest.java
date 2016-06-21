@@ -113,6 +113,7 @@ public class CreatePseudoTransitTest {
 			}
 		}
 		MATSimLayer matSimLayer = ConvertToPseudoNetworkAction.convertToPseudoNetwork();
-		new TransitScheduleExporter(new File("transitSchedule.xml")).run(matSimLayer);
+		new ExportTask(new File("pseudo-network.xml"), matSimLayer).realRun();
+		new TransitScheduleExporter(new File("pseudo-transitSchedule.xml")).run(matSimLayer);
 	}
 }

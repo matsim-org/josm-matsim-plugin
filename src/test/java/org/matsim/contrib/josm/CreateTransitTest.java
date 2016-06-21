@@ -38,7 +38,8 @@ public class CreateTransitTest {
 	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	@org.junit.Test
-	public void createPseudoTransit() throws IllegalDataException, IOException {
+	public void createTransit() throws IllegalDataException, IOException {
+		Main.pref.put("matsim_supportTransit", true);
 
 		System.out.println("Fixture initialized");
 
@@ -49,15 +50,13 @@ public class CreateTransitTest {
 
 		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
-		Main.pref.put("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		NetworkListener listener = new NetworkListener(set, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
 				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
-		System.out.println("Listener set");
-
-
 		Main.pref.addPreferenceChangeListener(listener);
+
+
 		listener.visitAll();
 		set.addDataSetListener(listener);
 		Main.getLayerManager().addLayer(layer);
@@ -113,6 +112,7 @@ public class CreateTransitTest {
 			}
 		}
 
+		new ExportTask(new File("network.xml"), (MATSimLayer) Main.getLayerManager().getActiveLayer()).realRun();
 		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.getLayerManager().getActiveLayer());
 	}
 }
