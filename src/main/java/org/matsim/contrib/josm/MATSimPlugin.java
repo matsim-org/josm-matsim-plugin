@@ -123,10 +123,10 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// register for preference changed events
 		Main.pref.addPreferenceChangeListener(this);
 		Main.pref.addPreferenceChangeListener(MapRenderer.Properties.getInstance());
+		OsmConvertDefaults.listen(Main.pref);
 
 		// load default converting parameters
-		OsmConvertDefaults.load();
-		
+
 		//register validators
 		List<String> matsimTests = new ArrayList<>();
 		OsmValidator.addTest(NetworkTest.class);

@@ -91,7 +91,6 @@ class OsmConvertDefaultsDialog extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				OsmConvertDefaults.reset();
-				OsmConvertDefaults.load();
 				fillValues();
 			}
 		});
@@ -143,8 +142,6 @@ class OsmConvertDefaultsDialog extends JPanel {
 			double laneCapacity = Double.parseDouble(((JTextField) input.get(i + "_4")).getText());
 			boolean oneway = (((JCheckBox) input.get(i + "_5")).isSelected());
 
-			OsmConvertDefaults.getWayDefaults().put(OsmConvertDefaults.highwayTypes.get(i),
-					new OsmWayDefaults(hierarchy, lanes, freespeed, freespeedFactor, laneCapacity, oneway));
 			Main.pref.put("matsim_convertDefaults_" + OsmConvertDefaults.highwayTypes.get(i), hierarchy + ";" + lanes + ";" + freespeed + ";"
 					+ freespeedFactor + ";" + laneCapacity + ";" + oneway);
 		}

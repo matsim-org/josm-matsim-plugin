@@ -52,7 +52,6 @@ public class UpdateStopTagsTest {
 
 	@Before
 	public void init() {
-		OsmConvertDefaults.load();
 		Main.pref.put("matsim_supportTransit", true);
 		DataSet data = new DataSet();
 		initializeDataSet(data);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.Preferences;
 
 /**
  * Holds the default converting values
@@ -24,11 +25,24 @@ class OsmConvertDefaults {
 
 	static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed", "freespeedFactor", "laneCapacity", "oneway" };
 
+	static {
+		load();
+	}
+
+	static void listen(Preferences pref) {
+		pref.addPreferenceChangeListener(new Preferences.PreferenceChangedListener() {
+			@Override
+			public void preferenceChanged(Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+				load();
+			}
+		});
+	}
+
 	public static Map<String, OsmWayDefaults> getWayDefaults() {
 		return wayDefaults;
 	}
 
-	static void load() {
+	private static void load() {
 
 		Map<String, String> values = new HashMap<>();
 		values.put("motorway", Main.pref.get("matsim_convertDefaults_motorway", "1;2;" + Double.toString(120. / 3.6) + ";1.0;2000;true"));
@@ -77,7 +91,6 @@ class OsmConvertDefaults {
 	}
 
 	static void reset() {
-
 		Main.pref.put("matsim_convertDefaults_motorway", "1;2;" + Double.toString(120. / 3.6) + ";1.0;2000;true");
 		Main.pref.put("matsim_convertDefaults_motorway_link", "2;1;" + Double.toString(80. / 3.6) + ";1.0;1500;true");
 		Main.pref.put("matsim_convertDefaults_trunk", "2;1;" + Double.toString(80. / 3.6) + ";1.0;2000;false");

@@ -55,7 +55,6 @@ public class OSMDataTest {
 
 	@Before
 	public void init() throws IOException, IllegalDataException {
-		OsmConvertDefaults.load();
 		Main.pref.put("matsim_supportTransit", true);
 		URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 		URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
