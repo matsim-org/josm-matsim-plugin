@@ -32,8 +32,7 @@ import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 
-public class CreatePseudoTransitTest {
-
+public class CreateTransitTest {
 
 	@Rule
 	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
@@ -41,12 +40,13 @@ public class CreatePseudoTransitTest {
 	@org.junit.Test
 	public void createPseudoTransit() throws IllegalDataException, IOException {
 
+		System.out.println("Fixture initialized");
+
 		System.out.println("Reading DataSet");
 		InputStream stream = getClass().getResourceAsStream("/test-input/OSMData/busRoute-without-stop-areas.osm.xml");
 		DataSet set = OsmReader.parseDataSet(stream, null);
 		System.out.println("DataSet ready");
-		Main main = Main.main;
-		System.out.println(main);
+
 		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
 		Main.pref.put("matsim_supportTransit", true);
@@ -112,7 +112,7 @@ public class CreatePseudoTransitTest {
 				}
 			}
 		}
-		MATSimLayer matSimLayer = ConvertToPseudoNetworkAction.convertToPseudoNetwork();
-		new TransitScheduleExporter(new File("transitSchedule.xml")).run(matSimLayer);
+
+		new TransitScheduleExporter(new File("transitSchedule.xml")).run((MATSimLayer) Main.getLayerManager().getActiveLayer());
 	}
 }

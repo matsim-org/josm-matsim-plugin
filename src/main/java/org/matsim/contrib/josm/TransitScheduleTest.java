@@ -75,6 +75,8 @@ public class TransitScheduleTest extends Test {
 	 */
 	private final static int DUPLICATE_LINE_ID = 3010;
 
+	private final static int MATSIM_ERROR_MESSAGE = 3333;
+
 	/**
 	 * Creates a new {@code TransitScheduleTest}.
 	 */
@@ -199,7 +201,12 @@ public class TransitScheduleTest extends Test {
 		}
 
 		ValidationResult validationResult = TransitScheduleValidator.validateAll(scenario.getTransitSchedule(), scenario.getNetwork());
-		TransitScheduleValidator.printResult(validationResult);
+		for (String errorString : validationResult.getWarnings()) {
+			errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+		}
+		for (String errorString : validationResult.getErrors()) {
+			errors.add(new TestError(this, Severity.ERROR, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+		}
 		super.endTest();
 	}
 
