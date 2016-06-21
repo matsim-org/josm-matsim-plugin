@@ -32,7 +32,7 @@ import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
 
-public class CreateTransitTest {
+public class CreateTransitFromIncompleteDataTest {
 
 	@Rule
 	public JOSMTestRules test = new JOSMTestRules().preferences().projection();

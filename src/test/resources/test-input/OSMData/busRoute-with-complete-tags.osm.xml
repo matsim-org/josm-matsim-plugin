@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='true' generator='JOSM'>
+  <node id='-8' action='modify' visible='true' lat='52.53530058223' lon='13.2829726955' />
+  <node id='-10' action='modify' visible='true' lat='52.53508201349' lon='13.30992215402' />
+  <node id='-12' action='modify' visible='true' lat='52.53513665577' lon='13.34459712399' />
+  <node id='-14' action='modify' visible='true' lat='52.52859623997' lon='13.35900737797' />
+  <node id='-16' action='modify' visible='true' lat='52.51595852975' lon='13.35989292499' />
+  <node id='-18' action='modify' visible='true' lat='52.50693219921' lon='13.36004814687' />
+  <node id='-20' action='modify' visible='true' lat='52.50288588934' lon='13.34226150425' />
+  <node id='-22' action='modify' visible='true' lat='52.50184691184' lon='13.29833388685' />
+  <node id='-24' action='modify' visible='true' lat='52.5003704279' lon='13.31360524668' />
+  <node id='-26' action='modify' visible='true' lat='52.51037673707' lon='13.2937524789' />
+  <node id='-28' action='modify' visible='true' lat='52.50687752184' lon='13.28863208179'>
+    <tag k='public_transport' v='platform' />
+  </node>
+  <node id='-30' action='modify' visible='true' lat='52.50392484228' lon='13.32995458485'>
+    <tag k='public_transport' v='platform' />
+  </node>
+  <node id='-32' action='modify' visible='true' lat='52.53797796105' lon='13.29887287602'>
+    <tag k='public_transport' v='platform' />
+  </node>
+  <node id='-34' action='modify' visible='true' lat='52.52289508482' lon='13.36382107107'>
+    <tag k='public_transport' v='platform' />
+  </node>
+  <way id='-36' action='modify' visible='true'>
+    <nd ref='-8' />
+    <nd ref='-10' />
+    <nd ref='-12' />
+    <nd ref='-14' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <way id='-38' action='modify' visible='true'>
+    <nd ref='-16' />
+    <nd ref='-14' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <way id='-40' action='modify' visible='true'>
+    <nd ref='-16' />
+    <nd ref='-18' />
+    <nd ref='-20' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <way id='-42' action='modify' visible='true'>
+    <nd ref='-22' />
+    <nd ref='-24' />
+    <nd ref='-20' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <way id='-44' action='modify' visible='true'>
+    <nd ref='-22' />
+    <nd ref='-26' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <relation id='-46' action='modify' visible='true'>
+    <member type='node' ref='-28' role='platform' />
+    <member type='node' ref='-26' role='stop' />
+    <tag k='public_transport' v='stop_area' />
+    <tag k='ref' v='4' />
+    <tag k='type' v='public_transport' />
+  </relation>
+  <relation id='-48' action='modify' visible='true'>
+    <member type='node' ref='-30' role='platform' />
+    <member type='node' ref='-20' role='stop' />
+    <tag k='public_transport' v='stop_area' />
+    <tag k='ref' v='3' />
+    <tag k='type' v='public_transport' />
+  </relation>
+  <relation id='-50' action='modify' visible='true'>
+    <member type='node' ref='-34' role='platform' />
+    <member type='node' ref='-14' role='stop' />
+    <tag k='public_transport' v='stop_area' />
+    <tag k='ref' v='2' />
+    <tag k='type' v='public_transport' />
+  </relation>
+  <relation id='-52' action='modify' visible='true'>
+    <member type='node' ref='-32' role='platform' />
+    <member type='node' ref='-8' role='stop' />
+    <tag k='public_transport' v='stop_area' />
+    <tag k='ref' v='1' />
+    <tag k='type' v='public_transport' />
+  </relation>
+  <relation id='-54' action='modify' visible='true'>
+    <member type='way' ref='-36' role='' />
+    <member type='way' ref='-38' role='' />
+    <member type='way' ref='-40' role='' />
+    <member type='way' ref='-42' role='' />
+    <member type='way' ref='-44' role='' />
+    <member type='node' ref='-32' role='platform' />
+    <member type='node' ref='-34' role='platform' />
+    <member type='node' ref='-30' role='platform' />
+    <member type='node' ref='-28' role='platform' />
+    <tag k='ref' v='1to4' />
+    <tag k='route' v='bus' />
+    <tag k='type' v='route' />
+  </relation>
+  <relation id='-56' action='modify' visible='true'>
+    <member type='way' ref='-44' role='' />
+    <member type='way' ref='-42' role='' />
+    <member type='way' ref='-40' role='' />
+    <member type='way' ref='-38' role='' />
+    <member type='way' ref='-36' role='' />
+    <member type='node' ref='-28' role='platform' />
+    <member type='node' ref='-30' role='platform' />
+    <member type='node' ref='-34' role='platform' />
+    <member type='node' ref='-32' role='platform' />
+    <tag k='ref' v='4to1' />
+    <tag k='route' v='bus' />
+    <tag k='type' v='route' />
+  </relation>
+  <relation id='-58' action='modify' visible='true'>
+    <member type='relation' ref='-56' role='' />
+    <member type='relation' ref='-54' role='' />
+    <tag k='ref' v='busRoute' />
+    <tag k='type' v='route_master' />
+  </relation>
+</osm>
