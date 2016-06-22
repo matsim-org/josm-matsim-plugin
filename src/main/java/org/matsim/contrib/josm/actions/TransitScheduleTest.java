@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.NetworkListener;
@@ -202,13 +203,18 @@ public class TransitScheduleTest extends Test {
 
 			}
 		}
-
-		ValidationResult validationResult = TransitScheduleValidator.validateAll(scenario.getTransitSchedule(), scenario.getNetwork());
-		for (String errorString : validationResult.getWarnings()) {
-			errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
-		}
-		for (String errorString : validationResult.getErrors()) {
-			errors.add(new TestError(this, Severity.ERROR, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+		if (errors.isEmpty()) { // Otherwise, it is possible that we have a condition where Export would throw an Exception
+			// We continue validation with a preview of the real, exported TransitSchedule, so that the ids
+			// in the error messages are the ones in the XML.
+			EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(scenario);
+			ValidationResult validationResult = TransitScheduleValidator.validateAll(targetScenario.getTransitSchedule(), targetScenario.getNetwork());
+			for (String errorString : validationResult.getWarnings()) {
+				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+			}
+			for (String errorString : validationResult.getErrors()) {
+				// We call them only Warnings in JOSM because it still can be exported to XML.
+				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+			}
 		}
 		super.endTest();
 	}

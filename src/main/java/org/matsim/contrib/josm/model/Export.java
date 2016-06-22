@@ -57,9 +57,11 @@ public class Export {
 				if (oldNode == null) {
 					throw new RuntimeException("Stop references a node which is not in the scenario: "+nodeId);
 				}
-				for (Link oldInLink : oldNode.getInLinks().values()) {
-					Id<Link> newInLinkId = Id.createLinkId(((LinkImpl) oldInLink).getOrigId());
-					newStop.setLinkId(newInLinkId); // last one wins
+				if (newStop.getLinkId() == null) {
+					for (Link oldInLink : oldNode.getInLinks().values()) {
+						Id<Link> newInLinkId = Id.createLinkId(((LinkImpl) oldInLink).getOrigId());
+						newStop.setLinkId(newInLinkId); // last one wins
+					}
 				}
 			}
 			newStop.setName(stop.getName());

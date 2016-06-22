@@ -587,15 +587,17 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 			if (relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
 				EastNorth eN = decidePlatformLocation(relation);
 				if (eN != null) {
-					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
 					EditableTransitStopFacility stop = (EditableTransitStopFacility) scenario.getTransitSchedule().getFactory()
 							.createTransitStopFacility(Id.create(String.valueOf(relation.getUniqueId()), TransitStopFacility.class), new Coord(eN.getX(), eN.getY()), true);
+					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
 					stop.setLinkId(linkId);
-					Node stopPosition = determineStopPositionOsmNode(relation);
+					org.matsim.api.core.v01.network.Node stopPosition = determineStopPositionOsmNode(relation);
 					if (stopPosition != null) {
-						Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
-						if (scenario.getNetwork().getNodes().containsKey(nodeId)) {
-							stop.setNodeId(nodeId);
+						stop.setNodeId(stopPosition.getId());
+						if (linkId == null) {
+							for (Link inLink : stopPosition.getInLinks().values()) {
+								stop.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
+							}
 						}
 					}
 					Id<TransitStopFacility> origId;
@@ -614,14 +616,18 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 			}
 		}
 
-		private Node determineStopPositionOsmNode(Relation relation) {
-			Node stopPosition = null;
+		private org.matsim.api.core.v01.network.Node determineStopPositionOsmNode(Relation relation) {
 			for (RelationMember member : relation.getMembers()) {
 				if (member.hasRole("stop") && member.isNode()) {
-					stopPosition = member.getNode();
+					Node stopPosition = member.getNode();
+					Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
+					org.matsim.api.core.v01.network.Node node = scenario.getNetwork().getNodes().get(nodeId);
+					if (node != null) {
+						return node;
+					}
 				}
 			}
-			return stopPosition;
+			return null;
 		}
 
 		private Id<Link> determineExplicitMatsimLinkId(Relation relation) {
