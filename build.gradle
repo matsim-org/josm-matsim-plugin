@@ -90,8 +90,8 @@ jar {
 }
 
 compileJava {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 }
 
 // Download the JOSM binary and put it into its place.

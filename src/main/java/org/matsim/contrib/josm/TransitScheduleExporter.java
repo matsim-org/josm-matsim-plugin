@@ -1,7 +1,7 @@
 package org.matsim.contrib.josm;
 
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 
 import java.io.File;
 
@@ -14,17 +14,8 @@ class TransitScheduleExporter {
 	}
 
 	void run(MATSimLayer layer) {
-		Scenario targetScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
-
-		// if (Main.pref.getBoolean("matsim_transit_lite")) {
-		// CreatePseudoNetwork pseudoNetworkCreator = new
-		// CreatePseudoNetwork(targetScenario.getTransitSchedule(),
-		// targetScenario.getNetwork(), "dummy_");
-		// pseudoNetworkCreator.createNetwork();
-		// }
-		if (targetScenario.getTransitSchedule() != null) {
-			new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(scheduleFile.getPath());
-		}
+		EditableScenario targetScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(scheduleFile.getPath());
 	}
 
 }

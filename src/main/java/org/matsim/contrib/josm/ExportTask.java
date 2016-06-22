@@ -95,11 +95,10 @@ class ExportTask {
 				if (oldNode == null) {
 					throw new RuntimeException("Stop references a node which is not in the scenario: "+nodeId);
 				}
-				if (oldNode.getInLinks().size() == 1) {
-					Link oldInLink = oldNode.getInLinks().values().iterator().next();
+				for (Link oldInLink : oldNode.getInLinks().values()) {
 					Id<Link> newInLinkId = Id.createLinkId(((LinkImpl) oldInLink).getOrigId());
-					newStop.setLinkId(newInLinkId);
-				} // otherwise: ambiguous
+					newStop.setLinkId(newInLinkId); // last one wins
+				}
 			}
 			newStop.setName(stop.getName());
 			newSchedule.addStopFacility(newStop);
