@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.gui;
 
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
@@ -9,8 +9,6 @@ import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.PreferencePan
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -46,25 +44,55 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		super("matsim-scenario.png", tr("MASim preferences"), tr("Configure the MATSim plugin."), false, new JTabbedPane());
 	}
 
+	@Override
+	public void addGui(final PreferenceTabbedPane gui) {
+		GridBagConstraints gc = new GridBagConstraints();
+		gc.weightx = 1.0;
+		gc.weighty = 1.0;
+		gc.anchor = GridBagConstraints.NORTHWEST;
+		gc.fill = GridBagConstraints.BOTH;
+		PreferencePanel panel = gui.createPreferenceTab(this);
+		panel.add(buildContentPane(), gc);
+	}
+
+	@Override
+	public boolean ok() {
+		Main.pref.put("matsim_supportTransit", transitFeature.isSelected());
+		Main.pref.put("matsim_transit_lite", transitLite.isSelected());
+		Main.pref.put("matsim_showIds", showIds.isSelected());
+		Main.pref.put("matsim_renderer", renderMatsim.isSelected());
+		Main.pref.put("matsim_cleanNetwork", cleanNetwork.isSelected());
+		Main.pref.put("matsim_keepPaths", keepPaths.isSelected());
+		Main.pref.put("matsim_showInternalIds", showInternalIds.isSelected());
+		Main.pref.put("matsim_filterActive", filterActive.isSelected());
+		Main.pref.putInteger("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
+		Main.pref.putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
+		return false;
+	}
+
+	private JTabbedPane buildContentPane() {
+		JTabbedPane pane = getTabPane();
+		pane.addTab(tr("Visualization"), buildVisualizationPanel());
+		pane.addTab(tr("Converter Options"), buildConvertPanel());
+		return pane;
+	}
+
 	private JPanel buildVisualizationPanel() {
 		JPanel pnl = new JPanel(new GridBagLayout());
 		GridBagConstraints cOptions = new GridBagConstraints();
 		wayOffset.setValue((int) ((Main.pref.getDouble("matsim_wayOffset", 0)) / 0.03));
 		showIds.setSelected(Main.pref.getBoolean("matsim_showIds"));
 		renderMatsim.setSelected(Main.pref.getBoolean("matsim_renderer"));
-		renderMatsim.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (!renderMatsim.isSelected()) {
-					showIds.setSelected(false);
-				} else {
-					showIds.setSelected(isCleanNetwork());
-				}
-				showIds.setEnabled(renderMatsim.isSelected());
-				wayOffset.setEnabled(renderMatsim.isSelected());
-				showIds.setEnabled(renderMatsim.isSelected());
-				wayOffsetLabel.setEnabled(renderMatsim.isSelected());
+		renderMatsim.addActionListener(e -> {
+			if (!renderMatsim.isSelected()) {
+				showIds.setSelected(false);
+			} else {
+				showIds.setSelected(isCleanNetwork());
 			}
+			showIds.setEnabled(renderMatsim.isSelected());
+			wayOffset.setEnabled(renderMatsim.isSelected());
+			showIds.setEnabled(renderMatsim.isSelected());
+			wayOffsetLabel.setEnabled(renderMatsim.isSelected());
 		});
 		wayOffset.setEnabled(renderMatsim.isSelected());
 		showIds.setEnabled(renderMatsim.isSelected());
@@ -97,18 +125,15 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		JPanel pnl = new JPanel(new GridBagLayout());
 		GridBagConstraints cOptions = new GridBagConstraints();
 		transitFeature.setSelected(isSupportTransit());
-		transitFeature.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (transitFeature.isSelected()) {
-					cleanNetwork.setSelected(false);
-					transitLite.setSelected(isTransitLite());
-				} else {
-					cleanNetwork.setSelected(isCleanNetwork());
-					transitLite.setSelected(false);
-				}
-				cleanNetwork.setEnabled(!transitFeature.isSelected());
+		transitFeature.addActionListener(e -> {
+			if (transitFeature.isSelected()) {
+				cleanNetwork.setSelected(false);
+				transitLite.setSelected(isTransitLite());
+			} else {
+				cleanNetwork.setSelected(isCleanNetwork());
+				transitLite.setSelected(false);
 			}
+			cleanNetwork.setEnabled(!transitFeature.isSelected());
 		});
 
 		transitLite.setSelected(isSupportTransit() && isTransitLite());
@@ -116,22 +141,19 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		cleanNetwork.setSelected(isCleanNetwork());
 		cleanNetwork.setEnabled(!transitFeature.isSelected());
 		keepPaths.setSelected(isKeepPaths());
-		convertingDefaults.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				OsmConvertDefaultsDialog dialog = new OsmConvertDefaultsDialog();
-				JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				JDialog dlg = pane.createDialog(Main.parent, tr("Defaults"));
-				dlg.setAlwaysOnTop(true);
-				dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				dlg.setVisible(true);
-				if (pane.getValue() != null) {
-					if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-						dialog.handleInput();
-					}
+		convertingDefaults.addActionListener(e -> {
+			OsmConvertDefaultsDialog dialog = new OsmConvertDefaultsDialog();
+			JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+			JDialog dlg = pane.createDialog(Main.parent, tr("Defaults"));
+			dlg.setAlwaysOnTop(true);
+			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			dlg.setVisible(true);
+			if (pane.getValue() != null) {
+				if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
+					dialog.handleInput();
 				}
-				dlg.dispose();
 			}
+			dlg.dispose();
 		});
 
 		filterActive.setSelected(Main.pref.getBoolean("matsim_filterActive", false));
@@ -180,11 +202,11 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		return pnl;
 	}
 
-	static boolean isKeepPaths() {
+	public static boolean isKeepPaths() {
 		return Main.pref.getBoolean("matsim_keepPaths", false);
 	}
 
-	static boolean isCleanNetwork() {
+	public static boolean isCleanNetwork() {
 		return Main.pref.getBoolean("matsim_cleanNetwork", true);
 	}
 
@@ -192,44 +214,12 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		return Main.pref.getBoolean("matsim_supportTransit", false);
 	}
 
-	static boolean isTransitLite() {
+	public static boolean isTransitLite() {
 		return Main.pref.getBoolean("matsim_transit_lite", false);
 	}
 
-	static void setTransitLite(boolean transitLite) {
-		Main.pref.put("matsim_transit_lite", true);
+	public static void setTransitLite(boolean transitLite) {
+		Main.pref.put("matsim_transit_lite", transitLite);
 	}
 
-	JTabbedPane buildContentPane() {
-		JTabbedPane pane = getTabPane();
-		pane.addTab(tr("Visualization"), buildVisualizationPanel());
-		pane.addTab(tr("Converter Options"), buildConvertPanel());
-		return pane;
-	}
-
-	@Override
-	public void addGui(final PreferenceTabbedPane gui) {
-		GridBagConstraints gc = new GridBagConstraints();
-		gc.weightx = 1.0;
-		gc.weighty = 1.0;
-		gc.anchor = GridBagConstraints.NORTHWEST;
-		gc.fill = GridBagConstraints.BOTH;
-		PreferencePanel panel = gui.createPreferenceTab(this);
-		panel.add(buildContentPane(), gc);
-	}
-
-	@Override
-	public boolean ok() {
-		Main.pref.put("matsim_supportTransit", transitFeature.isSelected());
-		Main.pref.put("matsim_transit_lite", transitLite.isSelected());
-		Main.pref.put("matsim_showIds", showIds.isSelected());
-		Main.pref.put("matsim_renderer", renderMatsim.isSelected());
-		Main.pref.put("matsim_cleanNetwork", cleanNetwork.isSelected());
-		Main.pref.put("matsim_keepPaths", keepPaths.isSelected());
-		Main.pref.put("matsim_showInternalIds", showInternalIds.isSelected());
-		Main.pref.put("matsim_filterActive", filterActive.isSelected());
-		Main.pref.putInteger("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
-		Main.pref.putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
-		return false;
-	}
 }

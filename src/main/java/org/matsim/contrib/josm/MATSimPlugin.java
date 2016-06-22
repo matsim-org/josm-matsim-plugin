@@ -17,6 +17,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
 import org.matsim.contrib.josm.actions.*;
+import org.matsim.contrib.josm.gui.LinksToggleDialog;
+import org.matsim.contrib.josm.gui.PTToggleDialog;
+import org.matsim.contrib.josm.gui.Preferences;
+import org.matsim.contrib.josm.model.OsmConvertDefaults;
+import org.matsim.contrib.josm.actions.NetworkTest;
+import org.matsim.contrib.josm.actions.TransitScheduleTest;
 import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
@@ -141,7 +147,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	}
 
-	static void addPreferenceChangedListener(PreferenceChangedListener listener) {
+	public static void addPreferenceChangedListener(PreferenceChangedListener listener) {
 		preferenceChangeListeners.add(new WeakReference<>(listener));
 	}
 

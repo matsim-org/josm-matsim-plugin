@@ -5,11 +5,15 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.Export;
+import org.matsim.contrib.josm.model.LayerConverter;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkWriter;
+import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -60,6 +64,6 @@ public class CreateTransitFromCompleteDataTest {
 		EditableScenario layerScenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getScenario();
 		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
-		new TransitScheduleExporter(new File("transitSchedule-2.xml")).run((MATSimLayer) Main.getLayerManager().getActiveLayer());
+		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
 	}
 }

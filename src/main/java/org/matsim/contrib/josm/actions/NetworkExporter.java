@@ -7,8 +7,7 @@ import javax.swing.JOptionPane;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
-import org.matsim.contrib.josm.MATSimLayer;
-import org.matsim.contrib.josm.NetworkTest;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.network.algorithms.NetworkCleaner;

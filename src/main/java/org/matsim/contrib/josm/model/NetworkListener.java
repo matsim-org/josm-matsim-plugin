@@ -1,9 +1,11 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.*;
+import org.matsim.contrib.josm.MATSimPlugin;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
@@ -50,7 +52,7 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
-	interface ScenarioDataChangedListener {
+	public interface ScenarioDataChangedListener {
 		void notifyDataChanged();
 	}
 
@@ -94,7 +96,7 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 		}
 	}
 
-	void addListener(ScenarioDataChangedListener listener) {
+	public void addListener(ScenarioDataChangedListener listener) {
 		listeners.add(listener);
 	}
 
@@ -717,7 +719,7 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 		return osmPrimitive.isUsable() && osmPrimitive.getDataSet() != null;
 	}
 
-	EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
+	public EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
 		if (maybeRelation instanceof Relation && scenario.getConfig().transit().isUseTransit()) {
 			for (EditableTransitLine editableTransitLine : scenario.getTransitSchedule().getEditableTransitLines().values()) {
 				for (EditableTransitRoute transitRoute : editableTransitLine.getEditableRoutes().values()) {

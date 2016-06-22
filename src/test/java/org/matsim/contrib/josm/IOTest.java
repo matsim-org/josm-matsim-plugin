@@ -11,6 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
+import org.matsim.contrib.josm.model.Importer;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
 import org.matsim.core.population.routes.NetworkRoute;

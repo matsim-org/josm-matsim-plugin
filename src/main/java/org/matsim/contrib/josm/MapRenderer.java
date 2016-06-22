@@ -2,6 +2,7 @@ package org.matsim.contrib.josm;
 
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.core.network.LinkImpl;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;

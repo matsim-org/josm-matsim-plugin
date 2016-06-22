@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 
 import org.openstreetmap.josm.data.osm.Node;

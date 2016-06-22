@@ -1,21 +1,14 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.gui;
 
-//License: GPL. For details, see LICENSE file.
-
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
+import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.tools.GBC;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Dialog displayed to download OSM data from OSM server.
@@ -33,12 +26,9 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 
 		JPanel contentPnl = new JPanel(new GridLayout(2, 1));
 
-		ActionListener cbListener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox cb = (JCheckBox) e.getSource();
-				Main.pref.put("matsim_download_" + cb.getText(), cb.isSelected());
-			}
+		ActionListener cbListener = e -> {
+			JCheckBox cb = (JCheckBox) e.getSource();
+			Main.pref.put("matsim_download_" + cb.getText(), cb.isSelected());
 		};
 
 		JPanel highwaysPnl = new JPanel(new FlowLayout());

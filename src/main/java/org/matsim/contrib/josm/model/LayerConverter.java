@@ -1,9 +1,9 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.josm.model.Export;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;

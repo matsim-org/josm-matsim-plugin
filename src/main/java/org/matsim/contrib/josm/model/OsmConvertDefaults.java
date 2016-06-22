@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,23 +13,23 @@ import org.openstreetmap.josm.data.Preferences;
  *
  *
  */
-class OsmConvertDefaults {
+public class OsmConvertDefaults {
 	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
-	static final List<String> highwayTypes = Arrays.asList("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
+	public static final List<String> highwayTypes = Arrays.asList("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
 			"secondary", "tertiary", "minor", "unclassified", "residential", "living_street");
 
 	// This is an exhaustive list.
 	// See http://wiki.openstreetmap.org/wiki/Proposed_features/Public_Transport
-	static final List<String> routeTypes = Arrays.asList("train", "subway", "monorail", "tram", "bus", "trolleybus", "aerialway", "ferry");
+	public static final List<String> routeTypes = Arrays.asList("train", "subway", "monorail", "tram", "bus", "trolleybus", "aerialway", "ferry");
 
-	static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed", "freespeedFactor", "laneCapacity", "oneway" };
+	public static final String[] wayAttributes = { "hierarchy", "lanes", "freespeed", "freespeedFactor", "laneCapacity", "oneway" };
 
 	static {
 		load();
 	}
 
-	static void listen(Preferences pref) {
+	public static void listen(Preferences pref) {
 		pref.addPreferenceChangeListener(new Preferences.PreferenceChangedListener() {
 			@Override
 			public void preferenceChanged(Preferences.PreferenceChangeEvent preferenceChangeEvent) {
@@ -90,7 +90,7 @@ class OsmConvertDefaults {
 		}
 	}
 
-	static void reset() {
+	public static void reset() {
 		Main.pref.put("matsim_convertDefaults_motorway", "1;2;" + Double.toString(120. / 3.6) + ";1.0;2000;true");
 		Main.pref.put("matsim_convertDefaults_motorway_link", "2;1;" + Double.toString(80. / 3.6) + ";1.0;1500;true");
 		Main.pref.put("matsim_convertDefaults_trunk", "2;1;" + Double.toString(80. / 3.6) + ";1.0;2000;false");
@@ -105,7 +105,7 @@ class OsmConvertDefaults {
 		Main.pref.put("matsim_convertDefaults_living_street", "6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false");
 	}
 
-	static class OsmWayDefaults {
+	public static class OsmWayDefaults {
 
 		public final int hierarchy;
 		public final double lanesPerDirection;

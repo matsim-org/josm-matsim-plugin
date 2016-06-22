@@ -1,8 +1,8 @@
 package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.josm.MATSimLayer;
-import org.matsim.contrib.josm.Preferences;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
@@ -25,7 +25,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * New Network Action which causes an empty
- * {@link org.matsim.contrib.josm.MATSimLayer} to be created
+ * {@link MATSimLayer} to be created
  *
  * @author Nico
  *

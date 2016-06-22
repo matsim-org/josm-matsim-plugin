@@ -1,30 +1,19 @@
-package org.matsim.contrib.josm;
-
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Collection;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
+package org.matsim.contrib.josm.gui;
 
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Collection;
 
 /**
  * the import dialog
@@ -49,27 +38,27 @@ public class ImportDialog extends JPanel {
 	final JComboBox<ProjectionChoice> importSystemCB = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[] {}));
 	private JPanel projSubPrefPanelWrapper = new JPanel(new GridBagLayout());
 	private JPanel projSubPrefPanel;
-	
+
 	private ProjectionChoice projectionChoice = null;
 	private Collection<String> prefs = null;
-	
+
 	private File networkFile = null;
 	private File scheduleFile = null;
 
 	public ImportDialog() {
-		
+
 		networkHeading.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
 		schedulePathHeading.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
 		importSystemLabel.setFont(networkHeading.getFont().deriveFont(Font.BOLD));
 		networkPath.setBorder(BorderFactory.createEtchedBorder());
 		schedulePath.setBorder(BorderFactory.createEtchedBorder());
-		
+
 		setLayout(new GridBagLayout());
-		
+
 		add(networkHeading, GBC.eop());
 		add(networkPath, GBC.eop().fill(GridBagConstraints.HORIZONTAL) );
 		add(networkPathButton, GBC.eop());
-		
+
 		JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
 		sep.setPreferredSize(new Dimension(400,3));
 		add(sep, GBC.eop());
@@ -77,7 +66,7 @@ public class ImportDialog extends JPanel {
 		add(schedulePathHeading, GBC.eop());
 		add(schedulePath, GBC.eop().fill(GridBagConstraints.HORIZONTAL) );
 		add(schedulePathButton, GBC.eop());
-		
+
 		JSeparator sep2 = new JSeparator(SwingConstants.HORIZONTAL);
 		sep2.setPreferredSize(new Dimension(400,3));
 		add(sep2, GBC.eop());
@@ -111,7 +100,7 @@ public class ImportDialog extends JPanel {
 				FileFilter filter = new FileNameExtensionFilter("Network-XML", "xml");
 				chooser.setFileFilter(filter);
 				int result = chooser.showOpenDialog(Main.parent);
-				if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile().getAbsolutePath() != null) {
+				if (result == JFileChooser.APPROVE_OPTION) {
 					networkFile = new File(chooser.getSelectedFile().getAbsolutePath());
 					networkPath.setText(networkFile.getName());
 				}
@@ -133,7 +122,7 @@ public class ImportDialog extends JPanel {
 				FileFilter filter = new FileNameExtensionFilter("TransitSchedule-XML", "xml");
 				chooser.setFileFilter(filter);
 				int result = chooser.showOpenDialog(Main.parent);
-				if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile().getAbsolutePath() != null) {
+				if (result == JFileChooser.APPROVE_OPTION) {
 					scheduleFile = new File(chooser.getSelectedFile().getAbsolutePath());
 					schedulePath.setText(scheduleFile.getName());
 				}
@@ -156,12 +145,7 @@ public class ImportDialog extends JPanel {
 		if (size < 1)
 			return;
 
-		final ActionListener listener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				prefs = pc.getPreferences(projSubPrefPanel);
-			}
-		};
+		final ActionListener listener = e -> prefs = pc.getPreferences(projSubPrefPanel);
 
 		// Replace old panel with new one
 		projSubPrefPanelWrapper.removeAll();
@@ -171,23 +155,23 @@ public class ImportDialog extends JPanel {
 		repaint();
 		projectionChoice = pc;
 	}
-	
-	
+
+
 	public ProjectionChoice getProjectionChoice() {
 		return projectionChoice;
 	}
-	
+
 	public Collection<String> getPrefs() {
 		return prefs;
 	}
-	
+
 	public File getNetworkFile() {
 		return networkFile;
 	}
-	
+
 	public File getScheduleFile() {
 		return scheduleFile;
 	}
-	
+
 
 }

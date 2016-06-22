@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.URL;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.model.Importer;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;

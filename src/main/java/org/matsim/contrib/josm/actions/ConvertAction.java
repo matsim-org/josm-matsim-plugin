@@ -1,7 +1,7 @@
 package org.matsim.contrib.josm.actions;
 
-import org.matsim.contrib.josm.LayerConverter;
-import org.matsim.contrib.josm.MATSimLayer;
+import org.matsim.contrib.josm.model.LayerConverter;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.ProjectionBounds;
@@ -20,7 +20,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 /**
  * The Convert Action which causes the
  * {@link ConvertTask} to start. Results in a new
- * {@link org.matsim.contrib.josm.MATSimLayer} which holds the converted data.
+ * {@link MATSimLayer} which holds the converted data.
  *
  * @author Nico
  *

@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.gui;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -29,7 +29,11 @@ import javax.swing.table.DefaultTableModel;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.*;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
+import org.matsim.contrib.josm.actions.NetworkTest;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkImpl;
@@ -63,7 +67,7 @@ import org.openstreetmap.josm.tools.ImageProvider;
  */
 
 @SuppressWarnings("serial")
-class LinksToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
+public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
 	private final JTable table_links;
 	private final MATSimTableModel_links tableModel_links = new MATSimTableModel_links();
 
@@ -99,7 +103,7 @@ class LinksToggleDialog extends ToggleDialog implements ActiveLayerChangeListene
 		notifyEverythingChanged();
 	}
 
-	LinksToggleDialog() {
+	public LinksToggleDialog() {
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 

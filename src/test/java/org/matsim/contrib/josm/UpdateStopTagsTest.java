@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;

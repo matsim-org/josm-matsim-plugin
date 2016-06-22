@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.gui;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -20,6 +20,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
@@ -54,7 +56,7 @@ import org.openstreetmap.josm.gui.util.HighlightHelper;
  */
 
 @SuppressWarnings("serial")
-class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
+public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
 	private final JTable table_pt;
 	private NetworkListener osmNetworkListener;
 
@@ -88,7 +90,7 @@ class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, 
 		notifyEverythingChanged();
 	}
 
-	PTToggleDialog() {
+	public PTToggleDialog() {
 		super("Lines/Routes/Stops", "matsim-scenario.png", "Lines/Routes/Stops", null, 150, true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 

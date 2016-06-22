@@ -1,9 +1,11 @@
 package org.matsim.contrib.josm.actions;
 
-import org.matsim.contrib.josm.ImportDialog;
-import org.matsim.contrib.josm.ImportTask;
+import org.matsim.contrib.josm.model.Importer;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.gui.ImportDialog;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
+import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -43,16 +45,50 @@ public class ImportAction extends JosmAction {
 			if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
 				if (dialog.getNetworkFile()!=null) {
 					
-					ProjectionChoice pc = (ProjectionChoice) dialog.getProjectionChoice();
+					ProjectionChoice pc = dialog.getProjectionChoice();
 
 				        String id = pc.getId();
 				        ProjectionPreference.setProjection(id, dialog.getPrefs());
-					
-					ImportTask task = new ImportTask(dialog.getNetworkFile(), dialog.getScheduleFile());
+
+					final java.io.File network = dialog.getNetworkFile();
+					final java.io.File schedule = dialog.getScheduleFile();
+					PleaseWaitRunnable task = new PleaseWaitRunnable("MATSim Import") {
+						private final Importer importer = new Importer(network, schedule);
+
+						/**
+						 * @see PleaseWaitRunnable#cancel()
+						 */
+						@Override
+						protected void cancel() {
+						}
+
+						/**
+						 * @see PleaseWaitRunnable#finish()
+						 */
+						@Override
+						protected void finish() {
+							MATSimLayer layer = importer.getLayer();
+							// layer = null happens if Exception happens during import,
+							// as Exceptions are handled only after this method is called.
+							if (layer != null) {
+								Main.main.addLayer(layer);
+								Main.getLayerManager().setActiveLayer(layer);
+							}
+						}
+
+						/**
+						 * @see PleaseWaitRunnable#realRun()
+						 */
+						@Override
+						protected void realRun() {
+							importer.run();
+						}
+					};
 					Main.worker.execute(task);
 				}
 			}
 		}
 		dlg.dispose();
 	}
+
 }

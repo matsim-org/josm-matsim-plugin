@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.swing.Action;
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;

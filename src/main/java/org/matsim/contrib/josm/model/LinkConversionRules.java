@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 
 import org.matsim.api.core.v01.TransportMode;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-class LinkConversionRules {
+public class LinkConversionRules {
 
 	public static final String ID = "matsim:id";
 	public static final String FREESPEED = "matsim:freespeed";

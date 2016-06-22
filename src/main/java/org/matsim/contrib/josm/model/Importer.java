@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import java.io.File;
 import java.util.ArrayList;

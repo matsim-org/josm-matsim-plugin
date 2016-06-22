@@ -1,4 +1,4 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
 import org.openstreetmap.josm.Main;

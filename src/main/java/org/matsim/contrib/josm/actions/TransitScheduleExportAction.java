@@ -9,9 +9,10 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
-import org.matsim.contrib.josm.MATSimLayer;
-import org.matsim.contrib.josm.TransitScheduleExporter;
-import org.matsim.contrib.josm.TransitScheduleTest;
+import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.Export;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.DiskAccessAction;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
@@ -73,7 +74,8 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					new TransitScheduleExporter(file).run((MATSimLayer) Main.map.mapView.getActiveLayer());
+					EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.map.mapView.getActiveLayer()).getScenario());
+					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 
 				// set up error layer

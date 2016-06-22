@@ -1,6 +1,7 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.gui;
 
-import org.matsim.contrib.josm.OsmConvertDefaults.OsmWayDefaults;
+import org.matsim.contrib.josm.model.OsmConvertDefaults;
+import org.matsim.contrib.josm.model.OsmConvertDefaults.OsmWayDefaults;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.tools.ImageProvider;
 
@@ -22,7 +23,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  *
  */
 @SuppressWarnings("serial")
-class OsmConvertDefaultsDialog extends JPanel {
+public class OsmConvertDefaultsDialog extends JPanel {
 	private final Map<String, JComponent> input = new HashMap<>();
 
 	public OsmConvertDefaultsDialog() {
@@ -132,7 +133,7 @@ class OsmConvertDefaultsDialog extends JPanel {
 	}
 
 	// processes the input given by user and stores values in preferences
-	void handleInput() {
+	public void handleInput() {
 		for (int i = 0; i < OsmConvertDefaults.highwayTypes.size(); i++) {
 
 			int hierarchy = Integer.parseInt(((JTextField) input.get(i + "_0")).getText());
