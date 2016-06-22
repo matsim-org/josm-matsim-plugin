@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkReaderMatsimV1;
 import org.matsim.core.population.routes.NetworkRoute;
@@ -81,15 +82,15 @@ public class IOTest {
 		Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
 		Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
 		if (scenario.getConfig().transit().isUseTransit()) {
-			Assert.assertEquals(0, ExportTask.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getFacilities().size());
-			Assert.assertEquals(0, ExportTask.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
-			Assert.assertEquals(0, countRoutes(ExportTask.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
+			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getFacilities().size());
+			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
+			Assert.assertEquals(0, countRoutes(Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
 		}
 		delete.undoCommand();
 		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
 		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
 		if (scenario.getConfig().transit().isUseTransit()) {
-			Scenario outputScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+			Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
 			Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), outputScenario.getTransitSchedule().getFacilities().size());
 			Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), outputScenario.getTransitSchedule().getTransitLines().size());
 			Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(outputScenario.getTransitSchedule()));
@@ -134,7 +135,7 @@ public class IOTest {
 		Scenario scenario = PtTutorialScenario.scenario();
 		MATSimLayer layer = PtTutorialScenario.layer();
 		deleteAndUndeleteEverything(scenario, layer);
-		Scenario outputScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
 		checkAttributes(scenario, outputScenario);
 	}
 
@@ -142,7 +143,7 @@ public class IOTest {
 	public void deleteAndUndeleteStopRelations() {
 		Scenario scenario = PtTutorialScenario.scenario();
 		MATSimLayer layer = PtTutorialScenario.layer();
-		Scenario outputScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
 		deleteAndUndeleteStopRelations(layer);
 		checkAttributes(scenario, outputScenario);
 	}
@@ -156,14 +157,14 @@ public class IOTest {
 				commands.add(delete);
 			}
 		}
-		Scenario outputScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
 		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 			Assert.assertNull(facility.getLinkId());
 		}
 		for (Command command : commands) {
 			command.undoCommand();
 		}
-		outputScenario = ExportTask.convertIdsAndFilterDeleted(layer.getScenario());
+		outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
 		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 			Assert.assertNotNull(facility.getLinkId());
 		}

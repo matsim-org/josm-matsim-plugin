@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
@@ -164,7 +165,7 @@ public class OSMDataTest {
 			Assert.assertEquals(7, route.getRoute().getLinkIds().size());
 		}
 
-		Scenario simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted((EditableScenario) busRouteListener.getScenario());
+		Scenario simulatedExportScenario = Export.convertIdsAndFilterDeleted((EditableScenario) busRouteListener.getScenario());
 		int nStopsWithLink = 0;
 		for (TransitStopFacility transitStopFacility : simulatedExportScenario.getTransitSchedule().getFacilities().values()) {
 			if (transitStopFacility.getLinkId() != null) {
@@ -184,7 +185,7 @@ public class OSMDataTest {
 			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
 		}
 
-		simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted(((EditableScenario) busRouteListener.getScenario()));
+		simulatedExportScenario = Export.convertIdsAndFilterDeleted(((EditableScenario) busRouteListener.getScenario()));
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 
@@ -208,7 +209,7 @@ public class OSMDataTest {
 		Assert.assertEquals(10, convertedOsm.getWays().size());
 		Assert.assertEquals(7, convertedOsm.getRelations().size());
 
-		simulatedExportScenario = ExportTask.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
+		simulatedExportScenario = Export.convertIdsAndFilterDeleted(converter.getMatsimLayer().getScenario());
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 	}

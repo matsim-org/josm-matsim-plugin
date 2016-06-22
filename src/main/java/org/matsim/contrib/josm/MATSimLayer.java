@@ -32,7 +32,7 @@ import org.openstreetmap.josm.gui.layer.OsmDataLayer;
  * @author nkuehnel
  *
  */
-class MATSimLayer extends OsmDataLayer {
+public class MATSimLayer extends OsmDataLayer {
     private final EditableScenario matsimScenario;
 
     // data mappings

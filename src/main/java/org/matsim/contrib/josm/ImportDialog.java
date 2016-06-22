@@ -33,7 +33,7 @@ import org.openstreetmap.josm.tools.ImageProvider;
  *
  */
 @SuppressWarnings("serial")
-class ImportDialog extends JPanel {
+public class ImportDialog extends JPanel {
 
 	/**
 	 * Holds the path of the import file

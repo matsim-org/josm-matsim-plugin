@@ -1,5 +1,7 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
+import org.matsim.contrib.josm.ImportDialog;
+import org.matsim.contrib.josm.ImportTask;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;

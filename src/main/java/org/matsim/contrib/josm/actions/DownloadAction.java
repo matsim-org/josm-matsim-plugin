@@ -1,10 +1,12 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.event.ActionEvent;
 import java.util.concurrent.Future;
 
+import org.matsim.contrib.josm.DownloadDialog;
+import org.matsim.contrib.josm.DownloadMATSimOsmTask;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;

@@ -1,6 +1,8 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.MATSimLayer;
+import org.matsim.contrib.josm.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
@@ -29,7 +31,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  *
  */
 @SuppressWarnings("serial")
-class NewNetworkAction extends JosmAction {
+public class NewNetworkAction extends JosmAction {
 
 	public NewNetworkAction() {
 		super(tr("New MATSim network"), "new.png", tr("Create new Network"), Shortcut.registerShortcut("menu:matsimNetwork",
@@ -42,7 +44,7 @@ class NewNetworkAction extends JosmAction {
 		Main.main.addLayer(layer);
 	}
 
-	static MATSimLayer createMatsimLayer() {
+	public static MATSimLayer createMatsimLayer() {
 		DataSet dataSet = new DataSet();
 		Config config = ConfigUtils.createConfig();
 		if (Preferences.isSupportTransit()) {

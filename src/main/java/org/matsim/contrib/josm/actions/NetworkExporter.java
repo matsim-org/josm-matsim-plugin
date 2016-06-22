@@ -1,10 +1,17 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.model.Export;
+import org.matsim.contrib.josm.MATSimLayer;
+import org.matsim.contrib.josm.NetworkTest;
+import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.core.network.NetworkWriter;
+import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.validation.OsmValidator;
@@ -18,18 +25,18 @@ import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * The FileExporter that handles file output when saving. Runs
- * {@link NetworkTest} prior to the {@link ExportTask}.
+ * {@link NetworkTest} prior to the {@link Export}.
  *
  * @author Nico
  *
  */
-final class NetworkExporter extends FileExporter {
+public final class NetworkExporter extends FileExporter {
 
 	/**
 	 * Creates a new {@code MATSimNetworkFileExporter}. <br>
 	 * Extension used is {@code .xml}.
 	 */
-	NetworkExporter() {
+	public NetworkExporter() {
 		super(new ExtensionFileFilter("xml", "xml", "MATSim Network Files (*.xml)"));
 	}
 
@@ -56,7 +63,7 @@ final class NetworkExporter extends FileExporter {
 	 * Before exporting a {@link NetworkTest} is run, resulting in a validation
 	 * layer. The export fails if severe errors are found.
 	 *
-	 * @see ExportTask
+	 * @see Export
 	 * @param file
 	 *            The {@code .xml} network-file to which the network data is
 	 *            stored to
@@ -106,8 +113,13 @@ final class NetworkExporter extends FileExporter {
 
 		// start export task if not aborted
 		if (okToExport) {
-			ExportTask task = new ExportTask(file, (OsmDataLayer) layer);
-			task.realRun();
+			EditableScenario layerScenario = ((MATSimLayer) layer).getScenario();
+			Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
+
+			if (Main.pref.getBoolean("matsim_cleanNetwork")) {
+				new NetworkCleaner().run(targetScenario.getNetwork());
+			}
+			new NetworkWriter(targetScenario.getNetwork()).write(file.getPath());
 		}
 
 		// set up error layer

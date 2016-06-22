@@ -1,8 +1,10 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.josm.*;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
@@ -33,7 +35,7 @@ import java.util.List;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-class ConvertToPseudoNetworkAction extends JosmAction {
+public class ConvertToPseudoNetworkAction extends JosmAction {
 
 	public ConvertToPseudoNetworkAction() {
 		super(tr("Convert to transit pseudo-network"), null, tr("Convert to transit pseudo-network"), Shortcut.registerShortcut("menu:matsimPseudoNetwork",
@@ -63,7 +65,7 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 		}
 	}
 
-	static MATSimLayer convertToPseudoNetwork() {
+	public static MATSimLayer convertToPseudoNetwork() {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(Preferences.isSupportTransit());
 		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
@@ -74,7 +76,7 @@ class ConvertToPseudoNetworkAction extends JosmAction {
 
 		emptyNetwork(sourceScenario);
 		fixTransitSchedule(sourceScenario);
-		EditableScenario targetScenario = ExportTask.convertIdsAndFilterDeleted(sourceScenario);
+		EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(sourceScenario);
 
 		new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "pt_")
 				.createNetwork();

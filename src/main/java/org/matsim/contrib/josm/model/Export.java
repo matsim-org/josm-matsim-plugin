@@ -1,60 +1,22 @@
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.network.NodeImpl;
-import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
-import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The task which which writes out the network xml file
- *
- * @author Nico
- *
- */
+public class Export {
 
-class ExportTask {
-
-	private final File networkFile;
-	private OsmDataLayer layer;
-
-	/**
-	 * Creates a new Export task with the given export <code>file</code>
-	 * location
-	 *
-	 * @param file
-	 *            The file to be exported to
-	 */
-	public ExportTask(File file, OsmDataLayer layer) {
-		this.networkFile = file;
-		this.layer = layer;
-	}
-
-	protected void realRun() {
-		EditableScenario layerScenario = ((MATSimLayer) layer).getScenario();
-		Scenario targetScenario = convertIdsAndFilterDeleted(layerScenario);
-
-		if (Main.pref.getBoolean("matsim_cleanNetwork")) {
-			new NetworkCleaner().run(targetScenario.getNetwork());
-		}
-		new NetworkWriter(targetScenario.getNetwork()).write(networkFile.getPath());
-	}
-
-	static EditableScenario convertIdsAndFilterDeleted(EditableScenario layerScenario) {
+	public static EditableScenario convertIdsAndFilterDeleted(EditableScenario layerScenario) {
 		Config config = layerScenario.getConfig();
 		config.transit().setUseTransit(true);
 		EditableScenario targetScenario = EditableScenarioUtils.createScenario(config);

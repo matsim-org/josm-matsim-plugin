@@ -1,5 +1,5 @@
 // License: GPL. For details, see LICENSE file.
-package org.matsim.contrib.josm;
+package org.matsim.contrib.josm.actions;
 
 import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
 import static org.openstreetmap.josm.tools.I18n.tr;
@@ -9,6 +9,9 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import org.matsim.contrib.josm.MATSimLayer;
+import org.matsim.contrib.josm.TransitScheduleExporter;
+import org.matsim.contrib.josm.TransitScheduleTest;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.DiskAccessAction;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
@@ -18,12 +21,9 @@ import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.tools.ImageProvider;
 
-class TransitScheduleExportAction extends DiskAccessAction implements org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
+public class TransitScheduleExportAction extends DiskAccessAction implements org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
-	/**
-	 * Constructs a new {@code GpxExportAction}.
-	 */
-	TransitScheduleExportAction() {
+	public TransitScheduleExportAction() {
 		super(tr("Export MATSim transit schedule..."), null, tr("Export the transit schedule."), null);
 	}
 

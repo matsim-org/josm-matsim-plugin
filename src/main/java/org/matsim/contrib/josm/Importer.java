@@ -38,7 +38,7 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
 
-class Importer {
+public class Importer {
 
 	private final File network;
 	private final File schedule;
@@ -65,7 +65,7 @@ class Importer {
 		this.schedule = null;
 	}
 
-	void run() {
+	public void run() {
 		dataSet = new DataSet();
 		if (sourceScenario == null) {
 			sourceScenario = readScenario();

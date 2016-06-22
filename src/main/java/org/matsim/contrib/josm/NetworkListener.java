@@ -38,7 +38,7 @@ import java.util.*;
  *
  *
  */
-class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
+public class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
 
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
@@ -109,7 +109,7 @@ class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Pr
 		this.stopRelation2TransitStop = stopRelation2TransitStop;
 	}
 
-	void visitAll() {
+	public void visitAll() {
 		ConvertVisitor visitor = new ConvertVisitor();
 		for (Node node : data.getNodes()) {
 			visitor.visit(node);

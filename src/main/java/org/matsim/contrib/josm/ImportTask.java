@@ -11,7 +11,7 @@ import org.openstreetmap.josm.gui.PleaseWaitRunnable;
  *
  * @author Nico
  */
-class ImportTask extends PleaseWaitRunnable {
+public class ImportTask extends PleaseWaitRunnable {
 
     private final Importer importer;
 

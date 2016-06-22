@@ -16,6 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
+import org.matsim.contrib.josm.actions.*;
 import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;

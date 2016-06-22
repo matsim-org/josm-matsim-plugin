@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
@@ -43,7 +44,7 @@ public class LayerConverter {
 		NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<>(), new HashMap<>(), new HashMap<>());
 		networkListener.visitAll();
 
-		EditableScenario exportedScenario = ExportTask.convertIdsAndFilterDeleted(sourceScenario);
+		EditableScenario exportedScenario = Export.convertIdsAndFilterDeleted(sourceScenario);
 		splitTransitStopFacilities(exportedScenario);
 
 		// check if network should be cleaned

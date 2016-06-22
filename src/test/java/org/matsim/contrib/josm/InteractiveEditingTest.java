@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.contrib.josm.actions.NewNetworkAction;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;

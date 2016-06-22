@@ -19,7 +19,7 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  *
  *
  */
-final class Preferences extends DefaultTabPreferenceSetting {
+public final class Preferences extends DefaultTabPreferenceSetting {
 
 	private final JCheckBox transitFeature = new JCheckBox("Transit support [alpha]");
 	private final JCheckBox transitLite = new JCheckBox("Transit routes lite");
@@ -188,7 +188,7 @@ final class Preferences extends DefaultTabPreferenceSetting {
 		return Main.pref.getBoolean("matsim_cleanNetwork", true);
 	}
 
-	static boolean isSupportTransit() {
+	public static boolean isSupportTransit() {
 		return Main.pref.getBoolean("matsim_supportTransit", false);
 	}
 
