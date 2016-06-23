@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;
@@ -35,7 +35,7 @@ public class UpdateStopTagsTest {
  	public JOSMTestRules test = new JOSMTestRules().preferences();;
 
 	private OsmDataLayer layer;
-	private NetworkListener listener;
+	private NetworkModel listener;
 
 	private Node highway_bus_stop_node;
 	private Node highway_bus_stop_nodeOnWay;
@@ -59,11 +59,10 @@ public class UpdateStopTagsTest {
 		layer = new OsmDataLayer(data, "test", null);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		listener = new NetworkListener(data, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
+		listener = new NetworkModel(data, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
 				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
-		data.addDataSetListener(listener);
 		Main.getLayerManager().addLayer(layer);
 	}
 

@@ -32,7 +32,7 @@ public class ProjectionHandlingTest {
 		Main.setProjection(ProjectionPreference.mercator.getProjection());
 		matsimLayer = PtTutorialScenario.layer();
 	       
-		for(Node node: matsimLayer.getNetworkListener().getScenario().getNetwork().getNodes().values()) {
+		for(Node node: matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().values()) {
 			nodeCoords.put(node.getId(), node.getCoord());
 		}
 	}
@@ -47,7 +47,7 @@ public class ProjectionHandlingTest {
 		Assert.assertEquals(ProjectionPreference.wgs84.getProjection().toCode(), Main.getProjection().toCode());
 		
 		for(Entry<Id<Node>, Coord> entry: nodeCoords.entrySet()) {
-			Node node = matsimLayer.getNetworkListener().getScenario().getNetwork().getNodes().get(entry.getKey());
+			Node node = matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().get(entry.getKey());
 			Assert.assertNotEquals(entry.getValue().getX(), node.getCoord().getX(), DELTA);
 			Assert.assertNotEquals(entry.getValue().getY(), node.getCoord().getY(), DELTA);
 		}
@@ -56,7 +56,7 @@ public class ProjectionHandlingTest {
 		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), Main.getProjection().toCode());
 		
 		for(Entry<Id<Node>, Coord> entry: nodeCoords.entrySet()) {
-			Node node = matsimLayer.getNetworkListener().getScenario().getNetwork().getNodes().get(entry.getKey());
+			Node node = matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().get(entry.getKey());
 			Assert.assertEquals(entry.getValue().getX(), node.getCoord().getX(), DELTA);
 			Assert.assertEquals(entry.getValue().getY(), node.getCoord().getY(), DELTA);
 		}

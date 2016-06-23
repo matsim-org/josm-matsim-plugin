@@ -20,10 +20,10 @@ public class LinkConversionRules {
 
 	static String getWayType(Way way) {
 		String wayType = null;
-		if (way.getKeys().containsKey(NetworkListener.TAG_HIGHWAY)) {
-			wayType = way.getKeys().get(NetworkListener.TAG_HIGHWAY);
-		} else if (way.getKeys().containsKey(NetworkListener.TAG_RAILWAY)) {
-			wayType = way.getKeys().get(NetworkListener.TAG_RAILWAY);
+		if (way.getKeys().containsKey(NetworkModel.TAG_HIGHWAY)) {
+			wayType = way.getKeys().get(NetworkModel.TAG_HIGHWAY);
+		} else if (way.getKeys().containsKey(NetworkModel.TAG_RAILWAY)) {
+			wayType = way.getKeys().get(NetworkModel.TAG_RAILWAY);
 		}
 		return wayType;
 	}
@@ -101,10 +101,10 @@ public class LinkConversionRules {
 		if (defaults != null) {
 			if (modes == null) {
 				modes = new HashSet<>();
-				if (way.getKeys().containsKey(NetworkListener.TAG_RAILWAY)) {
+				if (way.getKeys().containsKey(NetworkModel.TAG_RAILWAY)) {
 					modes.add(TransportMode.pt);
 				}
-				if (way.getKeys().containsKey(NetworkListener.TAG_HIGHWAY)) {
+				if (way.getKeys().containsKey(NetworkModel.TAG_HIGHWAY)) {
 					modes.add(TransportMode.car);
 				}
 			}

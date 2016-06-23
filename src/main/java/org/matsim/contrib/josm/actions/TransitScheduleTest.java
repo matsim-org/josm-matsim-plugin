@@ -14,7 +14,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.gui.Preferences;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
@@ -99,9 +99,9 @@ public class TransitScheduleTest extends Test {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
 			this.scenario = EditableScenarioUtils.createScenario(config);
-			NetworkListener networkListener = new NetworkListener(Main.main.getCurrentDataSet(), scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
+			NetworkModel networkModel = new NetworkModel(Main.main.getCurrentDataSet(), scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
 					new HashMap<Relation, TransitStopFacility>());
-			networkListener.visitAll();
+			networkModel.visitAll();
 		}
 		this.routeIds = new HashMap<>();
 		this.facilityIds = new HashMap<>();

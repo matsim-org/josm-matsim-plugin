@@ -17,7 +17,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
@@ -50,11 +50,11 @@ public class OSMDataTest {
 	public JOSMTestRules test = new JOSMTestRules().preferences().projection();
 
 	private OsmDataLayer incompleteWayLayer;
-	private NetworkListener incompleteWayListener;
+	private NetworkModel incompleteWayListener;
 	private OsmDataLayer busRouteLayer;
-	private NetworkListener busRouteListener;
+	private NetworkModel busRouteListener;
 	private OsmDataLayer intersectionsLayer;
-	private NetworkListener intersectionsListener;
+	private NetworkModel intersectionsListener;
 
 	@Before
 	public void init() throws IOException, IllegalDataException {
@@ -80,12 +80,12 @@ public class OSMDataTest {
 		intersectionsLayer = new OsmDataLayer(intersectionsData, "test", null);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		busRouteListener = new NetworkListener(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		busRouteListener = new NetworkModel(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		Main.pref.addPreferenceChangeListener(busRouteListener);
 		busRouteListener.visitAll();
-		incompleteWayListener = new NetworkListener(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		incompleteWayListener = new NetworkModel(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		incompleteWayListener.visitAll();
-		intersectionsListener = new NetworkListener(intersectionsData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		intersectionsListener = new NetworkModel(intersectionsData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		Main.pref.addPreferenceChangeListener(intersectionsListener);
 		intersectionsListener.visitAll();
 		busRouteData.addDataSetListener(busRouteListener);

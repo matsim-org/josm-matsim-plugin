@@ -40,7 +40,7 @@ import java.util.*;
  *
  *
  */
-public class NetworkListener implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
+public class NetworkModel implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
 
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
@@ -100,9 +100,10 @@ public class NetworkListener implements DataSetListener, org.openstreetmap.josm.
 		listeners.add(listener);
 	}
 
-	public NetworkListener(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-						   Map<Relation, TransitStopFacility> stopRelation2TransitStop) throws IllegalArgumentException {
+	public NetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
+						Map<Relation, TransitStopFacility> stopRelation2TransitStop) throws IllegalArgumentException {
 		this.data = data;
+		this.data.addDataSetListener(this);
 		MATSimPlugin.addPreferenceChangedListener(this);
 		Main.addProjectionChangeListener(this);
 		this.scenario = scenario;

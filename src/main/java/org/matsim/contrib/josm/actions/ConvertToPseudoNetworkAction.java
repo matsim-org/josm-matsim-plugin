@@ -7,7 +7,7 @@ import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
@@ -73,9 +73,9 @@ public class ConvertToPseudoNetworkAction extends JosmAction {
 		config.transit().setUseTransit(Preferences.isSupportTransit());
 		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
 
-		NetworkListener networkListener = new NetworkListener(getEditLayer().data, sourceScenario, new HashMap<Way, List<Link>>(),
+		NetworkModel networkModel = new NetworkModel(getEditLayer().data, sourceScenario, new HashMap<Way, List<Link>>(),
 				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
-		networkListener.visitAll();
+		networkModel.visitAll();
 
 		emptyNetwork(sourceScenario);
 		fixTransitSchedule(sourceScenario);

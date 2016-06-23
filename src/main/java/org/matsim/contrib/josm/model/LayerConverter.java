@@ -41,8 +41,8 @@ public class LayerConverter {
 		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
 
 		// convert layer data
-		NetworkListener networkListener = new NetworkListener((osmLayer).data, sourceScenario, new HashMap<>(), new HashMap<>(), new HashMap<>());
-		networkListener.visitAll();
+		NetworkModel networkModel = new NetworkModel((osmLayer).data, sourceScenario, new HashMap<>(), new HashMap<>(), new HashMap<>());
+		networkModel.visitAll();
 
 		EditableScenario exportedScenario = Export.convertIdsAndFilterDeleted(sourceScenario);
 		splitTransitStopFacilities(exportedScenario);

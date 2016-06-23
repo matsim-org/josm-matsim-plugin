@@ -21,7 +21,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
@@ -56,9 +56,9 @@ import org.openstreetmap.josm.gui.util.HighlightHelper;
  */
 
 @SuppressWarnings("serial")
-public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkListener.ScenarioDataChangedListener {
+public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkModel.ScenarioDataChangedListener {
 	private final JTable table_pt;
-	private NetworkListener osmNetworkListener;
+	private NetworkModel networkModel;
 
 	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
 		@Override
@@ -109,36 +109,35 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
-		if (osmNetworkListener != null) {
-			osmNetworkListener.removeListener(this);
+		if (networkModel != null) {
+			networkModel.removeListener(this);
 		}
 		OsmDataLayer layer = Main.main.getEditLayer();
 		if (isShowing() && layer instanceof MATSimLayer) {
 			if (((MATSimLayer) layer).getScenario().getConfig().transit().isUseTransit()) {
-				osmNetworkListener = ((MATSimLayer) layer).getNetworkListener(); // MATSim
+				networkModel = ((MATSimLayer) layer).getNetworkModel(); // MATSim
 			}
 		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
 			EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-			osmNetworkListener = new NetworkListener(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
+			networkModel = new NetworkModel(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
 					new HashMap<Relation, TransitStopFacility>());
-			osmNetworkListener.visitAll();
-			layer.data.addDataSetListener(osmNetworkListener);
+			networkModel.visitAll();
 		} else { // empty data mappings if no data layer is active
 			setTitle(tr("Lines/Stops/Routes"));
 		}
-		if (osmNetworkListener != null) {
-			osmNetworkListener.addListener(this);
+		if (networkModel != null) {
+			networkModel.addListener(this);
 		}
 		notifyDataChanged();
 	}
 
 	@Override
 	public void notifyDataChanged() {
-		if (osmNetworkListener != null && osmNetworkListener.getScenario().getConfig().transit().isUseTransit()) {
-			setTitle(tr("Lines: {0} / Routes: {1} / Stops: {2}", countTransitLines(osmNetworkListener.getScenario()),
-					countTransitRoutes(osmNetworkListener.getScenario()), countStopFacilities(osmNetworkListener.getScenario())));
+		if (networkModel != null && networkModel.getScenario().getConfig().transit().isUseTransit()) {
+			setTitle(tr("Lines: {0} / Routes: {1} / Stops: {2}", countTransitLines(networkModel.getScenario()),
+					countTransitRoutes(networkModel.getScenario()), countStopFacilities(networkModel.getScenario())));
 		} else {
 			setTitle(tr("No MATSim transit schedule active"));
 		}
@@ -255,13 +254,13 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		// changes
 		void selectionChanged() {
 			this.routes.clear();
-			if (osmNetworkListener != null) {
+			if (networkModel != null) {
 				DataSet currentDataSet = Main.main.getCurrentDataSet();
 				if (currentDataSet != null) {
 					Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
 					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
 						for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-							EditableTransitRoute route = osmNetworkListener.findRoute(maybeRelation);
+							EditableTransitRoute route = networkModel.findRoute(maybeRelation);
 							if (route != null && !route.isDeleted()) {
 								uniqueRoutes.add(route);
 							}
@@ -298,8 +297,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 			// clear old data set listeners
-		if (osmNetworkListener != null && e.getPreviousEditLayer() != null) {
-			e.getPreviousEditDataSet().removeDataSetListener(osmNetworkListener);
+		if (networkModel != null && e.getPreviousEditLayer() != null) {
+			e.getPreviousEditDataSet().removeDataSetListener(networkModel);
 		}
 		notifyEverythingChanged();
 	}

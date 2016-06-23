@@ -14,7 +14,7 @@ import org.matsim.contrib.josm.actions.ConvertToPseudoNetworkAction;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.model.NetworkListener;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.actions.TransitScheduleTest;
@@ -62,14 +62,13 @@ public class CreatePseudoTransitTest {
 		Main.pref.put("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		NetworkListener listener = new NetworkListener(set, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
+		NetworkModel listener = new NetworkModel(set, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
 				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
 		System.out.println("Listener set");
 
 
 		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
-		set.addDataSetListener(listener);
 		Main.getLayerManager().addLayer(layer);
 		Main.getLayerManager().setActiveLayer(layer);
 		System.out.println("Layer added");

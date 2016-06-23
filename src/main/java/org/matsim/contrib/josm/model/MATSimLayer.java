@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.swing.Action;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.josm.model.NetworkListener;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -40,7 +39,7 @@ public class MATSimLayer extends OsmDataLayer {
     private Map<Way, List<Link>> way2Links = new HashMap<>();
     private Map<Link, List<WaySegment>> link2Segment = new HashMap<>();
     private Map<Relation, EditableTransitRoute> relation2Route = new HashMap<>();
-    private final NetworkListener networkListener;
+    private final NetworkModel networkModel;
 
     public MATSimLayer(DataSet data, String name, File associatedFile, EditableScenario scenario, HashMap<Way, List<Link>> way2Links,
                        Map<Link, List<WaySegment>> link2Segment, Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
@@ -48,8 +47,7 @@ public class MATSimLayer extends OsmDataLayer {
         this.matsimScenario = scenario;
         this.way2Links = way2Links;
         this.link2Segment = link2Segment;
-        networkListener = new NetworkListener(data, scenario, way2Links, link2Segment, stopRelation2TransitStop);
-        data.addDataSetListener(networkListener);
+        networkModel = new NetworkModel(data, scenario, way2Links, link2Segment, stopRelation2TransitStop);
     }
 
     public Map<Way, List<Link>> getWay2Links() {
@@ -93,7 +91,7 @@ public class MATSimLayer extends OsmDataLayer {
         return SaveActionBase.createAndOpenSaveFileChooser(tr("Save MATSim network file"), "xml");
     }
 
-    public NetworkListener getNetworkListener() {
-        return networkListener;
+    public NetworkModel getNetworkModel() {
+        return networkModel;
     }
 }
