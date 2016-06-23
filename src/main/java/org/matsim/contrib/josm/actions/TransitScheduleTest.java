@@ -98,10 +98,9 @@ public class TransitScheduleTest extends Test {
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
-			this.scenario = EditableScenarioUtils.createScenario(config);
-			NetworkModel networkModel = new NetworkModel(Main.main.getCurrentDataSet(), scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
-					new HashMap<Relation, TransitStopFacility>());
+			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.main.getCurrentDataSet());
 			networkModel.visitAll();
+			this.scenario = networkModel.getScenario();
 		}
 		this.routeIds = new HashMap<>();
 		this.facilityIds = new HashMap<>();

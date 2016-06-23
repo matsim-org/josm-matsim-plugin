@@ -62,9 +62,7 @@ public class CreatePseudoTransitTest {
 		Main.pref.put("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		NetworkModel listener = new NetworkModel(set, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
-		System.out.println("Listener set");
+		NetworkModel listener = NetworkModel.createNetworkModel(set);
 
 
 		Main.pref.addPreferenceChangeListener(listener);

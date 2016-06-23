@@ -59,8 +59,7 @@ public class UpdateStopTagsTest {
 		layer = new OsmDataLayer(data, "test", null);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		listener = new NetworkModel(data, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		listener = NetworkModel.createNetworkModel(data);
 		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
 		Main.getLayerManager().addLayer(layer);

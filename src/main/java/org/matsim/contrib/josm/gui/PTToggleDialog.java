@@ -118,11 +118,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 				networkModel = ((MATSimLayer) layer).getNetworkModel(); // MATSim
 			}
 		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
-			Config config = ConfigUtils.createConfig();
-			config.transit().setUseTransit(true);
-			EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-			networkModel = new NetworkModel(layer.data, scenario, new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(),
-					new HashMap<Relation, TransitStopFacility>());
+			networkModel = NetworkModel.createNetworkModel(layer.data);
 			networkModel.visitAll();
 		} else { // empty data mappings if no data layer is active
 			setTitle(tr("Lines/Stops/Routes"));

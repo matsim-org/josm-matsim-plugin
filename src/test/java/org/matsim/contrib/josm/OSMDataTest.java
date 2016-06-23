@@ -80,12 +80,12 @@ public class OSMDataTest {
 		intersectionsLayer = new OsmDataLayer(intersectionsData, "test", null);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		busRouteListener = new NetworkModel(busRouteData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		busRouteListener = NetworkModel.createNetworkModel(busRouteData);
 		Main.pref.addPreferenceChangeListener(busRouteListener);
 		busRouteListener.visitAll();
-		incompleteWayListener = new NetworkModel(incompleteWayData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		incompleteWayListener = NetworkModel.createNetworkModel(incompleteWayData);
 		incompleteWayListener.visitAll();
-		intersectionsListener = new NetworkModel(intersectionsData, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(), new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		intersectionsListener = NetworkModel.createNetworkModel(intersectionsData);
 		Main.pref.addPreferenceChangeListener(intersectionsListener);
 		intersectionsListener.visitAll();
 		busRouteData.addDataSetListener(busRouteListener);

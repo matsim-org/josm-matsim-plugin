@@ -76,7 +76,8 @@ public class Importer {
 			convertStops();
 			convertLines();
 		}
-		return new MATSimLayer(dataSet, network == null ? MATSimLayer.createNewName() : network.getName(), network == null ? null : network, new NetworkModel(dataSet, targetScenario, way2Links, link2Segment, stopRelation2TransitStop));
+		NetworkModel networkModel = NetworkModel.createNetworkModel(dataSet, targetScenario, way2Links, link2Segment, stopRelation2TransitStop);
+		return new MATSimLayer(dataSet, network == null ? MATSimLayer.createNewName() : network.getName(), network == null ? null : network, networkModel);
 	}
 
 	// Abuse fields in MATSim data structures to hold the "real" object ids.

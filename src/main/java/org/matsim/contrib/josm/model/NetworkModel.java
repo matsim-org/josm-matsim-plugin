@@ -2,14 +2,12 @@ package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.*;
 import org.matsim.contrib.josm.MATSimPlugin;
 import org.matsim.contrib.josm.gui.Preferences;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableTransitLine;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
-import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
+import org.matsim.contrib.josm.scenario.*;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
 import org.matsim.core.population.routes.NetworkRoute;
@@ -51,6 +49,17 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
+
+	public static NetworkModel createNetworkModel(DataSet data) {
+		Config config = ConfigUtils.createConfig();
+		config.transit().setUseTransit(true);
+		return NetworkModel.createNetworkModel(data, EditableScenarioUtils.createScenario(config), new HashMap<>(), new HashMap<>(), new HashMap<>());
+	}
+
+	public static NetworkModel createNetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
+												  Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
+		return new NetworkModel(data, scenario, way2Links, link2Segments, stopRelation2TransitStop);
+	}
 
 	public interface ScenarioDataChangedListener {
 		void notifyDataChanged();
@@ -100,8 +109,8 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 		listeners.add(listener);
 	}
 
-	public NetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-						Map<Relation, TransitStopFacility> stopRelation2TransitStop) throws IllegalArgumentException {
+	private NetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
+						 Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
 		this.data = data;
 		this.data.addDataSetListener(this);
 		MATSimPlugin.addPreferenceChangedListener(this);

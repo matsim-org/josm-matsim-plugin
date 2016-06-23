@@ -69,13 +69,11 @@ public class ConvertToPseudoNetworkAction extends JosmAction {
 	}
 
 	public static MATSimLayer convertToPseudoNetwork() {
-		Config config = ConfigUtils.createConfig();
-		config.transit().setUseTransit(Preferences.isSupportTransit());
-		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
 
-		NetworkModel networkModel = new NetworkModel(getEditLayer().data, sourceScenario, new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		NetworkModel networkModel = NetworkModel.createNetworkModel(getEditLayer().data);
 		networkModel.visitAll();
+		EditableScenario sourceScenario = networkModel.getScenario();
+
 
 		emptyNetwork(sourceScenario);
 		fixTransitSchedule(sourceScenario);

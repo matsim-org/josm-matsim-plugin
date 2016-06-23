@@ -5,10 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -35,16 +32,11 @@ public class LayerConverter {
 
 	public void run() {
 
-		// scenario for converted data
-		Config config = ConfigUtils.createConfig();
-		config.transit().setUseTransit(Preferences.isSupportTransit());
-		EditableScenario sourceScenario = EditableScenarioUtils.createScenario(config);
-
 		// convert layer data
-		NetworkModel networkModel = new NetworkModel((osmLayer).data, sourceScenario, new HashMap<>(), new HashMap<>(), new HashMap<>());
+		NetworkModel networkModel = NetworkModel.createNetworkModel((osmLayer).data);
 		networkModel.visitAll();
 
-		EditableScenario exportedScenario = Export.convertIdsAndFilterDeleted(sourceScenario);
+		EditableScenario exportedScenario = Export.convertIdsAndFilterDeleted(networkModel.getScenario());
 		splitTransitStopFacilities(exportedScenario);
 
 		// check if network should be cleaned

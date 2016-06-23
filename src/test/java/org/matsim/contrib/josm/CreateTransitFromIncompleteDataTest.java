@@ -61,8 +61,7 @@ public class CreateTransitFromIncompleteDataTest {
 
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		NetworkModel listener = new NetworkModel(set, EditableScenarioUtils.createScenario(config), new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		Main.pref.addPreferenceChangeListener(listener);
 
 
