@@ -18,9 +18,7 @@ import java.io.IOException;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
- * The Convert Action which causes the
- * {@link ConvertTask} to start. Results in a new
- * {@link MATSimLayer} which holds the converted data.
+ * Results in a new {@link MATSimLayer} which holds the converted data.
  *
  * @author Nico
  *
@@ -36,7 +34,30 @@ public class ConvertAction extends JosmAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isEnabled()) {
-            ConvertTask task = new ConvertTask();
+            PleaseWaitRunnable task = new PleaseWaitRunnable("Converting to MATSim Network") {
+				private MATSimLayer converter;
+
+				@Override
+				protected void cancel() {
+				}
+
+				@Override
+				protected void realRun() throws SAXException, IOException, OsmTransferException {
+					this.converter = LayerConverter.convertWithFullTransit((OsmDataLayer) Main.main.getActiveLayer());
+				}
+
+				@Override
+				protected void finish() {
+					if (converter != null) {
+						// Do not zoom to full layer extent, but leave the view port where
+						// it is.
+						// (Perhaps I want to look at the particular are I am viewing right
+						// now.)
+						ProjectionBounds projectionBounds = null;
+						Main.main.addLayer(converter, projectionBounds);
+					}
+				}
+			};
             task.run();
         }
     }
@@ -46,57 +67,4 @@ public class ConvertAction extends JosmAction {
         setEnabled(getEditLayer() != null && !(getEditLayer() instanceof MATSimLayer));
     }
 
-    /**
-	 * The Task that handles the convert action. Creates new OSM primitives with
-	 * MATSim Tag scheme
-	 *
-	 * @author Nico
-	 *
-	 */
-
-	private static class ConvertTask extends PleaseWaitRunnable {
-
-		private final LayerConverter converter;
-
-		/**
-		 * Creates a new Convert task
-		 *
-		 * @see PleaseWaitRunnable
-		 */
-		public ConvertTask() {
-			super("Converting to MATSim Network");
-			this.converter = new LayerConverter((OsmDataLayer) Main.main.getActiveLayer());
-		}
-
-		/**
-		 * @see PleaseWaitRunnable#cancel()
-		 */
-		@Override
-		protected void cancel() {
-			// TODO Auto-generated method stub
-		}
-
-		/**
-		 * @see PleaseWaitRunnable#realRun()
-		 */
-		@Override
-		protected void realRun() throws SAXException, IOException, OsmTransferException {
-			this.converter.run();
-		}
-
-		/**
-		 * @see PleaseWaitRunnable#finish()
-		 */
-		@Override
-		protected void finish() {
-			if (converter.getMatsimLayer() != null) {
-				// Do not zoom to full layer extent, but leave the view port where
-				// it is.
-				// (Perhaps I want to look at the particular are I am viewing right
-				// now.)
-				ProjectionBounds projectionBounds = null;
-				Main.main.addLayer(converter.getMatsimLayer(), projectionBounds);
-			}
-		}
-	}
 }

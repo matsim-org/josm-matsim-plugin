@@ -85,15 +85,13 @@ public class CreateTransitFromIncompleteDataTest {
 		}
 
 		System.out.println("Converting data");
-		LayerConverter converter = new LayerConverter(layer);
-		converter.run();
-		Main.getLayerManager().addLayer(converter.getMatsimLayer());
+		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 		System.out.println("Exporting data");
 
 		TransitScheduleTest test = new TransitScheduleTest();
 		PleaseWaitProgressMonitor progMonitor = new
 				PleaseWaitProgressMonitor("Validation");
-		// run validator tests
+		// convertWithFullTransit validator tests
 		test.startTest(progMonitor);
 		test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
 		test.endTest();

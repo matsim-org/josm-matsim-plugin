@@ -59,7 +59,7 @@ public final class NetworkExporter extends FileExporter {
 	 * Exports the MATSim network of the given {@code layer} into the given
 	 * {@code file}. <br>
 	 * <br>
-	 * Before exporting a {@link NetworkTest} is run, resulting in a validation
+	 * Before exporting a {@link NetworkTest} is convertWithFullTransit, resulting in a validation
 	 * layer. The export fails if severe errors are found.
 	 *
 	 * @see Export
@@ -76,7 +76,7 @@ public final class NetworkExporter extends FileExporter {
 		NetworkTest test = new NetworkTest();
 		PleaseWaitProgressMonitor progMonitor = new PleaseWaitProgressMonitor("Validation");
 
-		// run validator tests
+		// convertWithFullTransit validator tests
 		test.startTest(progMonitor);
 		test.visit(((OsmDataLayer) layer).data.allPrimitives());
 		test.endTest();

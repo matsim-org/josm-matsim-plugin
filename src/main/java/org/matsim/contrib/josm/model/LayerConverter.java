@@ -3,12 +3,17 @@ package org.matsim.contrib.josm.model;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.utils.CreatePseudoNetwork;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
 import java.util.ArrayList;
@@ -19,18 +24,25 @@ import java.util.stream.Collectors;
 
 public class LayerConverter {
 
-	private OsmDataLayer osmLayer;
-	private MATSimLayer matsimLayer;
+	public static MATSimLayer convertToPseudoNetwork(OsmDataLayer osmDataLayer) {
 
-	public LayerConverter(OsmDataLayer osmLayer) {
-		this.osmLayer = osmLayer;
+		NetworkModel networkModel = NetworkModel.createNetworkModel(osmDataLayer.data);
+		networkModel.visitAll();
+		EditableScenario sourceScenario = networkModel.getScenario();
+
+
+		emptyNetwork(sourceScenario);
+		fixTransitSchedule(sourceScenario);
+		EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(sourceScenario);
+
+		new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "pt_")
+				.createNetwork();
+
+		Importer importer = new Importer(targetScenario);
+		return importer.createMatsimLayer();
 	}
 
-	public MATSimLayer getMatsimLayer() {
-		return matsimLayer;
-	}
-
-	public void run() {
+	public static MATSimLayer convertWithFullTransit(OsmDataLayer osmLayer) {
 
 		// convert layer data
 		NetworkModel networkModel = NetworkModel.createNetworkModel((osmLayer).data);
@@ -44,7 +56,7 @@ public class LayerConverter {
 			new NetworkCleaner().run(exportedScenario.getNetwork());
 		}
 		Importer importer = new Importer(exportedScenario);
-		matsimLayer = importer.createMatsimLayer();
+		return importer.createMatsimLayer();
 	}
 
 	private static void splitTransitStopFacilities(EditableScenario targetScenario) {
@@ -95,5 +107,35 @@ public class LayerConverter {
 		return links;
 	}
 
+	private static void emptyNetwork(EditableScenario sourceScenario) {
+		for (Id<Link> linkId : new ArrayList<>(sourceScenario.getNetwork().getLinks().keySet())) {
+			sourceScenario.getNetwork().removeLink(linkId);
+		}
+		for (Id<Node> nodeId : new ArrayList<>(sourceScenario.getNetwork().getNodes().keySet())) {
+			sourceScenario.getNetwork().removeNode(nodeId);
+		}
+		for (EditableTransitStopFacility transitStopFacility : sourceScenario.getTransitSchedule().getEditableFacilities().values()) {
+			transitStopFacility.setNodeId(null);
+		}
+		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				transitRoute.setRoute(null);
+			}
+		}
+	}
 
+	private static void fixTransitSchedule(EditableScenario sourceScenario) {
+		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				transitRoute.setRoute(null);
+				// FIXME: I have to normalize the facilities here - there are referenced facility objects here which are not in the scenario.
+				// FIXME: This fact will VERY likely also lead to problems elsewhere.
+				for (TransitRouteStop transitRouteStop : transitRoute.getStops()) {
+					TransitStopFacility stopFacility1 = transitRouteStop.getStopFacility();
+					TransitStopFacility stopFacility = sourceScenario.getTransitSchedule().getFacilities().get(stopFacility1.getId());
+					transitRouteStop.setStopFacility(stopFacility);
+				}
+			}
+		}
+	}
 }

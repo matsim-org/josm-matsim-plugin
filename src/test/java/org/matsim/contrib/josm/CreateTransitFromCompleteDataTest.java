@@ -44,9 +44,7 @@ public class CreateTransitFromCompleteDataTest {
 		Main.getLayerManager().addLayer(layer);
 		Main.getLayerManager().setActiveLayer(layer);
 
-		LayerConverter converter = new LayerConverter(layer);
-		converter.run();
-		Main.getLayerManager().addLayer(converter.getMatsimLayer());
+		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
 		EditableScenario layerScenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel().getScenario();
 		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);

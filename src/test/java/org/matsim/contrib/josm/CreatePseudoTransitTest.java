@@ -2,7 +2,6 @@ package org.matsim.contrib.josm;
 
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.josm.actions.ConvertToPseudoNetworkAction;
 import org.matsim.contrib.josm.actions.TransitScheduleTest;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
@@ -18,6 +17,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.Test;
@@ -85,31 +85,7 @@ public class CreatePseudoTransitTest {
 			}
 		}
 
-		System.out.println("Converting data");
-		LayerConverter converter = new LayerConverter(layer);
-		converter.run();
-		Main.getLayerManager().addLayer(converter.getMatsimLayer());
-		System.out.println("Exporting data");
-
-		TransitScheduleTest test = new TransitScheduleTest();
-		PleaseWaitProgressMonitor progMonitor = new
-				PleaseWaitProgressMonitor("Validation");
-		// run validator tests
-		test.startTest(progMonitor);
-		test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
-		test.endTest();
-		progMonitor.finishTask();
-		progMonitor.close();
-
-		for (TestError error : test.getErrors()) {
-			if (error.isFixable()) {
-				final Command fixCommand = error.getFix();
-				if (fixCommand != null) {
-					fixCommand.executeCommand();
-				}
-			}
-		}
-		MATSimLayer matSimLayer = ConvertToPseudoNetworkAction.convertToPseudoNetwork();
+		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(JosmAction.getEditLayer());
 		EditableScenario layerScenario = matSimLayer.getNetworkModel().getScenario();
 		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("pseudo-network.xml").getPath());

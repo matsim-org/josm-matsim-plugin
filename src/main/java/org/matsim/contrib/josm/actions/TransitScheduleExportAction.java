@@ -38,7 +38,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 				TransitScheduleTest test = new TransitScheduleTest();
 				PleaseWaitProgressMonitor progMonitor = new PleaseWaitProgressMonitor("Validation");
 
-				// run validator tests
+				// convertWithFullTransit validator tests
 				test.startTest(progMonitor);
 				test.visit(Main.main.getCurrentDataSet().allPrimitives());
 				test.endTest();

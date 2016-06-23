@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -125,11 +126,9 @@ public class OSMDataTest {
 		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getLinks().size());
 		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getNodes().size());
 
-		LayerConverter converter =  new LayerConverter(incompleteWayLayer);
-		converter.run();
-
-		Assert.assertEquals(0,converter.getMatsimLayer().data.getWays().size());
-		Assert.assertEquals(0, converter.getMatsimLayer().getNetworkModel().getScenario().getNetwork().getLinks().size());
+		MATSimLayer matsimLayer = LayerConverter.convertWithFullTransit(incompleteWayLayer);
+		Assert.assertEquals(0, matsimLayer.data.getWays().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 
 	}
 
@@ -179,12 +178,8 @@ public class OSMDataTest {
 		simulatedExportScenario = Export.convertIdsAndFilterDeleted(busRouteListener.getScenario());
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
-
-
-		LayerConverter converter =  new LayerConverter(busRouteLayer);
-		converter.run();
-
-		Scenario internalScenario = converter.getMatsimLayer().getNetworkModel().getScenario();
+		MATSimLayer matsimLayer = LayerConverter.convertWithFullTransit(busRouteLayer);
+		Scenario internalScenario = matsimLayer.getNetworkModel().getScenario();
 		Assert.assertEquals(10,internalScenario.getNetwork().getLinks().size());
 		Assert.assertEquals(6,internalScenario.getNetwork().getNodes().size());
 		Assert.assertEquals(4,internalScenario.getTransitSchedule().getFacilities().size());
@@ -195,12 +190,12 @@ public class OSMDataTest {
 			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
 		}
 
-		DataSet convertedOsm = converter.getMatsimLayer().data;
+		DataSet convertedOsm = matsimLayer.data;
 		Assert.assertEquals(10, convertedOsm.getNodes().size());
 		Assert.assertEquals(10, convertedOsm.getWays().size());
 		Assert.assertEquals(7, convertedOsm.getRelations().size());
 
-		simulatedExportScenario = Export.convertIdsAndFilterDeleted(converter.getMatsimLayer().getNetworkModel().getScenario());
+		simulatedExportScenario = Export.convertIdsAndFilterDeleted(matsimLayer.getNetworkModel().getScenario());
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 	}
