@@ -1,23 +1,14 @@
 package org.matsim.contrib.josm;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.actions.ConvertToPseudoNetworkAction;
+import org.matsim.contrib.josm.actions.TransitScheduleTest;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.actions.TransitScheduleTest;
 import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
@@ -26,13 +17,9 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -40,6 +27,12 @@ import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class CreatePseudoTransitTest {
@@ -63,9 +56,6 @@ public class CreatePseudoTransitTest {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
-
-
-		Main.pref.addPreferenceChangeListener(listener);
 		listener.visitAll();
 		Main.getLayerManager().addLayer(layer);
 		Main.getLayerManager().setActiveLayer(layer);

@@ -1,33 +1,22 @@
 package org.matsim.contrib.josm;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.coor.LatLon;
-import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.Tag;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class UpdateStopTagsTest {
 
@@ -35,7 +24,6 @@ public class UpdateStopTagsTest {
  	public JOSMTestRules test = new JOSMTestRules().preferences();;
 
 	private OsmDataLayer layer;
-	private NetworkModel listener;
 
 	private Node highway_bus_stop_node;
 	private Node highway_bus_stop_nodeOnWay;
@@ -59,8 +47,7 @@ public class UpdateStopTagsTest {
 		layer = new OsmDataLayer(data, "test", null);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		listener = NetworkModel.createNetworkModel(data);
-		Main.pref.addPreferenceChangeListener(listener);
+		NetworkModel listener = NetworkModel.createNetworkModel(data);
 		listener.visitAll();
 		Main.getLayerManager().addLayer(layer);
 	}

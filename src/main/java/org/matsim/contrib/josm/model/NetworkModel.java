@@ -2,8 +2,7 @@ package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.*;
-import org.matsim.contrib.josm.MATSimPlugin;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
@@ -17,15 +16,11 @@ import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.actions.search.SearchCompiler.Match;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.*;
-import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
-import org.openstreetmap.josm.data.projection.Projection;
-import org.openstreetmap.josm.data.projection.ProjectionChangeListener;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
@@ -38,7 +33,139 @@ import java.util.*;
  *
  *
  */
-public class NetworkModel implements DataSetListener, org.openstreetmap.josm.data.Preferences.PreferenceChangedListener, ProjectionChangeListener {
+public class NetworkModel {
+
+	private class NetworkModelDataSetListener implements DataSetListener {
+
+		@Override
+		public void dataChanged(DataChangedEvent dataChangedEvent) {
+			visitAll();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		// convert all referred elements of the moved node
+		public void nodeMoved(NodeMovedEvent moved) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			aggregatePrimitivesVisitor.visit(moved.getNode());
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		public void otherDatasetChange(AbstractDatasetChangedEvent arg0) {
+		}
+
+		@Override
+		// convert added primitive as well as the ones connected to it
+		public void primitivesAdded(PrimitivesAddedEvent added) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			for (OsmPrimitive primitive : added.getPrimitives()) {
+				if (primitive instanceof Way) {
+					Way way = (Way) primitive;
+					aggregatePrimitivesVisitor.visit(way);
+					for (Node node : way.getNodes()) {
+						aggregatePrimitivesVisitor.visit(node);
+					}
+				} else if (primitive instanceof Relation) {
+					aggregatePrimitivesVisitor.visit((Relation) primitive);
+				} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
+					aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
+				}
+			}
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		// delete any MATSim reference to the removed element and invoke new
+		// conversion of referring elements
+		public void primitivesRemoved(PrimitivesRemovedEvent primitivesRemoved) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			for (OsmPrimitive primitive : primitivesRemoved.getPrimitives()) {
+				if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
+					aggregatePrimitivesVisitor.visit(((org.openstreetmap.josm.data.osm.Node) primitive));
+				} else if (primitive instanceof Way) {
+					aggregatePrimitivesVisitor.visit((Way) primitive);
+				} else if (primitive instanceof Relation) {
+					aggregatePrimitivesVisitor.visit((Relation) primitive);
+				}
+			}
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		// convert affected relation
+		public void relationMembersChanged(RelationMembersChangedEvent arg0) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			aggregatePrimitivesVisitor.visit(arg0.getRelation());
+			for (OsmPrimitive primitive : arg0.getRelation().getMemberPrimitivesList()) {
+				if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
+					aggregatePrimitivesVisitor.visit(((org.openstreetmap.josm.data.osm.Node) primitive));
+				} else if (primitive instanceof Way) {
+					aggregatePrimitivesVisitor.visit((Way) primitive);
+				} else if (primitive instanceof Relation) {
+					aggregatePrimitivesVisitor.visit((Relation) primitive);
+				}
+			}
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		// convert affected elements and other connected elements
+		public void tagsChanged(TagsChangedEvent changed) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			for (OsmPrimitive primitive : changed.getPrimitives()) {
+				if (primitive instanceof Way) {
+					Way way = (Way) primitive;
+					aggregatePrimitivesVisitor.visit(way);
+					for (Node node : way.getNodes()) {
+						aggregatePrimitivesVisitor.visit(node);
+					}
+					aggregatePrimitivesVisitor.visit(way);
+					List<Link> links = way2Links.get(way);
+					if (links != null) {
+						for (Link link : links) {
+							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
+									OsmPrimitiveType.NODE));
+							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
+									OsmPrimitiveType.NODE));
+						}
+					}
+				} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
+					aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
+				} else if (primitive instanceof Relation) {
+					aggregatePrimitivesVisitor.visit((Relation) primitive);
+				}
+			}
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+		@Override
+		// convert affected elements and other connected elements
+		public void wayNodesChanged(WayNodesChangedEvent changed) {
+			AggregatePrimitives aggregatePrimitivesVisitor = new AggregatePrimitives();
+			for (Node node : changed.getChangedWay().getNodes()) {
+				aggregatePrimitivesVisitor.visit(node);
+			}
+			List<Link> links = way2Links.get(changed.getChangedWay());
+			if (links != null) {
+				for (Link link : links) {
+					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
+							OsmPrimitiveType.NODE));
+					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
+							OsmPrimitiveType.NODE));
+				}
+			}
+			aggregatePrimitivesVisitor.visit((changed.getChangedWay()));
+			aggregatePrimitivesVisitor.finished();
+			fireNotifyDataChanged();
+		}
+
+	}
 
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
@@ -58,41 +185,11 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 
 	public static NetworkModel createNetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
 												  Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
-		return new NetworkModel(data, scenario, way2Links, link2Segments, stopRelation2TransitStop);
+		return new NetworkModel(data, Main.pref, scenario, way2Links, link2Segments, stopRelation2TransitStop);
 	}
 
 	public interface ScenarioDataChangedListener {
 		void notifyDataChanged();
-	}
-
-	private class RelevantNodeMatch extends Match {
-
-		@Override
-		public boolean match(OsmPrimitive osm) {
-			return osm instanceof Node && match((Node) osm);
-		}
-
-		public boolean match(Node node) {
-			if (isUsableAndNotRemoved(node)) {
-				Way junctionWay = null;
-				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
-					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
-						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
-							return true;
-						} else {
-							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
-								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
-										&& relation.hasTag("type", "route")) {
-									return true;
-								}
-							}
-						}
-						junctionWay = way;
-					}
-				}
-			}
-			return false;
-		}
 	}
 
 	public void removeListener(ScenarioDataChangedListener listener) {
@@ -109,12 +206,21 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 		listeners.add(listener);
 	}
 
-	private NetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
+	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
 						 Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
 		this.data = data;
-		this.data.addDataSetListener(this);
-		MATSimPlugin.addPreferenceChangedListener(this);
-		Main.addProjectionChangeListener(this);
+		this.data.addDataSetListener(new NetworkModelDataSetListener());
+		prefs.addPreferenceChangeListener(e -> {
+			if (e.getKey().equalsIgnoreCase("matsim_keepPaths") || e.getKey().equalsIgnoreCase("matsim_filterActive")
+					|| e.getKey().equalsIgnoreCase("matsim_filter_hierarchy") || e.getKey().equalsIgnoreCase("matsim_transit_lite")) {
+				visitAll();
+			}
+			fireNotifyDataChanged();
+		});
+		Main.addProjectionChangeListener((oldValue, newValue) -> {
+			visitAll();
+			fireNotifyDataChanged();
+		});
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
@@ -122,7 +228,7 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 	}
 
 	public void visitAll() {
-		ConvertVisitor visitor = new ConvertVisitor();
+		Convert visitor = new Convert();
 		for (Node node : data.getNodes()) {
 			visitor.visit(node);
 		}
@@ -135,22 +241,7 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 		fireNotifyDataChanged();
 	}
 
-	@Override
-	public void dataChanged(DataChangedEvent dataChangedEvent) {
-		visitAll();
-		fireNotifyDataChanged();
-	}
-
-	@Override
-	// convert all referred elements of the moved node
-	public void nodeMoved(NodeMovedEvent moved) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		aggregatePrimitivesVisitor.visit(moved.getNode());
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
-	class MyAggregatePrimitivesVisitor implements Visitor {
+	class AggregatePrimitives implements Visitor {
 
 		Set<OsmPrimitive> primitives = new HashSet<>();
 
@@ -210,7 +301,7 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 		}
 
 		void finished() {
-			ConvertVisitor visitor = new ConvertVisitor();
+			Convert visitor = new Convert();
 			for (Node node : OsmPrimitive.getFilteredList(primitives, Node.class)) {
 				visitor.visit(node);
 			}
@@ -224,119 +315,6 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 
 	}
 
-	@Override
-	public void otherDatasetChange(AbstractDatasetChangedEvent arg0) {
-	}
-
-	@Override
-	// convert added primitive as well as the ones connected to it
-	public void primitivesAdded(PrimitivesAddedEvent added) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		for (OsmPrimitive primitive : added.getPrimitives()) {
-			if (primitive instanceof Way) {
-				Way way = (Way) primitive;
-				aggregatePrimitivesVisitor.visit(way);
-				for (Node node : way.getNodes()) {
-					aggregatePrimitivesVisitor.visit(node);
-				}
-			} else if (primitive instanceof Relation) {
-				aggregatePrimitivesVisitor.visit((Relation) primitive);
-			} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-				aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
-			}
-		}
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
-	@Override
-	// delete any MATSim reference to the removed element and invoke new
-	// conversion of referring elements
-	public void primitivesRemoved(PrimitivesRemovedEvent primitivesRemoved) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		for (OsmPrimitive primitive : primitivesRemoved.getPrimitives()) {
-			if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-				aggregatePrimitivesVisitor.visit(((org.openstreetmap.josm.data.osm.Node) primitive));
-			} else if (primitive instanceof Way) {
-				aggregatePrimitivesVisitor.visit((Way) primitive);
-			} else if (primitive instanceof Relation) {
-				aggregatePrimitivesVisitor.visit((Relation) primitive);
-			}
-		}
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
-	@Override
-	// convert affected relation
-	public void relationMembersChanged(RelationMembersChangedEvent arg0) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		aggregatePrimitivesVisitor.visit(arg0.getRelation());
-		for (OsmPrimitive primitive : arg0.getRelation().getMemberPrimitivesList()) {
-			if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-				aggregatePrimitivesVisitor.visit(((org.openstreetmap.josm.data.osm.Node) primitive));
-			} else if (primitive instanceof Way) {
-				aggregatePrimitivesVisitor.visit((Way) primitive);
-			} else if (primitive instanceof Relation) {
-				aggregatePrimitivesVisitor.visit((Relation) primitive);
-			}
-		}
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
-	@Override
-	// convert affected elements and other connected elements
-	public void tagsChanged(TagsChangedEvent changed) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		for (OsmPrimitive primitive : changed.getPrimitives()) {
-			if (primitive instanceof Way) {
-				Way way = (Way) primitive;
-				aggregatePrimitivesVisitor.visit(way);
-				for (Node node : way.getNodes()) {
-					aggregatePrimitivesVisitor.visit(node);
-				}
-				aggregatePrimitivesVisitor.visit(way);
-				List<Link> links = way2Links.get(way);
-				if (links != null) {
-					for (Link link : links) {
-						aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-								OsmPrimitiveType.NODE));
-						aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-								OsmPrimitiveType.NODE));
-					}
-				}
-			} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
-				aggregatePrimitivesVisitor.visit((org.openstreetmap.josm.data.osm.Node) primitive);
-			} else if (primitive instanceof Relation) {
-				aggregatePrimitivesVisitor.visit((Relation) primitive);
-			}
-		}
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
-	@Override
-	// convert affected elements and other connected elements
-	public void wayNodesChanged(WayNodesChangedEvent changed) {
-		MyAggregatePrimitivesVisitor aggregatePrimitivesVisitor = new MyAggregatePrimitivesVisitor();
-		for (Node node : changed.getChangedWay().getNodes()) {
-			aggregatePrimitivesVisitor.visit(node);
-		}
-		List<Link> links = way2Links.get(changed.getChangedWay());
-		if (links != null) {
-			for (Link link : links) {
-				aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-						OsmPrimitiveType.NODE));
-				aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-						OsmPrimitiveType.NODE));
-			}
-		}
-		aggregatePrimitivesVisitor.visit((changed.getChangedWay()));
-		aggregatePrimitivesVisitor.finished();
-		fireNotifyDataChanged();
-	}
-
 	private void searchAndRemoveRoute(TransitRoute route) {
 		// We do not know what line the route is in, so we have to search for
 		// it.
@@ -345,30 +323,13 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 		}
 	}
 
-	@Override
-	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent e) {
-		if (e.getKey().equalsIgnoreCase("matsim_keepPaths") || e.getKey().equalsIgnoreCase("matsim_filterActive")
-				|| e.getKey().equalsIgnoreCase("matsim_filter_hierarchy") || e.getKey().equalsIgnoreCase("matsim_transit_lite")) {
-			visitAll();
-		}
-		fireNotifyDataChanged();
-	}
-	
-	@Override
-	public void projectionChanged(Projection oldValue, Projection newValue) {
-		visitAll();
-		fireNotifyDataChanged();
-	}
-
-
 	public EditableScenario getScenario() {
 		return scenario;
 	}
 
-	class ConvertVisitor extends AbstractVisitor {
+	class Convert extends AbstractVisitor {
 
 		final Collection<OsmPrimitive> visited = new HashSet<>();
-		private final RelevantNodeMatch relevantNodeMatch = new RelevantNodeMatch();
 
 		void convertWay(Way way) {
 			final String wayType = LinkConversionRules.getWayType(way);
@@ -461,7 +422,7 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
 					}
 				}
-				if (node.evaluateCondition(relevantNodeMatch)) {
+				if (isRelevant(node)) {
 					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
 					NodeImpl matsimNode = (NodeImpl) scenario
 							.getNetwork()
@@ -472,6 +433,28 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 					scenario.getNetwork().addNode(matsimNode);
 				}
 			}
+		}
+
+		private boolean isRelevant(Node node) {
+			if (isUsableAndNotRemoved(node)) {
+				Way junctionWay = null;
+				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
+					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
+						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
+							return true;
+						} else {
+							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
+								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
+										&& relation.hasTag("type", "route")) {
+									return true;
+								}
+							}
+						}
+						junctionWay = way;
+					}
+				}
+			}
+			return false;
 		}
 
 		@Override

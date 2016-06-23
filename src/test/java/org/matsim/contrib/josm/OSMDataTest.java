@@ -1,25 +1,13 @@
 package org.matsim.contrib.josm;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
@@ -33,14 +21,20 @@ import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
-import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.Compression;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 public class OSMDataTest {
@@ -81,16 +75,11 @@ public class OSMDataTest {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		busRouteListener = NetworkModel.createNetworkModel(busRouteData);
-		Main.pref.addPreferenceChangeListener(busRouteListener);
 		busRouteListener.visitAll();
 		incompleteWayListener = NetworkModel.createNetworkModel(incompleteWayData);
 		incompleteWayListener.visitAll();
 		intersectionsListener = NetworkModel.createNetworkModel(intersectionsData);
-		Main.pref.addPreferenceChangeListener(intersectionsListener);
 		intersectionsListener.visitAll();
-		busRouteData.addDataSetListener(busRouteListener);
-		incompleteWayData.addDataSetListener(incompleteWayListener);
-		intersectionsData.addDataSetListener(intersectionsListener);
 	}
 
 
@@ -167,7 +156,7 @@ public class OSMDataTest {
 			Assert.assertEquals(7, route.getRoute().getLinkIds().size());
 		}
 
-		Scenario simulatedExportScenario = Export.convertIdsAndFilterDeleted((EditableScenario) busRouteListener.getScenario());
+		Scenario simulatedExportScenario = Export.convertIdsAndFilterDeleted(busRouteListener.getScenario());
 		int nStopsWithLink = 0;
 		for (TransitStopFacility transitStopFacility : simulatedExportScenario.getTransitSchedule().getFacilities().values()) {
 			if (transitStopFacility.getLinkId() != null) {
@@ -187,7 +176,7 @@ public class OSMDataTest {
 			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
 		}
 
-		simulatedExportScenario = Export.convertIdsAndFilterDeleted(((EditableScenario) busRouteListener.getScenario()));
+		simulatedExportScenario = Export.convertIdsAndFilterDeleted(busRouteListener.getScenario());
 		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 

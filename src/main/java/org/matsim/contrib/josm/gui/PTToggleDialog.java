@@ -292,10 +292,6 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	// also adjusts standard file export formats
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-			// clear old data set listeners
-		if (networkModel != null && e.getPreviousEditLayer() != null) {
-			e.getPreviousEditDataSet().removeDataSetListener(networkModel);
-		}
 		notifyEverythingChanged();
 	}
 

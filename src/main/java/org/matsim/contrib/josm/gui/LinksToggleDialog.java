@@ -356,10 +356,6 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	// also adjusts standard file export formats
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-		// clear old data set listeners
-		if (networkModel != null && e.getPreviousActiveLayer() != null) {
-			e.getPreviousEditDataSet().removeDataSetListener(networkModel);
-		}
 		if(Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
 			for(Test test: OsmValidator.getTests()) {
 				if(test instanceof NetworkTest) {

@@ -1,33 +1,11 @@
 package org.matsim.contrib.josm;
 
-import static org.openstreetmap.josm.tools.I18n.marktr;
-
-import java.awt.event.KeyEvent;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-
 import org.matsim.contrib.josm.actions.*;
 import org.matsim.contrib.josm.gui.LinksToggleDialog;
 import org.matsim.contrib.josm.gui.PTToggleDialog;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
-import org.matsim.contrib.josm.actions.NetworkTest;
-import org.matsim.contrib.josm.actions.TransitScheduleTest;
-import org.matsim.contrib.osm.CreateStopAreas;
-import org.matsim.contrib.osm.IncompleteRoutesTest;
-import org.matsim.contrib.osm.MasterRoutesTest;
-import org.matsim.contrib.osm.RepairAction;
-import org.matsim.contrib.osm.UpdateStopTags;
+import org.matsim.contrib.osm.*;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
@@ -48,6 +26,17 @@ import org.openstreetmap.josm.plugins.Plugin;
 import org.openstreetmap.josm.plugins.PluginInformation;
 import org.xml.sax.SAXException;
 
+import javax.swing.*;
+import java.awt.event.KeyEvent;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.openstreetmap.josm.tools.I18n.marktr;
+
 /**
  * This is the main class for the MATSim plugin.
  *
@@ -58,7 +47,6 @@ import org.xml.sax.SAXException;
  */
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
-	private static Collection<WeakReference<PreferenceChangedListener>> preferenceChangeListeners = new ArrayList<>();
 	private PTToggleDialog ptToggleDialog = new PTToggleDialog();
 	private LinksToggleDialog linksToggleDialog = new LinksToggleDialog();
 
@@ -147,10 +135,6 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	}
 
-	public static void addPreferenceChangedListener(PreferenceChangedListener listener) {
-		preferenceChangeListeners.add(new WeakReference<>(listener));
-	}
-
 	/**
 	 * Called when the JOSM map frame is created or destroyed.
 	 *
@@ -188,16 +172,6 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 			ptToggleDialog.setEnabled(supportTransit);
 			if (!supportTransit) {
 				ptToggleDialog.hideDialog();
-			}
-		}
-		Iterator<WeakReference<PreferenceChangedListener>> iterator = preferenceChangeListeners.iterator();
-		while (iterator.hasNext()) {
-			WeakReference<PreferenceChangedListener> next = iterator.next();
-			PreferenceChangedListener preferenceChangedListener = next.get();
-			if (preferenceChangedListener != null) {
-				preferenceChangedListener.preferenceChanged(e);
-			} else {
-				iterator.remove();
 			}
 		}
 	}
