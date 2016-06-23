@@ -28,8 +28,7 @@ public class PtTutorialScenario {
 
 	public static MATSimLayer layer() {
 		Importer importer = new Importer(new File(networkUrl.getFile()), new File(transitScheduleUrl.getFile()));
-		importer.run();
-		return importer.getLayer();
+		return importer.createMatsimLayer();
 	}
 
 }

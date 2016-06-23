@@ -85,8 +85,7 @@ public class ConvertToPseudoNetworkAction extends JosmAction {
 				.createNetwork();
 
 		Importer importer = new Importer(targetScenario);
-		importer.run();
-		return importer.getLayer();
+		return importer.createMatsimLayer();
 	}
 
 	private static void emptyNetwork(EditableScenario sourceScenario) {

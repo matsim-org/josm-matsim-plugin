@@ -41,7 +41,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
 		new AddCommand(matsimLayer, way).executeCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 	}
 
 	@Test
@@ -65,14 +65,14 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.MODES, "car");
 		AddCommand addWay = new AddCommand(matsimLayer, way);
 		addWay.executeCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(2, matsimLayer.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(2, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
 		addWay.undoCommand();
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		addNode2.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
 		addNode1.undoCommand();
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
 	}
 
 
@@ -97,7 +97,7 @@ public class InteractiveEditingTest {
 		DeleteCommand delete = new DeleteCommand(way);
 		delete.executeCommand();
 		delete.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 	}
 
 	@Test
@@ -120,8 +120,8 @@ public class InteractiveEditingTest {
 		new AddCommand(matsimLayer, way).executeCommand();
 		DeleteCommand deleteWay = new DeleteCommand(way);
 		deleteWay.executeCommand();
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
 		DeleteCommand deleteNode1 = new DeleteCommand(node1);
 		deleteNode1.executeCommand();
 		DeleteCommand deleteNode2 = new DeleteCommand(node2);
@@ -129,9 +129,9 @@ public class InteractiveEditingTest {
 		deleteNode2.undoCommand();
 		deleteNode1.undoCommand();
 		// These nodes are not needed for a link yet:
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
 		deleteWay.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 	}
 
 
@@ -149,12 +149,12 @@ public class InteractiveEditingTest {
 		way.addNode(node1);
 		way.addNode(node2);
 		new AddCommand(matsimLayer, way).executeCommand();
-		Assert.assertEquals(0, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		new ChangePropertyCommand(way, LinkConversionRules.FREESPEED, "10.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.CAPACITY, "1000.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.PERMLANES, "1.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.MODES, "car").executeCommand();
-		Assert.assertEquals(1, matsimLayer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 	}
 
 	@Test
@@ -162,11 +162,11 @@ public class InteractiveEditingTest {
 		Preferences.setTransitLite(true);
 		MATSimLayer matsimLayer = PtTutorialScenario.layer();
 		Main.getLayerManager().addLayer(matsimLayer);
-		Assert.assertEquals(4, matsimLayer.getScenario().getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(4, matsimLayer.getNetworkModel().getScenario().getTransitSchedule().getFacilities().size());
 
 		Node node2 = findNode2(matsimLayer);
 		new MoveCommand(node2, new LatLon(node2.getCoor().lat()+0.01, node2.getCoor().lon()+0.01)).executeCommand();
-		Assert.assertEquals(4, matsimLayer.getScenario().getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(4, matsimLayer.getNetworkModel().getScenario().getTransitSchedule().getFacilities().size());
 	}
 
 	private Node findNode2(MATSimLayer matsimLayer) {

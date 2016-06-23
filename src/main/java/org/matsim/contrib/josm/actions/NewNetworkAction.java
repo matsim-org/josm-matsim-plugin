@@ -3,6 +3,7 @@ package org.matsim.contrib.josm.actions;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.gui.Preferences;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.core.config.Config;
@@ -40,8 +41,7 @@ public class NewNetworkAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		MATSimLayer layer = createMatsimLayer();
-		Main.main.addLayer(layer);
+		Main.main.addLayer(createMatsimLayer());
 	}
 
 	public static MATSimLayer createMatsimLayer() {
@@ -51,7 +51,6 @@ public class NewNetworkAction extends JosmAction {
 			config.transit().setUseTransit(true);
 		}
 		EditableScenario scenario = EditableScenarioUtils.createScenario(config);
-		return new MATSimLayer(dataSet, MATSimLayer.createNewName(), null, scenario, new HashMap<Way, List<Link>>(),
-				new HashMap<Link, List<WaySegment>>(), new HashMap<Relation, TransitStopFacility>());
+		return new MATSimLayer(dataSet, MATSimLayer.createNewName(), null, new NetworkModel(dataSet, scenario, new HashMap<>(), new HashMap<>(), new HashMap<>()));
 	}
 }

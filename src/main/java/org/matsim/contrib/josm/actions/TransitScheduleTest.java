@@ -94,7 +94,7 @@ public class TransitScheduleTest extends Test {
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			this.scenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getScenario();
+			this.scenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel().getScenario();
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);

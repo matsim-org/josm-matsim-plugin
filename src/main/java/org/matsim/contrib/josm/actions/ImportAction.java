@@ -67,7 +67,7 @@ public class ImportAction extends JosmAction {
 						 */
 						@Override
 						protected void finish() {
-							MATSimLayer layer = importer.getLayer();
+							MATSimLayer layer = importer.createMatsimLayer();
 							// layer = null happens if Exception happens during import,
 							// as Exceptions are handled only after this method is called.
 							if (layer != null) {
@@ -81,7 +81,6 @@ public class ImportAction extends JosmAction {
 						 */
 						@Override
 						protected void realRun() {
-							importer.run();
 						}
 					};
 					Main.worker.execute(task);

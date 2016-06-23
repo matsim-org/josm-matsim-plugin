@@ -42,7 +42,6 @@ public class Importer {
 
 	private final File network;
 	private final File schedule;
-	private MATSimLayer layer;
 
 	HashMap<Id<TransitStopFacility>, TransitStopFacility> stops = new HashMap<>();
 	HashMap<Way, List<Link>> way2Links = new HashMap<>();
@@ -65,7 +64,7 @@ public class Importer {
 		this.schedule = null;
 	}
 
-	public void run() {
+	public MATSimLayer createMatsimLayer() {
 		dataSet = new DataSet();
 		if (sourceScenario == null) {
 			sourceScenario = readScenario();
@@ -77,7 +76,7 @@ public class Importer {
 			convertStops();
 			convertLines();
 		}
-		layer = new MATSimLayer(dataSet, network == null ? MATSimLayer.createNewName() : network.getName(), network == null ? null : network, targetScenario, way2Links, link2Segment, stopRelation2TransitStop);
+		return new MATSimLayer(dataSet, network == null ? MATSimLayer.createNewName() : network.getName(), network == null ? null : network, new NetworkModel(dataSet, targetScenario, way2Links, link2Segment, stopRelation2TransitStop));
 	}
 
 	// Abuse fields in MATSim data structures to hold the "real" object ids.
@@ -301,10 +300,6 @@ public class Importer {
 			dataSet.addPrimitive(lineRelation);
 			targetScenario.getTransitSchedule().addTransitLine(newLine);
 		}
-	}
-
-	public MATSimLayer getLayer() {
-		return layer;
 	}
 
 }

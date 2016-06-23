@@ -112,7 +112,7 @@ public final class NetworkExporter extends FileExporter {
 
 		// start export task if not aborted
 		if (okToExport) {
-			EditableScenario layerScenario = ((MATSimLayer) layer).getScenario();
+			EditableScenario layerScenario = ((MATSimLayer) layer).getNetworkModel().getScenario();
 			Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
 
 			if (Main.pref.getBoolean("matsim_cleanNetwork")) {

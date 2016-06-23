@@ -341,8 +341,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		public NetworkAttributes() {
 			Layer layer = Main.main.getActiveLayer();
 			if (layer instanceof MATSimLayer) {
-				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getScenario().getNetwork().getEffectiveLaneWidth()));
-				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getScenario().getNetwork().getCapacityPeriod()));
+				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
+				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
 			}
 			add(laneWidth);
 			add(laneWidthValue);
@@ -356,10 +356,10 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 				String lW = laneWidthValue.getText();
 				String cP = capacityPeriodValue.getText();
 				if (!lW.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
+					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
 				}
 				if (!cP.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
+					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
 				}
 			}
 		}

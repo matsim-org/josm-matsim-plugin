@@ -74,7 +74,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.map.mapView.getActiveLayer()).getScenario());
+					EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel().getScenario());
 					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 
@@ -106,7 +106,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 	}
 
 	private boolean shouldBeEnabled() {
-		return getEditLayer() instanceof MATSimLayer && ((MATSimLayer) getEditLayer()).getScenario().getConfig().transit().isUseTransit();
+		return getEditLayer() instanceof MATSimLayer && ((MATSimLayer) getEditLayer()).getNetworkModel().getScenario().getConfig().transit().isUseTransit();
 	}
 
 }

@@ -120,7 +120,7 @@ public class CreateTransitFromIncompleteDataTest {
 			}
 		}
 
-		EditableScenario layerScenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getScenario();
+		EditableScenario layerScenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel().getScenario();
 		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule.xml").getPath());

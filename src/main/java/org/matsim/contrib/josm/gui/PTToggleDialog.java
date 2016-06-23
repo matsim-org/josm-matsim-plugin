@@ -114,7 +114,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		}
 		OsmDataLayer layer = Main.main.getEditLayer();
 		if (isShowing() && layer instanceof MATSimLayer) {
-			if (((MATSimLayer) layer).getScenario().getConfig().transit().isUseTransit()) {
+			if (((MATSimLayer) layer).getNetworkModel().getScenario().getConfig().transit().isUseTransit()) {
 				networkModel = ((MATSimLayer) layer).getNetworkModel(); // MATSim
 			}
 		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {

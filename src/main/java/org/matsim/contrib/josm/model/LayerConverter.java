@@ -52,8 +52,7 @@ public class LayerConverter {
 			new NetworkCleaner().run(exportedScenario.getNetwork());
 		}
 		Importer importer = new Importer(exportedScenario);
-		importer.run();
-		matsimLayer = importer.getLayer();
+		matsimLayer = importer.createMatsimLayer();
 	}
 
 	private static void splitTransitStopFacilities(EditableScenario targetScenario) {

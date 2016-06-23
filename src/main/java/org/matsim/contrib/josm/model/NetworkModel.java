@@ -352,7 +352,7 @@ public class NetworkModel implements DataSetListener, org.openstreetmap.josm.dat
 	}
 
 
-	public Scenario getScenario() {
+	public EditableScenario getScenario() {
 		return scenario;
 	}
 

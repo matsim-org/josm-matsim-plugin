@@ -39,8 +39,7 @@ public class IOTest {
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		new NetworkReaderMatsimV1(scenario.getNetwork()).parse(url);
 		Importer importer = new Importer(new File(url.getFile()), null);
-		importer.run();
-		MATSimLayer layer = importer.getLayer();
+		MATSimLayer layer = importer.createMatsimLayer();
 		deleteAndUndeleteLinksOneByOne(scenario, layer);
 		deleteAndUndeleteLinks(scenario, layer);
 		deleteAndUndeleteEverything(scenario, layer);
@@ -54,45 +53,45 @@ public class IOTest {
 			delete.executeCommand();
 			commands.add(delete);
 			nLinks--;
-			Assert.assertEquals(nLinks, layer.getScenario().getNetwork().getLinks().size());
+			Assert.assertEquals(nLinks, layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		}
 		Assert.assertEquals(0, nLinks);
 		for (Command command : commands) {
 			command.undoCommand();
 			nLinks++;
-			Assert.assertEquals(nLinks, layer.getScenario().getNetwork().getLinks().size());
+			Assert.assertEquals(nLinks, layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		}
 	}
 
 	private void deleteAndUndeleteLinks(Scenario scenario, MATSimLayer layer) {
-		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		Command delete = DeleteCommand.delete(layer, layer.data.getWays(), false, true);
 		delete.executeCommand();
-		Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		delete.undoCommand();
-		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 	}
 
 	private void deleteAndUndeleteEverything(Scenario scenario, MATSimLayer layer) {
-		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		Command delete = DeleteCommand.delete(layer, layer.data.allPrimitives(), true, true);
 		delete.executeCommand();
-		Assert.assertEquals(0, layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(0, layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		if (scenario.getConfig().transit().isUseTransit()) {
-			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getFacilities().size());
-			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule().getTransitLines().size());
-			Assert.assertEquals(0, countRoutes(Export.convertIdsAndFilterDeleted(layer.getScenario()).getTransitSchedule()));
+			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario()).getTransitSchedule().getFacilities().size());
+			Assert.assertEquals(0, Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario()).getTransitSchedule().getTransitLines().size());
+			Assert.assertEquals(0, countRoutes(Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario()).getTransitSchedule()));
 		}
 		delete.undoCommand();
-		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getScenario().getNetwork().getLinks().size());
 		if (scenario.getConfig().transit().isUseTransit()) {
-			Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
+			Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario());
 			Assert.assertEquals(scenario.getTransitSchedule().getFacilities().size(), outputScenario.getTransitSchedule().getFacilities().size());
 			Assert.assertEquals(scenario.getTransitSchedule().getTransitLines().size(), outputScenario.getTransitSchedule().getTransitLines().size());
 			Assert.assertEquals(countRoutes(scenario.getTransitSchedule()), countRoutes(outputScenario.getTransitSchedule()));
@@ -137,7 +136,7 @@ public class IOTest {
 		Scenario scenario = PtTutorialScenario.scenario();
 		MATSimLayer layer = PtTutorialScenario.layer();
 		deleteAndUndeleteEverything(scenario, layer);
-		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario());
 		checkAttributes(scenario, outputScenario);
 	}
 
@@ -145,7 +144,7 @@ public class IOTest {
 	public void deleteAndUndeleteStopRelations() {
 		Scenario scenario = PtTutorialScenario.scenario();
 		MATSimLayer layer = PtTutorialScenario.layer();
-		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario());
 		deleteAndUndeleteStopRelations(layer);
 		checkAttributes(scenario, outputScenario);
 	}
@@ -159,14 +158,14 @@ public class IOTest {
 				commands.add(delete);
 			}
 		}
-		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
+		Scenario outputScenario = Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario());
 		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 			Assert.assertNull(facility.getLinkId());
 		}
 		for (Command command : commands) {
 			command.undoCommand();
 		}
-		outputScenario = Export.convertIdsAndFilterDeleted(layer.getScenario());
+		outputScenario = Export.convertIdsAndFilterDeleted(layer.getNetworkModel().getScenario());
 		for(TransitStopFacility facility: outputScenario.getTransitSchedule().getFacilities().values()) {
 			Assert.assertNotNull(facility.getLinkId());
 		}

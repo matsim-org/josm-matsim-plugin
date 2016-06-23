@@ -83,7 +83,7 @@ public class NetworkTest extends Test {
 		this.linkIds = new HashMap<>();
 		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
 			layer = (MATSimLayer) Main.main.getActiveLayer();
-			this.network = layer.getScenario().getNetwork();
+			this.network = layer.getNetworkModel().getScenario().getNetwork();
 		}
 		super.startTest(monitor);
 	}
@@ -95,7 +95,7 @@ public class NetworkTest extends Test {
 	@Override
 	public void visit(Way w) {
 		if (this.network != null) {
-			for (Link link : layer.getWay2Links().get(w)) {
+			for (Link link : layer.getNetworkModel().getWay2Links().get(w)) {
 				String origId = ((LinkImpl) link).getOrigId();
 				if (!linkIds.containsKey(origId)) {
 					linkIds.put(origId, new ArrayList<Way>());
@@ -153,10 +153,10 @@ public class NetworkTest extends Test {
 			if (entry.getValue().size() > 1) {
 				List<WaySegment> segments = new ArrayList<>();
 				for (Way way : entry.getValue()) {
-					List<Link> links = layer.getWay2Links().get(way);
+					List<Link> links = layer.getNetworkModel().getWay2Links().get(way);
 					for (Link link : links) {
 						if (((LinkImpl) link).getOrigId().equalsIgnoreCase(entry.getKey())) {
-							segments.addAll(layer.getLink2Segments().get(link));
+							segments.addAll(layer.getNetworkModel().getLink2Segments().get(link));
 						}
 					}
 				}
@@ -204,7 +204,7 @@ public class NetworkTest extends Test {
 				if (primitive instanceof Way) {
 					if (links2Fix.containsKey(testError)) {
 						String id2Fix = links2Fix.get(testError);
-						for (Link link : layer.getWay2Links().get(primitive)) {
+						for (Link link : layer.getNetworkModel().getWay2Links().get(primitive)) {
 							if (((LinkImpl) link).getOrigId().equalsIgnoreCase(id2Fix)) {
 								((LinkImpl) link).setOrigId(id2Fix + "(" + i + ")");
 								i++;
