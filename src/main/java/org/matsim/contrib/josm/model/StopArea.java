@@ -55,6 +55,20 @@ public class StopArea extends EditableTransitStopFacility {
 		}
 	}
 
+	public List<Node> determineStopPositionOsmNodes() {
+		List<Node> stopPositions = new ArrayList<>();
+		for (RelationMember member : relation.getMembers()) {
+			if (member.hasRole("stop") && member.isNode()) {
+				Node stopPosition = member.getNode();
+				if (stopPosition != null) {
+					stopPositions.add(stopPosition);
+				}
+			}
+		}
+		return stopPositions;
+	}
+
+
 	private Coord toCoord(EastNorth eN) {
 		return new Coord(eN.getX(), eN.getY());
 	}

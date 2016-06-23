@@ -589,32 +589,22 @@ public class NetworkModel {
 				StopArea stopArea = new StopArea(relation);
 				if (stopArea.getCoord() != null) {
 					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
-					stopArea.setLinkId(linkId);
-					org.matsim.api.core.v01.network.Node stopPosition = determineStopPositionOsmNode(relation);
-					if (stopPosition != null) {
-						if (linkId == null) {
-							for (Link inLink : stopPosition.getInLinks().values()) {
-								stopArea.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
+					if (linkId != null) {
+						stopArea.setLinkId(linkId);
+					} else {
+						for (Node stopPosition : stopArea.determineStopPositionOsmNodes()) {
+							Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
+							org.matsim.api.core.v01.network.Node node = scenario.getNetwork().getNodes().get(nodeId);
+							if (node != null) {
+								for (Link inLink : node.getInLinks().values()) {
+									stopArea.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
+								}
 							}
 						}
 					}
 					stopAreas.put(relation, stopArea);
 				}
 			}
-		}
-
-		private org.matsim.api.core.v01.network.Node determineStopPositionOsmNode(Relation relation) {
-			for (RelationMember member : relation.getMembers()) {
-				if (member.hasRole("stop") && member.isNode()) {
-					Node stopPosition = member.getNode();
-					Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
-					org.matsim.api.core.v01.network.Node node = scenario.getNetwork().getNodes().get(nodeId);
-					if (node != null) {
-						return node;
-					}
-				}
-			}
-			return null;
 		}
 
 		private Id<Link> determineExplicitMatsimLinkId(Relation relation) {
