@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm.model;
 
+import javafx.collections.*;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -24,7 +25,6 @@ import org.openstreetmap.josm.data.osm.visitor.Visitor;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
 import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
-import org.openstreetmap.josm.tools.Geometry;
 
 import java.util.*;
 
@@ -169,6 +169,9 @@ public class NetworkModel {
 
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
+
+	private ObservableMap<Relation, StopArea> stopAreas = FXCollections.observableHashMap();
+
 	private final EditableScenario scenario;
 
 	private final Map<Way, List<Link>> way2Links;
@@ -225,6 +228,13 @@ public class NetworkModel {
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
 		this.stopRelation2TransitStop = stopRelation2TransitStop;
+		this.stopAreas.addListener((MapChangeListener<Relation, StopArea>) change -> {
+			if (change.wasAdded()) {
+				StopArea addedStopArea = change.getValueAdded();
+				scenario.getTransitSchedule().addStopFacility(addedStopArea);
+				stopRelation2TransitStop.put(addedStopArea.getRelation(), addedStopArea);
+			}
+		});
 	}
 
 	public void visitAll() {
@@ -590,8 +600,7 @@ public class NetworkModel {
 							}
 						}
 					}
-					scenario.getTransitSchedule().addStopFacility(stopArea);
-					stopRelation2TransitStop.put(relation, stopArea);
+					stopAreas.put(relation, stopArea);
 				}
 			}
 		}

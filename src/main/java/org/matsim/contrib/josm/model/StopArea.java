@@ -111,4 +111,7 @@ public class StopArea extends EditableTransitStopFacility {
 		throw new RuntimeException();
 	}
 
+	public Relation getRelation() {
+		return relation;
+	}
 }
