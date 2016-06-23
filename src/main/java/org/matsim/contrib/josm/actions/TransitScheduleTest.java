@@ -10,13 +10,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
 import org.matsim.contrib.josm.scenario.EditableTransitLine;
 import org.matsim.contrib.josm.scenario.EditableTransitRoute;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
@@ -34,7 +32,6 @@ import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
@@ -42,7 +39,7 @@ import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 public class TransitScheduleTest extends Test {
 
-	private EditableScenario scenario;
+	private NetworkModel networkModel;
 
 	/**
 	 * Maps routes to their id. Routes that share the same id are added up in a
@@ -94,13 +91,13 @@ public class TransitScheduleTest extends Test {
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			this.scenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel().getScenario();
+			this.networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
 			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.main.getCurrentDataSet());
 			networkModel.visitAll();
-			this.scenario = networkModel.getScenario();
+			this.networkModel = networkModel;
 		}
 		this.routeIds = new HashMap<>();
 		this.facilityIds = new HashMap<>();
@@ -116,7 +113,7 @@ public class TransitScheduleTest extends Test {
 		if (r.hasTag("type", "route") && r.hasKey("route")) {
 			EditableTransitRoute route = null;
 			Id<EditableTransitRoute> id = Id.create(r.getUniqueId(), EditableTransitRoute.class);
-			for (EditableTransitLine line : scenario.getTransitSchedule().getEditableTransitLines().values()) {
+			for (EditableTransitLine line : networkModel.getScenario().getTransitSchedule().getEditableTransitLines().values()) {
 				if (line.getEditableRoutes().containsKey(id)) {
 					route = line.getEditableRoutes().get(id);
 				}
@@ -140,7 +137,7 @@ public class TransitScheduleTest extends Test {
 		if (r.hasTag("type", "route_master")) {
 			String id = String.valueOf(r.getUniqueId());
 			Id<TransitLine> lineId = Id.create(id, TransitLine.class);
-			EditableTransitLine line = scenario.getTransitSchedule().getEditableTransitLines().get(lineId);
+			EditableTransitLine line = networkModel.getScenario().getTransitSchedule().getEditableTransitLines().get(lineId);
 			if (line != null) {
 				Id<TransitLine> realId = line.getRealId();
 				if (!lineIds.containsKey(realId)) {
@@ -153,7 +150,7 @@ public class TransitScheduleTest extends Test {
 		if (r.hasTag("type", "public_transport") && r.hasTag("public_transport", "stop_area")) {
 			String id = String.valueOf(r.getUniqueId());
 			Id<TransitStopFacility> transitStopFacilityId = Id.create(id, TransitStopFacility.class);
-			EditableTransitStopFacility facility = ((EditableTransitStopFacility) scenario.getTransitSchedule().getFacilities().get(transitStopFacilityId));
+			EditableTransitStopFacility facility = ((EditableTransitStopFacility) networkModel.getScenario().getTransitSchedule().getFacilities().get(transitStopFacilityId));
 			if (facility != null) {
 				Id<TransitStopFacility> realId = facility.getOrigId();
 				if (!facilityIds.containsKey(realId)) {
@@ -205,7 +202,7 @@ public class TransitScheduleTest extends Test {
 		if (errors.isEmpty()) { // Otherwise, it is possible that we have a condition where Export would throw an Exception
 			// We continue validation with a preview of the real, exported TransitSchedule, so that the ids
 			// in the error messages are the ones in the XML.
-			EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(scenario);
+			EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(networkModel);
 			ValidationResult validationResult = TransitScheduleValidator.validateAll(targetScenario.getTransitSchedule(), targetScenario.getNetwork());
 			for (String errorString : validationResult.getWarnings()) {
 				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
@@ -234,7 +231,7 @@ public class TransitScheduleTest extends Test {
 		if (testError.getCode() == DUPLICATE_LINE_ID) {
 			for (OsmPrimitive primitive : testError.getPrimitives()) {
 				Id<TransitLine> id = Id.create(primitive.getUniqueId(), TransitLine.class);
-				EditableTransitLine line = scenario.getTransitSchedule().getEditableTransitLines().get(id);
+				EditableTransitLine line = networkModel.getScenario().getTransitSchedule().getEditableTransitLines().get(id);
 				String realId = line.getRealId().toString();
 				commands.add(new ChangePropertyCommand(primitive, "ref", (realId + "(" + j + ")")));
 				j++;
@@ -245,7 +242,7 @@ public class TransitScheduleTest extends Test {
 			for (OsmPrimitive primitive : testError.getPrimitives()) {
 				EditableTransitRoute route = null;
 				Id<EditableTransitRoute> id = Id.create(primitive.getUniqueId(), EditableTransitRoute.class);
-				for (EditableTransitLine line : scenario.getTransitSchedule().getEditableTransitLines().values()) {
+				for (EditableTransitLine line : networkModel.getScenario().getTransitSchedule().getEditableTransitLines().values()) {
 					if (line.getEditableRoutes().containsKey(id)) {
 						route = line.getEditableRoutes().get(id);
 					}
@@ -261,7 +258,7 @@ public class TransitScheduleTest extends Test {
 		if (testError.getCode() == DUPLICATE_FACILITY_ID) {
 			for (OsmPrimitive primitive : testError.getPrimitives()) {
 				Id<TransitStopFacility> id = Id.create(primitive.getUniqueId(), TransitStopFacility.class);
-				EditableTransitStopFacility facility = scenario.getTransitSchedule().getEditableFacilities().get(id);
+				EditableTransitStopFacility facility = networkModel.getScenario().getTransitSchedule().getEditableFacilities().get(id);
 				String realId = facility.getOrigId().toString();
 				commands.add(new ChangePropertyCommand(primitive, "ref", (realId + "(" + j + ")")));
 				j++;

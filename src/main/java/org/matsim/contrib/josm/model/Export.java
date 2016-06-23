@@ -16,18 +16,19 @@ import java.util.List;
 
 public class Export {
 
-	public static EditableScenario convertIdsAndFilterDeleted(EditableScenario layerScenario) {
-		Config config = layerScenario.getConfig();
+	public static EditableScenario convertIdsAndFilterDeleted(NetworkModel networkModel) {
+		EditableScenario scenario = networkModel.getScenario();
+		Config config = scenario.getConfig();
 		config.transit().setUseTransit(true);
 		EditableScenario targetScenario = EditableScenarioUtils.createScenario(config);
 
 		// copy nodes with switched id fields
-		for (Node node : layerScenario.getNetwork().getNodes().values()) {
+		for (Node node : scenario.getNetwork().getNodes().values()) {
 			Node newNode = targetScenario.getNetwork().getFactory().createNode(Id.create(((NodeImpl) node).getOrigId(), Node.class), node.getCoord());
 			targetScenario.getNetwork().addNode(newNode);
 		}
 		// copy links with switched id fields
-		for (Link link : layerScenario.getNetwork().getLinks().values()) {
+		for (Link link : scenario.getNetwork().getLinks().values()) {
 			Link newLink = targetScenario
 					.getNetwork()
 					.getFactory()
@@ -42,18 +43,18 @@ public class Export {
 			targetScenario.getNetwork().addLink(newLink);
 		}
 		TransitSchedule newSchedule = targetScenario.getTransitSchedule();
-		for (EditableTransitStopFacility stop : layerScenario.getTransitSchedule().getEditableFacilities().values()) {
+		for (EditableTransitStopFacility stop : scenario.getTransitSchedule().getEditableFacilities().values()) {
 			Id<TransitStopFacility> id = stop.getOrigId();
 			TransitStopFacility newStop = newSchedule.getFactory().createTransitStopFacility(id, stop.getCoord(), stop.getIsBlockingLane());
 			Id<Link> linkId = stop.getLinkId();
 			if (linkId != null) {
-				Link oldLink = layerScenario.getNetwork().getLinks().get(linkId);
+				Link oldLink = scenario.getNetwork().getLinks().get(linkId);
 				Id<Link> newLinkId = Id.createLinkId(((LinkImpl) oldLink).getOrigId());
 				newStop.setLinkId(newLinkId);
 			}
 			Id<Node> nodeId = stop.getNodeId();
 			if (nodeId != null) {
-				Node oldNode = layerScenario.getNetwork().getNodes().get(Id.createNodeId(nodeId));
+				Node oldNode = scenario.getNetwork().getNodes().get(Id.createNodeId(nodeId));
 				if (oldNode == null) {
 					throw new RuntimeException("Stop references a node which is not in the scenario: "+nodeId);
 				}
@@ -68,7 +69,7 @@ public class Export {
 			newSchedule.addStopFacility(newStop);
 		}
 
-		for (EditableTransitLine line : layerScenario.getTransitSchedule().getEditableTransitLines().values()) {
+		for (EditableTransitLine line : scenario.getTransitSchedule().getEditableTransitLines().values()) {
 			Id<TransitLine> lineId = Id.create(line.getRealId(), TransitLine.class);
 			TransitLine newTLine = newSchedule.getFactory().createTransitLine(lineId);
 			newSchedule.addTransitLine(newTLine);
@@ -79,12 +80,12 @@ public class Export {
 					NetworkRoute networkRoute = route.getRoute();
 					NetworkRoute newNetworkRoute;
 					if (networkRoute != null) {
-						Id<Link> startLinkId = Id.createLinkId(((LinkImpl) layerScenario.getNetwork().getLinks()
+						Id<Link> startLinkId = Id.createLinkId(((LinkImpl) scenario.getNetwork().getLinks()
 								.get(networkRoute.getStartLinkId())).getOrigId());
 						for (Id<Link> id : networkRoute.getLinkIds()) {
-							links.add(Id.createLinkId(((LinkImpl) layerScenario.getNetwork().getLinks().get(id)).getOrigId()));
+							links.add(Id.createLinkId(((LinkImpl) scenario.getNetwork().getLinks().get(id)).getOrigId()));
 						}
-						Id<Link> endLinkId = Id.createLinkId(((LinkImpl) layerScenario.getNetwork().getLinks().get(networkRoute.getEndLinkId()))
+						Id<Link> endLinkId = Id.createLinkId(((LinkImpl) scenario.getNetwork().getLinks().get(networkRoute.getEndLinkId()))
 								.getOrigId());
 						newNetworkRoute = new LinkNetworkRouteImpl(startLinkId, endLinkId);
 						newNetworkRoute.setLinkIds(startLinkId, links, endLinkId);
@@ -97,7 +98,7 @@ public class Export {
 						Id<TransitStopFacility> stopId = ((EditableTransitStopFacility) tRStop.getStopFacility()).getOrigId();
 						TransitRouteStop newTRStop = newSchedule.getFactory().createTransitRouteStop(newSchedule.getFacilities().get(stopId),
 								tRStop.getArrivalOffset(), tRStop.getDepartureOffset());
-						String awaitDepartureTime = String.valueOf(layerScenario.getTransitSchedule().getTransitStopsAttributes()
+						String awaitDepartureTime = String.valueOf(scenario.getTransitSchedule().getTransitStopsAttributes()
 								.getAttribute(tRStop.getStopFacility().getName() + "_" + route.getRealId(), "awaitDepartureTime"));
 						if (awaitDepartureTime != null) {
 							newTRStop.setAwaitDepartureTime(Boolean.parseBoolean(awaitDepartureTime));

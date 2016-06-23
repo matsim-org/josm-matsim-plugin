@@ -86,8 +86,7 @@ public class CreatePseudoTransitTest {
 		}
 
 		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(JosmAction.getEditLayer());
-		EditableScenario layerScenario = matSimLayer.getNetworkModel().getScenario();
-		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
+		Scenario targetScenario = Export.convertIdsAndFilterDeleted(matSimLayer.getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("pseudo-network.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("pseudo-transitSchedule.xml").getPath());
 	}

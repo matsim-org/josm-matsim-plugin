@@ -46,8 +46,7 @@ public class CreateTransitFromCompleteDataTest {
 
 		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
-		EditableScenario layerScenario = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel().getScenario();
-		Scenario targetScenario = Export.convertIdsAndFilterDeleted(layerScenario);
+		Scenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
 	}

@@ -74,7 +74,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel().getScenario());
+					EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel());
 					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 
