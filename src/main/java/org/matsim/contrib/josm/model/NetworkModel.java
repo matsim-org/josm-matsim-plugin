@@ -175,7 +175,6 @@ public class NetworkModel {
 	private final EditableScenario scenario;
 
 	private final Map<Way, List<Link>> way2Links;
-	private final Map<Relation, TransitStopFacility> stopRelation2TransitStop;
 	private final Map<Link, List<WaySegment>> link2Segments;
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
@@ -187,7 +186,7 @@ public class NetworkModel {
 	}
 
 	public static NetworkModel createNetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-												  Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
+												  Map<Relation, StopArea> stopRelation2TransitStop) {
 		return new NetworkModel(data, Main.pref, scenario, way2Links, link2Segments, stopRelation2TransitStop);
 	}
 
@@ -210,7 +209,7 @@ public class NetworkModel {
 	}
 
 	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-						 Map<Relation, TransitStopFacility> stopRelation2TransitStop) {
+						 Map<Relation, StopArea> stopRelation2TransitStop) {
 		this.data = data;
 		this.data.addDataSetListener(new NetworkModelDataSetListener());
 		prefs.addPreferenceChangeListener(e -> {
@@ -227,12 +226,14 @@ public class NetworkModel {
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
-		this.stopRelation2TransitStop = stopRelation2TransitStop;
+		this.stopAreas.putAll(stopRelation2TransitStop);
 		this.stopAreas.addListener((MapChangeListener<Relation, StopArea>) change -> {
+			if (change.wasRemoved()) {
+				scenario.getTransitSchedule().removeStopFacility(change.getValueRemoved());
+			}
 			if (change.wasAdded()) {
 				StopArea addedStopArea = change.getValueAdded();
 				scenario.getTransitSchedule().addStopFacility(addedStopArea);
-				stopRelation2TransitStop.put(addedStopArea.getRelation(), addedStopArea);
 			}
 		});
 	}
@@ -517,10 +518,7 @@ public class NetworkModel {
 							}
 						}
 					}
-					TransitStopFacility stop = stopRelation2TransitStop.remove(relation);
-					if (stop != null) {
-						scenario.getTransitSchedule().removeStopFacility(stop);
-					}
+					stopAreas.remove(relation);
 					createTransitStopFacility(relation);
 				}
 			}
@@ -572,12 +570,12 @@ public class NetworkModel {
 		private TransitStopFacility findOrCreateStopFacility(RelationMember member) {
 			for (OsmPrimitive referrer : member.getMember().getReferrers()) {
 				if (referrer instanceof Relation) {
-					TransitStopFacility facility = stopRelation2TransitStop.get(referrer);
+					TransitStopFacility facility = stopAreas.get(referrer);
 					if (facility != null) {
 						return facility;
 					}
 					createTransitStopFacility((Relation) referrer);
-					facility = stopRelation2TransitStop.get(referrer);
+					facility = stopAreas.get(referrer);
 					if (facility != null) {
 						return facility;
 					}

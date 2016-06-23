@@ -48,7 +48,7 @@ public class Importer {
 	HashMap<Link, List<WaySegment>> link2Segment = new HashMap<>();
 	HashMap<Node, org.openstreetmap.josm.data.osm.Node> node2OsmNode = new HashMap<>();
 	HashMap<Id<Link>, Way> linkId2Way = new HashMap<>();
-	HashMap<Relation, TransitStopFacility> stopRelation2TransitStop = new HashMap<>();
+	HashMap<Relation, StopArea> stopRelation2TransitStop = new HashMap<>();
 	private DataSet dataSet;
 	private EditableScenario sourceScenario;
 	private EditableScenario targetScenario;
@@ -212,12 +212,8 @@ public class Importer {
 				}
 			}
 			dataSet.addPrimitive(relation);
-			EditableTransitStopFacility newStop = ((EditableTransitStopFacility) targetScenario
-					.getTransitSchedule()
-					.getFactory()
-					.createTransitStopFacility(Id.create(relation.getUniqueId(), TransitStopFacility.class), stop.getCoord(),
-							stop.getIsBlockingLane()));
-			newStop.setName(stop.getName());
+			StopArea newStop = new StopArea(relation);
+			newStop.setIsBlockingLane(stop.getIsBlockingLane());
 			newStop.setOrigId(((EditableTransitStopFacility) stop).getOrigId());
 			newStop.setLinkId(linkId);
 			newStop.setNodeId(nodeId);
