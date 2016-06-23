@@ -578,33 +578,20 @@ public class NetworkModel {
 
 		private void createTransitStopFacility(Relation relation) {
 			if (relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
-				EastNorth eN = decidePlatformLocation(relation);
-				if (eN != null) {
-					EditableTransitStopFacility stop = (EditableTransitStopFacility) scenario.getTransitSchedule().getFactory()
-							.createTransitStopFacility(Id.create(String.valueOf(relation.getUniqueId()), TransitStopFacility.class), new Coord(eN.getX(), eN.getY()), true);
+				StopArea stopArea = new StopArea(relation);
+				if (stopArea.getCoord() != null) {
 					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
-					stop.setLinkId(linkId);
+					stopArea.setLinkId(linkId);
 					org.matsim.api.core.v01.network.Node stopPosition = determineStopPositionOsmNode(relation);
 					if (stopPosition != null) {
-						stop.setNodeId(stopPosition.getId());
 						if (linkId == null) {
 							for (Link inLink : stopPosition.getInLinks().values()) {
-								stop.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
+								stopArea.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
 							}
 						}
 					}
-					Id<TransitStopFacility> origId;
-					if (relation.hasKey("ref")) {
-						origId = Id.create(relation.get("ref"), TransitStopFacility.class);
-					} else {
-						origId = stop.getId();
-					}
-					if (relation.hasKey("name")) {
-						stop.setName(relation.get("name"));
-					}
-					stop.setOrigId(Id.create(origId, TransitStopFacility.class));
-					scenario.getTransitSchedule().addStopFacility(stop);
-					stopRelation2TransitStop.put(relation, stop);
+					scenario.getTransitSchedule().addStopFacility(stopArea);
+					stopRelation2TransitStop.put(relation, stopArea);
 				}
 			}
 		}
@@ -634,38 +621,6 @@ public class NetworkModel {
 				}
 			}
 			return null;
-		}
-
-		private EastNorth decidePlatformLocation(Relation relation) {
-			List<Node> nodes = new ArrayList<>();
-			for (RelationMember member : relation.getMembers()) {
-				if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")
-						|| member.hasRole("stop")) {
-					if (member.isWay()) {
-						nodes.addAll(member.getWay().getNodes());
-					} else if (member.isNode()) {
-						nodes.add(member.getNode());
-					}
-				}
-			}
-			Iterator<Node> iterator = nodes.iterator();
-			while (iterator.hasNext()) {
-				Node next = iterator.next();
-				if (! next.isLatLonKnown()) {
-					iterator.remove();
-				}
-			}
-			if (nodes.size() > 2) {
-				return Geometry.getCenter(nodes);
-			} else if (nodes.size() == 2) {
-				Node node0 = nodes.get(0);
-				Node node1 = nodes.get(1);
-				return node0.getEastNorth().getCenter(node1.getEastNorth());
-			} else if (nodes.size() == 1) {
-				return nodes.get(0).getEastNorth();
-			} else {
-				return null;
-			}
 		}
 
 		private NetworkRoute determineNetworkRoute(Relation relation) {
