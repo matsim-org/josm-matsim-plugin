@@ -2,6 +2,7 @@ package org.matsim.contrib.josm.model;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
@@ -11,13 +12,14 @@ import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Export {
 
 	public static EditableScenario convertIdsAndFilterDeleted(NetworkModel networkModel) {
 		EditableScenario scenario = networkModel.getScenario();
+		fixTransitSchedule(scenario);
 		Config config = scenario.getConfig();
 		config.transit().setUseTransit(true);
 		EditableScenario targetScenario = EditableScenarioUtils.createScenario(config);
@@ -120,6 +122,79 @@ public class Export {
 				newSchedule.removeTransitLine(newTLine);
 			}
 		}
+		splitTransitStopFacilities(targetScenario);
 		return targetScenario;
 	}
+
+	private static void fixTransitSchedule(EditableScenario sourceScenario) {
+		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
+				// FIXME: I have to normalize the facilities here - there are referenced facility objects here which are not in the scenario.
+				// FIXME: This fact will VERY likely also lead to problems elsewhere.
+				ListIterator<TransitRouteStop> i = transitRoute.getStops().listIterator();
+				while (i.hasNext()) {
+					TransitRouteStop transitRouteStop = i.next();
+					TransitStopFacility stopFacility1 = transitRouteStop.getStopFacility();
+					TransitStopFacility stopFacility = sourceScenario.getTransitSchedule().getFacilities().get(stopFacility1.getId());
+					if (stopFacility != null) {
+						transitRouteStop.setStopFacility(stopFacility);
+					} else {
+						i.remove();
+					}
+				}
+			}
+		}
+	}
+
+	private static void splitTransitStopFacilities(EditableScenario targetScenario) {
+		final Map<TransitStopFacility, List<TransitStopFacility>> facilityCopies = new HashMap<>();
+		for (EditableTransitStopFacility transitStopFacility : targetScenario.getTransitSchedule().getEditableFacilities().values()) {
+			facilityCopies.put(transitStopFacility, new ArrayList<>());
+		}
+		targetScenario.getTransitSchedule().getTransitLines().values().stream()
+				.flatMap(transitLine -> transitLine.getRoutes().values().stream())
+				.forEach(transitRoute -> transitRoute.getStops().stream()
+						.filter(transitRouteStop -> transitRouteStop.getStopFacility().getLinkId() != null)
+						.forEach(transitRouteStop -> {
+							TransitStopFacility facility = transitRouteStop.getStopFacility();
+							List<TransitStopFacility> copies = facilityCopies.get(facility);
+							Link stopFacilityLink = targetScenario.getNetwork().getLinks().get(facility.getLinkId());
+							List<Link> links = getLinks(transitRoute.getRoute(), targetScenario.getNetwork());
+							// check if stop.link is on route. if not, but a link with the same toNode as stop.link is,
+							// check if there is already a copy_link of stop. if it is, replace stop with copy. else create copy and replace stop with copy.
+							if (!links.contains(stopFacilityLink)) {
+								links.stream()
+										.filter(link -> link.getToNode().equals(stopFacilityLink.getToNode()))
+										.findFirst() // The first link on the route which has the same toNode of stop.link
+										.ifPresent(link -> {
+											// Create a copy of the stop which uses that link
+											TransitStopFacility facilityCopy = copies.stream()
+													.filter(copy -> copy.getLinkId().equals(stopFacilityLink.getId()))
+													.findAny() // except if there already is one
+													.orElseGet(() -> {
+														Id<TransitStopFacility> newId = Id.create(facility.getId().toString() + "." + Integer.toString(copies.size() + 1), TransitStopFacility.class);
+														TransitStopFacility newFacilityCopy = targetScenario.getTransitSchedule().getFactory().createTransitStopFacility(newId, facility.getCoord(), facility.getIsBlockingLane());
+														newFacilityCopy.setStopPostAreaId(facility.getId().toString());
+														newFacilityCopy.setLinkId(link.getId());
+														newFacilityCopy.setName(facility.getName());
+														copies.add(newFacilityCopy);
+														targetScenario.getTransitSchedule().addStopFacility(newFacilityCopy);
+														return newFacilityCopy;
+													});
+											transitRouteStop.setStopFacility(facilityCopy); // ... and set it.
+										});
+							}
+
+						})
+				);
+	}
+
+	private static List<Link> getLinks(NetworkRoute route, Network network) {
+		List<Link> links = new ArrayList<>();
+		links.add(network.getLinks().get(route.getStartLinkId()));
+		links.addAll(route.getLinkIds().stream().map(linkId -> network.getLinks().get(linkId)).collect(Collectors.toList()));
+		links.add(network.getLinks().get(route.getEndLinkId()));
+		return links;
+	}
+
 }
