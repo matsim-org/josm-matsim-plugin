@@ -202,7 +202,7 @@ public class TransitScheduleTest extends Test {
 		if (errors.isEmpty()) { // Otherwise, it is possible that we have a condition where Export would throw an Exception
 			// We continue validation with a preview of the real, exported TransitSchedule, so that the ids
 			// in the error messages are the ones in the XML.
-			EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(networkModel);
+			EditableScenario targetScenario = Export.toScenario(networkModel);
 			ValidationResult validationResult = TransitScheduleValidator.validateAll(targetScenario.getTransitSchedule(), targetScenario.getNetwork());
 			for (String errorString : validationResult.getWarnings()) {
 				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));

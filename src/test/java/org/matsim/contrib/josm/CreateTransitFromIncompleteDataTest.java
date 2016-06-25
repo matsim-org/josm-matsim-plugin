@@ -7,7 +7,6 @@ import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
@@ -107,7 +106,7 @@ public class CreateTransitFromIncompleteDataTest {
 			}
 		}
 
-		Scenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
+		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule.xml").getPath());
 	}

@@ -591,16 +591,6 @@ public class NetworkModel {
 					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
 					if (linkId != null) {
 						stopArea.setLinkId(linkId);
-					} else {
-						for (Node stopPosition : stopArea.determineStopPositionOsmNodes()) {
-							Id<org.matsim.api.core.v01.network.Node> nodeId = Id.createNodeId(NodeConversionRules.getId(stopPosition));
-							org.matsim.api.core.v01.network.Node node = scenario.getNetwork().getNodes().get(nodeId);
-							if (node != null) {
-								for (Link inLink : node.getInLinks().values()) {
-									stopArea.setLinkId(Id.createLinkId(((LinkImpl) inLink).getOrigId())); // last one wins
-								}
-							}
-						}
 					}
 					stopAreas.put(relation, stopArea);
 				}

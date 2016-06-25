@@ -23,7 +23,7 @@ public class LayerConverter {
 		EditableScenario sourceScenario = networkModel.getScenario();
 
 		emptyNetwork(sourceScenario);
-		EditableScenario targetScenario = Export.convertIdsAndFilterDeleted(networkModel);
+		EditableScenario targetScenario = Export.toScenario(networkModel);
 
 		new CreatePseudoNetwork(targetScenario.getTransitSchedule(), targetScenario.getNetwork(), "pt_")
 				.createNetwork();
@@ -38,7 +38,7 @@ public class LayerConverter {
 		NetworkModel networkModel = NetworkModel.createNetworkModel((osmLayer).data);
 		networkModel.visitAll();
 
-		EditableScenario exportedScenario = Export.convertIdsAndFilterDeleted(networkModel);
+		EditableScenario exportedScenario = Export.toScenario(networkModel);
 
 		// check if network should be cleaned
 		if ((!Preferences.isSupportTransit()) && Preferences.isCleanNetwork()) {

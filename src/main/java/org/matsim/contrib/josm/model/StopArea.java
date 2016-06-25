@@ -1,5 +1,8 @@
 package org.matsim.contrib.josm.model;
 
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
@@ -17,6 +20,8 @@ import java.util.Map;
 
 public class StopArea extends EditableTransitStopFacility {
 	private final Relation relation;
+
+	private final ListProperty<Node> stopPositionOsmNodes = new SimpleListProperty<>(FXCollections.observableArrayList());
 
 	public StopArea(Relation relation) {
 		super(Id.create(relation.getUniqueId(), TransitStopFacility.class));
@@ -55,7 +60,7 @@ public class StopArea extends EditableTransitStopFacility {
 		}
 	}
 
-	public List<Node> determineStopPositionOsmNodes() {
+	public List<Node> getStopPositionOsmNodes() {
 		List<Node> stopPositions = new ArrayList<>();
 		for (RelationMember member : relation.getMembers()) {
 			if (member.hasRole("stop") && member.isNode()) {
@@ -65,7 +70,8 @@ public class StopArea extends EditableTransitStopFacility {
 				}
 			}
 		}
-		return stopPositions;
+		stopPositionOsmNodes.setAll(stopPositions);
+		return stopPositionOsmNodes.get();
 	}
 
 

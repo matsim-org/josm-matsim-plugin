@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
@@ -155,9 +156,9 @@ public class OSMDataTest {
 			Assert.assertEquals(7, route.getRoute().getLinkIds().size());
 		}
 
-		Scenario simulatedExportScenario = Export.convertIdsAndFilterDeleted(busRouteListener);
+		Scenario scenario = Export.toScenario(busRouteListener);
 		int nStopsWithLink = 0;
-		for (TransitStopFacility transitStopFacility : simulatedExportScenario.getTransitSchedule().getFacilities().values()) {
+		for (TransitStopFacility transitStopFacility : scenario.getTransitSchedule().getFacilities().values()) {
 			if (transitStopFacility.getLinkId() != null) {
 				nStopsWithLink++;
 			}
@@ -175,28 +176,32 @@ public class OSMDataTest {
 			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
 		}
 
-		simulatedExportScenario = Export.convertIdsAndFilterDeleted(busRouteListener);
-		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
+		scenario = Export.toScenario(busRouteListener);
+		Assert.assertEquals("busRoute", scenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 		MATSimLayer matsimLayer = LayerConverter.convertWithFullTransit(busRouteLayer);
-		Scenario internalScenario = matsimLayer.getNetworkModel().getScenario();
-		Assert.assertEquals(10,internalScenario.getNetwork().getLinks().size());
-		Assert.assertEquals(6,internalScenario.getNetwork().getNodes().size());
-		Assert.assertEquals(4,internalScenario.getTransitSchedule().getFacilities().size());
-		Assert.assertEquals(1,internalScenario.getTransitSchedule().getTransitLines().size());
-		Assert.assertEquals(2,countRoutes(internalScenario.getTransitSchedule()));
-		for (TransitRoute route: internalScenario.getTransitSchedule().getTransitLines().values().iterator().next().getRoutes().values()) {
-			Assert.assertEquals(4, route.getStops().size());
-			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
-		}
+		Assert.assertEquals(10, scenario.getNetwork().getLinks().size());
+		Assert.assertEquals(6, scenario.getNetwork().getNodes().size());
+		Assert.assertEquals(4, scenario.getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(1, scenario.getTransitSchedule().getTransitLines().size());
+		Assert.assertEquals(2,countRoutes(scenario.getTransitSchedule()));
+
+		TransitRoute route1to4 = scenario.getTransitSchedule().getTransitLines().get(Id.create("busRoute", TransitLine.class)).getRoutes().get(Id.create("1to4", TransitRoute.class));
+		Assert.assertEquals(4, route1to4.getStops().size());
+		Assert.assertEquals(4, route1to4.getRoute().getLinkIds().size()); // this one needs a dummy entry link
+
+		TransitRoute route4to1 = scenario.getTransitSchedule().getTransitLines().get(Id.create("busRoute", TransitLine.class)).getRoutes().get(Id.create("4to1", TransitRoute.class));
+		Assert.assertEquals(4, route4to1.getStops().size());
+		Assert.assertEquals(3, route4to1.getRoute().getLinkIds().size());
+
 
 		DataSet convertedOsm = matsimLayer.data;
 		Assert.assertEquals(10, convertedOsm.getNodes().size());
 		Assert.assertEquals(10, convertedOsm.getWays().size());
 		Assert.assertEquals(7, convertedOsm.getRelations().size());
 
-		simulatedExportScenario = Export.convertIdsAndFilterDeleted(matsimLayer.getNetworkModel());
-		Assert.assertEquals("busRoute", simulatedExportScenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
+		scenario = Export.toScenario(matsimLayer.getNetworkModel());
+		Assert.assertEquals("busRoute", scenario.getTransitSchedule().getTransitLines().values().iterator().next().getId().toString());
 
 	}
 

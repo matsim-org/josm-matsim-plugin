@@ -8,7 +8,6 @@ import javax.swing.JOptionPane;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.core.network.NetworkWriter;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.openstreetmap.josm.Main;
@@ -112,7 +111,7 @@ public final class NetworkExporter extends FileExporter {
 
 		// start export task if not aborted
 		if (okToExport) {
-			Scenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) layer).getNetworkModel());
+			Scenario targetScenario = Export.toScenario(((MATSimLayer) layer).getNetworkModel());
 
 			if (Main.pref.getBoolean("matsim_cleanNetwork")) {
 				new NetworkCleaner().run(targetScenario.getNetwork());

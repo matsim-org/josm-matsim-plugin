@@ -7,7 +7,6 @@ import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkWriter;
@@ -46,7 +45,7 @@ public class CreateTransitFromCompleteDataTest {
 
 		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
-		Scenario targetScenario = Export.convertIdsAndFilterDeleted(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
+		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
 	}

@@ -2,12 +2,10 @@ package org.matsim.contrib.josm;
 
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.josm.actions.TransitScheduleTest;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
 import org.matsim.contrib.osm.CreateStopAreas;
 import org.matsim.contrib.osm.IncompleteRoutesTest;
 import org.matsim.contrib.osm.MasterRoutesTest;
@@ -23,7 +21,6 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
@@ -86,7 +83,7 @@ public class CreatePseudoTransitTest {
 		}
 
 		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(JosmAction.getEditLayer());
-		Scenario targetScenario = Export.convertIdsAndFilterDeleted(matSimLayer.getNetworkModel());
+		Scenario targetScenario = Export.toScenario(matSimLayer.getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("pseudo-network.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("pseudo-transitSchedule.xml").getPath());
 	}
