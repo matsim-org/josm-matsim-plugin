@@ -49,7 +49,11 @@ public class Export {
 		TransitSchedule transitSchedule = scenario.getTransitSchedule();
 		final Map<StopArea, List<TransitStopFacility>> facilityCopies = new HashMap<>(networkModel.getScenario().getTransitSchedule().getEditableFacilities().values().stream().collect(Collectors.toMap(sa -> (StopArea) sa, sa -> new ArrayList<>())));
 		networkModel.getScenario().getTransitSchedule().getEditableFacilities().values().stream().map(facility -> (StopArea) facility).forEach(stopArea -> {
-			if (stopArea.getStopPositionOsmNodes().isEmpty()) {
+			List<NodeImpl> stopPositionModelNodes = stopArea.getStopPositionOsmNodes().stream().map(osmNode -> (NodeImpl) networkModel.getScenario().getNetwork().getNodes().get(Id.createNodeId(osmNode.getUniqueId())))
+					.filter(modelNode -> modelNode != null) //FIXME: don't even return these
+					.collect(Collectors.toList());
+
+			if (stopPositionModelNodes.isEmpty()) {
 				Id<TransitStopFacility> id = stopArea.getOrigId();
 				TransitStopFacility transitStopFacility = transitSchedule.getFactory().createTransitStopFacility(id, stopArea.getCoord(), stopArea.getIsBlockingLane());
 				Id<Link> linkId = stopArea.getLinkId();
@@ -62,8 +66,8 @@ public class Export {
 				transitSchedule.addStopFacility(transitStopFacility);
 				facilityCopies.get(stopArea).add(transitStopFacility);
 			} else {
-				for (org.openstreetmap.josm.data.osm.Node osmNode : stopArea.getStopPositionOsmNodes()) {
-					Node node = scenario.getNetwork().getNodes().get(Id.createNodeId(( (NodeImpl) networkModel.getScenario().getNetwork().getNodes().get(Id.createNodeId(osmNode.getUniqueId()))  )   .getOrigId()));
+				for (NodeImpl modelNode : stopPositionModelNodes) {
+					Node node = scenario.getNetwork().getNodes().get(Id.createNodeId(modelNode.getOrigId()));
 					for (Link link : node.getInLinks().values()) {
 						Id<TransitStopFacility> id = Id.create(stopArea.getId().toString() + "." + Integer.toString(facilityCopies.get(stopArea).size() + 1), TransitStopFacility.class);
 						TransitStopFacility transitStopFacility = transitSchedule.getFactory().createTransitStopFacility(id, stopArea.getCoord(), stopArea.getIsBlockingLane());
@@ -72,6 +76,9 @@ public class Export {
 						transitSchedule.addStopFacility(transitStopFacility);
 						facilityCopies.get(stopArea).add(transitStopFacility);
 					}
+				}
+				if (facilityCopies.get(stopArea).isEmpty()) {
+					throw new RuntimeException();
 				}
 			}
 			if (facilityCopies.get(stopArea).isEmpty()) {
