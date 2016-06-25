@@ -1,5 +1,7 @@
 package org.matsim.contrib.josm.model;
 
+import javafx.beans.property.ReadOnlyMapProperty;
+import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.*;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -170,7 +172,7 @@ public class NetworkModel {
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
 
-	private ObservableMap<Relation, StopArea> stopAreas = FXCollections.observableHashMap();
+	private ReadOnlyMapWrapper<Relation, StopArea> stopAreas = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
 
 	private final EditableScenario scenario;
 
@@ -227,15 +229,6 @@ public class NetworkModel {
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
 		this.stopAreas.putAll(stopRelation2TransitStop);
-		this.stopAreas.addListener((MapChangeListener<Relation, StopArea>) change -> {
-			if (change.wasRemoved()) {
-				scenario.getTransitSchedule().removeStopFacility(change.getValueRemoved());
-			}
-			if (change.wasAdded()) {
-				StopArea addedStopArea = change.getValueAdded();
-				scenario.getTransitSchedule().addStopFacility(addedStopArea);
-			}
-		});
 	}
 
 	public void visitAll() {
@@ -426,13 +419,6 @@ public class NetworkModel {
 		public void visit(Node node) {
 			if (visited.add(node)) {
 				scenario.getNetwork().removeNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class));
-				if (scenario.getConfig().transit().isUseTransit()) {
-					TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
-							.get(Id.create(String.valueOf(node.getUniqueId()), TransitStopFacility.class));
-					if (transitStopFacility != null) {
-						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
-					}
-				}
 				if (isRelevant(node)) {
 					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
 					NodeImpl matsimNode = (NodeImpl) scenario
@@ -476,13 +462,6 @@ public class NetworkModel {
 					for (Link link : oldLinks) {
 						Link removedLink = scenario.getNetwork().removeLink(link.getId());
 						link2Segments.remove(removedLink);
-					}
-				}
-				if (scenario.getConfig().transit().isUseTransit()) {
-					TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFacilities()
-							.get(Id.create(String.valueOf(way.getUniqueId()), TransitStopFacility.class));
-					if (transitStopFacility != null) {
-						scenario.getTransitSchedule().removeStopFacility(transitStopFacility);
 					}
 				}
 				if (isUsableAndNotRemoved(way)) {
@@ -719,6 +698,10 @@ public class NetworkModel {
 
 	public Map<Link, List<WaySegment>> getLink2Segments() {
 		return link2Segments;
+	}
+
+	public ReadOnlyMapProperty<Relation, StopArea> stopAreas() {
+		return stopAreas.getReadOnlyProperty();
 	}
 
 }

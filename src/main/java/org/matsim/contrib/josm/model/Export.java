@@ -8,20 +8,19 @@ import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NodeImpl;
-import org.matsim.core.population.routes.LinkNetworkRouteImpl;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
-import org.matsim.facilities.Facility;
 import org.matsim.pt.transitSchedule.api.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Export {
 
 	public static EditableScenario toScenario(NetworkModel networkModel) {
-		fixTransitSchedule(networkModel.getScenario());
+		fixTransitSchedule(networkModel);
 		Config config = networkModel.getScenario().getConfig();
 		config.transit().setUseTransit(true);
 		EditableScenario scenario = EditableScenarioUtils.createScenario(config);
@@ -47,8 +46,8 @@ public class Export {
 			scenario.getNetwork().addLink(newLink);
 		}
 		TransitSchedule transitSchedule = scenario.getTransitSchedule();
-		final Map<StopArea, List<TransitStopFacility>> facilityCopies = new HashMap<>(networkModel.getScenario().getTransitSchedule().getEditableFacilities().values().stream().collect(Collectors.toMap(sa -> (StopArea) sa, sa -> new ArrayList<>())));
-		networkModel.getScenario().getTransitSchedule().getEditableFacilities().values().stream().map(facility -> (StopArea) facility).forEach(stopArea -> {
+		final Map<StopArea, List<TransitStopFacility>> facilityCopies = new HashMap<>(networkModel.stopAreas().values().stream().collect(Collectors.toMap(Function.identity(), sa -> new ArrayList<>())));
+		networkModel.stopAreas().values().stream().map(facility -> facility).forEach(stopArea -> {
 			List<NodeImpl> stopPositionModelNodes = stopArea.getStopPositionOsmNodes().stream().map(osmNode -> (NodeImpl) networkModel.getScenario().getNetwork().getNodes().get(Id.createNodeId(osmNode.getUniqueId())))
 					.filter(modelNode -> modelNode != null) //FIXME: don't even return these
 					.collect(Collectors.toList());
@@ -110,7 +109,6 @@ public class Export {
 					List<TransitRouteStop> newTRStops = new ArrayList<>();
 					IntStream.range(0, route.getStops().size()).forEach(i -> {
 						TransitRouteStop transitRouteStop = route.getStops().get(i);
-						Id<TransitStopFacility> stopId = ((EditableTransitStopFacility) transitRouteStop.getStopFacility()).getOrigId();
 						TransitRouteStop newTRStop = transitSchedule.getFactory().createTransitRouteStop(null, transitRouteStop.getArrivalOffset(), transitRouteStop.getDepartureOffset());
 						String awaitDepartureTime = String.valueOf(networkModel.getScenario().getTransitSchedule().getTransitStopsAttributes()
 								.getAttribute(transitRouteStop.getStopFacility().getName() + "_" + route.getRealId(), "awaitDepartureTime"));
@@ -186,8 +184,8 @@ public class Export {
 		return scenario;
 	}
 
-	private static void fixTransitSchedule(EditableScenario sourceScenario) {
-		for (TransitLine transitLine : sourceScenario.getTransitSchedule().getTransitLines().values()) {
+	private static void fixTransitSchedule(NetworkModel sourceScenario) {
+		for (TransitLine transitLine : sourceScenario.getScenario().getTransitSchedule().getTransitLines().values()) {
 			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
 				// FIXME: I have to normalize the facilities here - there are referenced facility objects here which are not in the scenario.
 				// FIXME: This fact will VERY likely also lead to problems elsewhere.
@@ -195,7 +193,7 @@ public class Export {
 				while (i.hasNext()) {
 					TransitRouteStop transitRouteStop = i.next();
 					TransitStopFacility stopFacility1 = transitRouteStop.getStopFacility();
-					TransitStopFacility stopFacility = sourceScenario.getTransitSchedule().getFacilities().get(stopFacility1.getId());
+					TransitStopFacility stopFacility = sourceScenario.stopAreas().get(((StopArea) stopFacility1).getRelation());
 					if (stopFacility != null) {
 						transitRouteStop.setStopFacility(stopFacility);
 					} else {
