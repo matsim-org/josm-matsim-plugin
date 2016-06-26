@@ -1,5 +1,8 @@
 package org.matsim.contrib.josm.model;
 
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyListProperty;
+import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.beans.property.ReadOnlyMapProperty;
 import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.*;
@@ -173,6 +176,7 @@ public class NetworkModel {
 	final static String TAG_RAILWAY = "railway";
 
 	private ReadOnlyMapWrapper<Relation, StopArea> stopAreas = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
+	private ReadOnlyListWrapper<StopArea> stopAreaList = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 
 	private final EditableScenario scenario;
 
@@ -228,6 +232,12 @@ public class NetworkModel {
 		this.scenario = scenario;
 		this.way2Links = way2Links;
 		this.link2Segments = link2Segments;
+		this.stopAreas.addListener((MapChangeListener<Relation, StopArea>) change -> {
+			Platform.runLater(() -> stopAreaList.remove(change.getValueRemoved()));
+			if (change.wasAdded()) {
+				Platform.runLater(() -> stopAreaList.add(change.getValueAdded()));
+			}
+		});
 		this.stopAreas.putAll(stopRelation2TransitStop);
 	}
 
@@ -702,6 +712,10 @@ public class NetworkModel {
 
 	public ReadOnlyMapProperty<Relation, StopArea> stopAreas() {
 		return stopAreas.getReadOnlyProperty();
+	}
+
+	public ReadOnlyListProperty<StopArea> stopAreaList() {
+		return stopAreaList.getReadOnlyProperty();
 	}
 
 }

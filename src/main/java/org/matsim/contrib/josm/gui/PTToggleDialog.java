@@ -60,18 +60,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	private final JTable table_pt;
 	private NetworkModel networkModel;
 
-	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
-		@Override
-		public void processDatasetEvent(AbstractDatasetChangedEvent abstractDatasetChangedEvent) {
-			notifyDataChanged();
-		}
-	});
-	private final SelectionChangedListener selectionListener = new SelectionChangedListener() {
-		@Override
-		public void selectionChanged(Collection<? extends OsmPrimitive> osmPrimitives) {
-			notifyDataChanged();
-		}
-	};
+	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(abstractDatasetChangedEvent -> notifyDataChanged());
+	private final SelectionChangedListener selectionListener = osmPrimitives -> notifyDataChanged();
 	private final MATSimTableModel_pt tableModel_pt;
 
 	@Override

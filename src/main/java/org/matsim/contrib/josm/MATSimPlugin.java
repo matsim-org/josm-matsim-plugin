@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.matsim.contrib.josm.actions.*;
 import org.matsim.contrib.josm.gui.LinksToggleDialog;
 import org.matsim.contrib.josm.gui.PTToggleDialog;
+import org.matsim.contrib.josm.gui.StopAreasToggleDialog;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.osm.*;
@@ -48,6 +49,7 @@ import static org.openstreetmap.josm.tools.I18n.marktr;
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	private PTToggleDialog ptToggleDialog = new PTToggleDialog();
+	private StopAreasToggleDialog stopAreasToggleDialog = new StopAreasToggleDialog();
 	private LinksToggleDialog linksToggleDialog = new LinksToggleDialog();
 
 	public MATSimPlugin(PluginInformation info) {
@@ -148,6 +150,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		if (oldFrame == null && newFrame != null) { // map frame added
 			Main.map.addToggleDialog(linksToggleDialog);
 			Main.map.addToggleDialog(ptToggleDialog);
+			Main.map.addToggleDialog(stopAreasToggleDialog);
 		}
 	}
 
@@ -170,8 +173,10 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		} else if (e.getKey().equalsIgnoreCase("matsim_supportTransit")) {
 			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
 			ptToggleDialog.setEnabled(supportTransit);
+			stopAreasToggleDialog.setEnabled(supportTransit);
 			if (!supportTransit) {
 				ptToggleDialog.hideDialog();
+				stopAreasToggleDialog.hideDialog();
 			}
 		}
 	}
