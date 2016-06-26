@@ -16,6 +16,8 @@ import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
+import javax.swing.*;
+
 public class StopAreasToggleDialog extends ToggleDialog {
 
 	private final JFXPanel fxPanel = new JFXPanel();
@@ -29,7 +31,7 @@ public class StopAreasToggleDialog extends ToggleDialog {
 		Main.pref.addPreferenceChangeListener(this);
 		createLayout(fxPanel, false, null);
 		Platform.runLater(() -> {
-			title.addListener((InvalidationListener) -> setTitle(title.get()));
+			title.addListener((InvalidationListener) -> SwingUtilities.invokeLater(() -> setTitle(title.get())));
 			AnchorPane root = new AnchorPane();
 			list.setCellFactory(l -> new ListCell<StopArea>() {
 				@Override
