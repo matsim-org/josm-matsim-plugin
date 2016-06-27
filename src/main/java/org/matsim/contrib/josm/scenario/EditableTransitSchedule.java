@@ -3,9 +3,11 @@ package org.matsim.contrib.josm.scenario;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.pt.transitSchedule.DepartureImpl;
 import org.matsim.pt.transitSchedule.TransitRouteStopImpl;
 import org.matsim.pt.transitSchedule.api.*;
 import org.matsim.utils.objectattributes.ObjectAttributes;
+import org.matsim.vehicles.Vehicle;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +55,7 @@ public class EditableTransitSchedule implements TransitSchedule {
 
         @Override
         public Departure createDeparture(Id<Departure> id, double v) {
-            return null;
+            return new EditableDeparture(id, v);
         }
     };
 

@@ -33,16 +33,21 @@ configurations {
 }
 
 dependencies {
-    zipIntoJar 'org.matsim:matsim:0.8.0'
+    zipIntoJar ('org.matsim:matsim:0.9.0-SNAPSHOT') {
+        exclude group: 'org.geotools'
+        exclude group: 'kml'
+        exclude group: 'org.jfree'
+    }
+    zipIntoJar ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {
+        exclude group: 'commons-logging'
+    }
+
     // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
     // the dependency.
     // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
     // We add it to compile, so that it becomes a dependency of our project.
-    compile (configurations.zipIntoJar.dependencies) {
-   		exclude group: 'org.geotools'
-        exclude group: 'kml'
-        exclude group: 'org.jfree'
-    }
+    compile (configurations.zipIntoJar.dependencies)
+
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
     compile files("libs/josm-latest.jar")

@@ -77,6 +77,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
 		Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
 		jMenu2.add(transitScheduleExportAction);
+		jMenu2.add(new OTFVisAction());
 
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream("matsimPreset.xml"));
