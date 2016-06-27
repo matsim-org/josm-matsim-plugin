@@ -33,12 +33,12 @@ configurations {
 }
 
 dependencies {
-    zipIntoJar ('org.matsim:matsim:0.9.0-SNAPSHOT') {
+    zipIntoJar ('org.matsim:matsim:0.8.0') {
         exclude group: 'org.geotools'
         exclude group: 'kml'
         exclude group: 'org.jfree'
     }
-    zipIntoJar ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {
+    zipIntoJar ('org.matsim.contrib:otfvis:0.8.0') {
         exclude group: 'commons-logging'
     }
 

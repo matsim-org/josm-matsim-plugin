@@ -38,15 +38,12 @@ import org.matsim.vis.otfvis.opengl.layer.OGLSimpleQuadDrawer;
 import org.matsim.vis.otfvis.opengl.layer.OGLSimpleStaticNetLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
-import org.openstreetmap.josm.gui.PleaseWaitRunnable;
-import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.Shortcut;
-import org.xml.sax.SAXException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -66,27 +63,12 @@ public class OTFVisAction extends JosmAction {
 		long departureId = 0;
 		for (TransitLine transitLine : scenario.getTransitSchedule().getTransitLines().values()) {
 			for (TransitRoute transitRoute : transitLine.getRoutes().values()) {
-				for (double time = 0.0; time < 24 * 60 * 60; time += 10 * 60.0) {
+				for (double time = 0.0; time < 0.5 * 60 * 60; time += 10 * 60.0) {
 					transitRoute.addDeparture(scenario.getTransitSchedule().getFactory().createDeparture(Id.create(departureId++, Departure.class), time));
 				}
 			}
 		}
 		new CreateVehiclesForSchedule(scenario.getTransitSchedule(), scenario.getTransitVehicles()).run();
-
-		// This swallows exceptions:
-//		PleaseWaitRunnable task = new PleaseWaitRunnable("Simulating") {
-//			@Override
-//			protected void cancel() {}
-//
-//			@Override
-//			protected void realRun() throws SAXException, IOException, OsmTransferException {
-//				OTFVis.playScenario(scenario);
-//			}
-//
-//			@Override
-//			protected void finish() {}
-//		};
-//		task.run();
 
 		EventsManager eventsManager = EventsUtils.createEventsManager();
 		com.google.inject.Injector injector = Injector.createInjector(scenario.getConfig(), new AbstractModule() {
@@ -120,6 +102,7 @@ public class OTFVisAction extends JosmAction {
 
 		GLAutoDrawable canvas = OTFOGLDrawer.createGLCanvas(visconf);
 		OTFClient otfClient = new OTFClient(canvas);
+		otfClient.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Default is "EXIT_ON_CLOSE" in MATSim 0.8.0
 		otfClient.setServer(server);
 		OTFClientControl.getInstance().setOTFVisConfig(visconf); // has to be set before OTFClientQuadTree.getConstData() is invoked!
 		OTFServerQuadTree serverQuadTree = server.getQuad(connectionManager);
@@ -136,20 +119,9 @@ public class OTFVisAction extends JosmAction {
 		otfClient.addDrawerAndInitialize(mainDrawer, saver);
 		otfClient.pack();
 		otfClient.setVisible(true);
-
-		PleaseWaitRunnable task = new PleaseWaitRunnable("Simulating") {
-			@Override
-			protected void cancel() {}
-
-			@Override
-			protected void realRun() throws SAXException, IOException, OsmTransferException {
-				instance.run();
-			}
-
-			@Override
-			protected void finish() {}
-		};
-		task.run();
-
+		new Thread(() -> {
+			instance.run();
+			SwingUtilities.invokeLater(otfClient::dispose);
+		}).start();
 	}
 }
