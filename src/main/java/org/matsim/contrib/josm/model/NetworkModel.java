@@ -447,15 +447,8 @@ public class NetworkModel {
 				Way junctionWay = null;
 				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
 					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
-						if (way.isFirstLastNode(node) || Preferences.isKeepPaths() || junctionWay != null) {
+						if (Preferences.isKeepPaths() || way.isFirstLastNode(node) || junctionWay != null || node.hasTag("public_transport", "stop_position")) {
 							return true;
-						} else {
-							for (Relation relation : OsmPrimitive.getFilteredList(node.getReferrers(), Relation.class)) {
-								if (relation.hasTag("route", "train", "track", "bus", "light_rail", "tram", "subway")
-										&& relation.hasTag("type", "route")) {
-									return true;
-								}
-							}
 						}
 						junctionWay = way;
 					}
