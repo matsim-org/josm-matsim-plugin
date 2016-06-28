@@ -1,6 +1,5 @@
 package org.matsim.contrib.josm.actions;
 
-import com.jogamp.opengl.GLAutoDrawable;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.NetworkModel;
@@ -27,7 +26,8 @@ import org.matsim.vis.otfvis.data.OTFClientQuadTree;
 import org.matsim.vis.otfvis.data.OTFConnectionManager;
 import org.matsim.vis.otfvis.data.OTFServerQuadTree;
 import org.matsim.vis.otfvis.data.fileio.SettingsSaver;
-import org.matsim.vis.otfvis.gui.OTFHostControlBar;
+import org.matsim.vis.otfvis.gui.OTFControlBar;
+import org.matsim.vis.otfvis.gui.OTFHostControl;
 import org.matsim.vis.otfvis.gui.OTFQueryControl;
 import org.matsim.vis.otfvis.gui.OTFQueryControlToolBar;
 import org.matsim.vis.otfvis.handler.FacilityDrawer;
@@ -99,24 +99,24 @@ public class OTFVisAction extends JosmAction {
 			connectionManager.connectReceiverToLayer(FacilityDrawer.DataDrawer.class, SimpleSceneLayer.class);
 		}
 
-
-		GLAutoDrawable canvas = OTFOGLDrawer.createGLCanvas(visconf);
-		OTFClient otfClient = new OTFClient(canvas);
-		otfClient.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Default is "EXIT_ON_CLOSE" in MATSim 0.8.0
-		otfClient.setServer(server);
 		OTFClientControl.getInstance().setOTFVisConfig(visconf); // has to be set before OTFClientQuadTree.getConstData() is invoked!
 		OTFServerQuadTree serverQuadTree = server.getQuad(connectionManager);
 		OTFClientQuadTree clientQuadTree = serverQuadTree.convertToClient(server, connectionManager);
 		clientQuadTree.getConstData();
-		OTFHostControlBar hostControlBar = otfClient.getHostControlBar();
 
-		OTFOGLDrawer mainDrawer = new OTFOGLDrawer(clientQuadTree, hostControlBar, visconf, canvas);
-		OTFQueryControl queryControl = new OTFQueryControl(server, hostControlBar, visconf);
+		Component canvas = OTFOGLDrawer.createGLCanvas(visconf);
+		OTFHostControl otfHostControl = new OTFHostControl(server, canvas);
+		OTFOGLDrawer drawer = new OTFOGLDrawer(clientQuadTree, visconf, canvas, otfHostControl);
+		OTFControlBar controlBar = new OTFControlBar(server, otfHostControl, drawer);
+
+		OTFQueryControl queryControl = new OTFQueryControl(server, controlBar, visconf);
 		OTFQueryControlToolBar queryControlBar = new OTFQueryControlToolBar(queryControl, visconf);
 		queryControl.setQueryTextField(queryControlBar.getTextField());
+		OTFClient otfClient = new OTFClient(canvas, server, controlBar, drawer, saver);
+		otfClient.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Default is "EXIT_ON_CLOSE" in MATSim 0.8.0
+
 		otfClient.getContentPane().add(queryControlBar, BorderLayout.SOUTH);
-		mainDrawer.setQueryHandler(queryControl);
-		otfClient.addDrawerAndInitialize(mainDrawer, saver);
+		drawer.setQueryHandler(queryControl);
 		otfClient.pack();
 		otfClient.setVisible(true);
 		new Thread(() -> {
