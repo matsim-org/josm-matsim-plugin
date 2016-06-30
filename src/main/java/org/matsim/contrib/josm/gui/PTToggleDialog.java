@@ -81,7 +81,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	}
 
 	public PTToggleDialog() {
-		super("Lines/Routes/Stops", "matsim-scenario.png", "Lines/Routes/Stops", null, 150, true, Preferences.class);
+		super("Lines/Routes", "matsim-scenario.png", "Lines/Routes", null, 150, true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 
 		// table for route data
@@ -111,7 +111,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			networkModel = NetworkModel.createNetworkModel(layer.data);
 			networkModel.visitAll();
 		} else { // empty data mappings if no data layer is active
-			setTitle(tr("Lines/Stops/Routes"));
+			setTitle(tr("Lines/Routes"));
 		}
 		if (networkModel != null) {
 			networkModel.addListener(this);
@@ -122,8 +122,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	@Override
 	public void notifyDataChanged() {
 		if (networkModel != null && networkModel.getScenario().getConfig().transit().isUseTransit()) {
-			setTitle(tr("Lines: {0} / Routes: {1} / Stops: {2}", countTransitLines(networkModel.getScenario()),
-					countTransitRoutes(networkModel.getScenario()), countStopFacilities(networkModel.getScenario())));
+			setTitle(tr("Lines: {0} / Routes: {1}", countTransitLines(networkModel.getScenario()),
+					countTransitRoutes(networkModel.getScenario())));
 		} else {
 			setTitle(tr("No MATSim transit schedule active"));
 		}
