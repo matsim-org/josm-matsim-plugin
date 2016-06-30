@@ -1,6 +1,7 @@
 package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.josm.gui.OTFDialog;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.scenario.EditableScenario;
@@ -79,49 +80,10 @@ public class OTFVisAction extends JosmAction {
 				install(new QSimModule());
 			}
 		});
-		QSim instance = (QSim) injector.getInstance(Mobsim.class);
-		OnTheFlyServer server = OTFVis.startServerAndRegisterWithQSim(scenario.getConfig(), scenario, injector.getInstance(EventsManager.class), instance);
-		SettingsSaver saver = new SettingsSaver("otfsettings");
-		OTFVisConfigGroup visconf = saver.tryToReadSettingsFile();
-		if (visconf == null) {
-			visconf = server.getOTFVisConfig();
-		}
-
-		OTFConnectionManager connectionManager = new OTFConnectionManager();
-		connectionManager.connectLinkToWriter(OTFLinkAgentsHandler.Writer.class);
-		connectionManager.connectWriterToReader(OTFLinkAgentsHandler.Writer.class, OTFLinkAgentsHandler.class);
-		connectionManager.connectReaderToReceiver(OTFLinkAgentsHandler.class, OGLSimpleQuadDrawer.class);
-		connectionManager.connectReceiverToLayer(OGLSimpleQuadDrawer.class, OGLSimpleStaticNetLayer.class);
-		connectionManager.connectWriterToReader(OTFAgentsListHandler.Writer.class, OTFAgentsListHandler.class);
-		if (scenario.getConfig().transit().isUseTransit()) {
-			connectionManager.connectWriterToReader(FacilityDrawer.Writer.class, FacilityDrawer.Reader.class);
-			connectionManager.connectReaderToReceiver(FacilityDrawer.Reader.class, FacilityDrawer.DataDrawer.class);
-			connectionManager.connectReceiverToLayer(FacilityDrawer.DataDrawer.class, SimpleSceneLayer.class);
-		}
-
-		OTFClientControl.getInstance().setOTFVisConfig(visconf); // has to be set before OTFClientQuadTree.getConstData() is invoked!
-		OTFServerQuadTree serverQuadTree = server.getQuad(connectionManager);
-		OTFClientQuadTree clientQuadTree = serverQuadTree.convertToClient(server, connectionManager);
-		clientQuadTree.getConstData();
-
-		Component canvas = OTFOGLDrawer.createGLCanvas(visconf);
-		OTFHostControl otfHostControl = new OTFHostControl(server, canvas);
-		OTFOGLDrawer drawer = new OTFOGLDrawer(clientQuadTree, visconf, canvas, otfHostControl);
-		OTFControlBar controlBar = new OTFControlBar(server, otfHostControl, drawer);
-
-		OTFQueryControl queryControl = new OTFQueryControl(server, controlBar, visconf);
-		OTFQueryControlToolBar queryControlBar = new OTFQueryControlToolBar(queryControl, visconf);
-		queryControl.setQueryTextField(queryControlBar.getTextField());
-		OTFClient otfClient = new OTFClient(canvas, server, controlBar, drawer, saver);
-		otfClient.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Default is "EXIT_ON_CLOSE" in MATSim 0.8.0
-
-		otfClient.getContentPane().add(queryControlBar, BorderLayout.SOUTH);
-		drawer.setQueryHandler(queryControl);
-		otfClient.pack();
-		otfClient.setVisible(true);
-		new Thread(() -> {
-			instance.run();
-			SwingUtilities.invokeLater(otfClient::dispose);
-		}).start();
+		QSim qSim = (QSim) injector.getInstance(Mobsim.class);
+		OTFDialog otfDialog = new OTFDialog(scenario, eventsManager, qSim);
+		otfDialog.setModal(false);
+		otfDialog.setVisible(true);
+		new Thread(qSim::run).start();
 	}
 }
