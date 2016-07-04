@@ -507,7 +507,7 @@ public class NetworkModel {
 		}
 
 		private EditableTransitRoute createTransitRoute(Relation relation, EditableTransitRoute oldRoute) {
-			if (!relation.isDeleted() && relation.hasTag("type", "route")) {
+			if (!relation.isDeleted() && relation.hasTag("type", "route") && relation.get("route") != null) {
 				TransitLine line = findOrCreateTransitLine(relation);
 				if (line != null) {
 					EditableTransitRoute newRoute;
