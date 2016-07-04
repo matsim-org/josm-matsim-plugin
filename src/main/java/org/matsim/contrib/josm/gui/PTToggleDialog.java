@@ -82,6 +82,10 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		createLayout(tableContainer_pt, false, null);
 	}
 
+	public void init() {
+		enabledness();
+	}
+
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
 		if (networkModel != null) {
@@ -146,7 +150,6 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		}
 		return nRoutes;
 	}
-
 
 	private class MATSimTableRenderer extends DefaultTableCellRenderer {
 		@Override
@@ -250,11 +253,6 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		}
 	}
 
-	// react to active layer (active data set) changes by setting the current
-	// data mappings
-	// MATSim layers contain data mappings while OsmDataLayers must first be
-	// converted
-	// also adjusts standard file export formats
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		notifyEverythingChanged();
@@ -264,11 +262,16 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
 		super.preferenceChanged(preferenceChangeEvent);
 		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
-			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
-			setEnabled(supportTransit);
-			if (!supportTransit) {
-				hideDialog();
-			}
+			enabledness();
+		}
+	}
+
+	private void enabledness() {
+		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		getButton().setEnabled(enabled);
+		if (isShowing() && !enabled) {
+			hideDialog();
+			hideNotify();
 		}
 	}
 

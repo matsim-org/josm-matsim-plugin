@@ -53,6 +53,10 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 		});
 	}
 
+	public void init() {
+		enabledness();
+	}
+
 	@Override
 	public void showNotify() {
 		Main.getLayerManager().addActiveLayerChangeListener(this);
@@ -88,11 +92,16 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
 		super.preferenceChanged(preferenceChangeEvent);
 		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
-			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
-			setEnabled(supportTransit);
-			if (!supportTransit) {
-				hideDialog();
-			}
+			enabledness();
+		}
+	}
+
+	private void enabledness() {
+		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		getButton().setEnabled(enabled);
+		if (isShowing() && !enabled) {
+			hideDialog();
+			hideNotify();
 		}
 	}
 

@@ -137,8 +137,12 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	public void mapFrameInitialized(MapFrame oldFrame, MapFrame newFrame) {
 		if (newFrame != null) {
 			Main.map.addToggleDialog(new LinksToggleDialog());
-			Main.map.addToggleDialog(new PTToggleDialog());
-			Main.map.addToggleDialog(new StopAreasToggleDialog());
+			PTToggleDialog toggleDialog1 = new PTToggleDialog();
+			Main.map.addToggleDialog(toggleDialog1);
+			toggleDialog1.init(); // after being added
+			StopAreasToggleDialog toggleDialog2 = new StopAreasToggleDialog();
+			Main.map.addToggleDialog(toggleDialog2);
+			toggleDialog2.init(); // after being added
 		}
 	}
 
@@ -159,14 +163,5 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 				factory.unregister(MapRenderer.class);
 			}
 		}
-//		else if (e.getKey().equalsIgnoreCase("matsim_supportTransit")) {
-//			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
-//			ptToggleDialog.setEnabled(supportTransit);
-//			stopAreasToggleDialog.setEnabled(supportTransit);
-//			if (!supportTransit) {
-//				ptToggleDialog.hideDialog();
-//				stopAreasToggleDialog.hideDialog();
-//			}
-//		}
 	}
 }
