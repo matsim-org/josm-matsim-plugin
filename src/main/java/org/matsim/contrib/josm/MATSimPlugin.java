@@ -48,10 +48,6 @@ import static org.openstreetmap.josm.tools.I18n.marktr;
  */
 public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
-	private PTToggleDialog ptToggleDialog = new PTToggleDialog();
-	private StopAreasToggleDialog stopAreasToggleDialog = new StopAreasToggleDialog();
-	private LinksToggleDialog linksToggleDialog = new LinksToggleDialog();
-
 	public MATSimPlugin(PluginInformation info) {
 		super(info);
 
@@ -137,20 +133,12 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	}
 
-	/**
-	 * Called when the JOSM map frame is created or destroyed.
-	 *
-	 * @param oldFrame
-	 *            The old MapFrame. Null if a new one is created.
-	 * @param newFrame
-	 *            The new MapFrame. Null if the current is destroyed.
-	 */
 	@Override
 	public void mapFrameInitialized(MapFrame oldFrame, MapFrame newFrame) {
-		if (oldFrame == null && newFrame != null) { // map frame added
-			Main.map.addToggleDialog(linksToggleDialog);
-			Main.map.addToggleDialog(ptToggleDialog);
-			Main.map.addToggleDialog(stopAreasToggleDialog);
+		if (newFrame != null) {
+			Main.map.addToggleDialog(new LinksToggleDialog());
+			Main.map.addToggleDialog(new PTToggleDialog());
+			Main.map.addToggleDialog(new StopAreasToggleDialog());
 		}
 	}
 
@@ -170,14 +158,15 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 				factory.activateDefault();
 				factory.unregister(MapRenderer.class);
 			}
-		} else if (e.getKey().equalsIgnoreCase("matsim_supportTransit")) {
-			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
-			ptToggleDialog.setEnabled(supportTransit);
-			stopAreasToggleDialog.setEnabled(supportTransit);
-			if (!supportTransit) {
-				ptToggleDialog.hideDialog();
-				stopAreasToggleDialog.hideDialog();
-			}
 		}
+//		else if (e.getKey().equalsIgnoreCase("matsim_supportTransit")) {
+//			boolean supportTransit = Main.pref.getBoolean("matsim_supportTransit");
+//			ptToggleDialog.setEnabled(supportTransit);
+//			stopAreasToggleDialog.setEnabled(supportTransit);
+//			if (!supportTransit) {
+//				ptToggleDialog.hideDialog();
+//				stopAreasToggleDialog.hideDialog();
+//			}
+//		}
 	}
 }

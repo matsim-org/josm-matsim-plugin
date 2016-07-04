@@ -15,7 +15,6 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
-import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
@@ -35,8 +34,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -59,18 +56,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	private final JButton networkAttributes = new JButton(new ImageProvider("dialogs", "edit").setWidth(16).get());
 	private NetworkModel networkModel;
 
-	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
-		@Override
-		public void processDatasetEvent(AbstractDatasetChangedEvent abstractDatasetChangedEvent) {
-			notifyDataChanged();
-		}
-	});
-	private final SelectionChangedListener selectionListener = new SelectionChangedListener() {
-		@Override
-		public void selectionChanged(Collection<? extends OsmPrimitive> osmPrimitives) {
-			notifyDataChanged();
-		}
-	};
+	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(e -> notifyDataChanged());
+	private final SelectionChangedListener selectionListener = osmPrimitives -> notifyDataChanged();
 
 	@Override
 	public void showNotify() {
@@ -105,30 +92,26 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		networkAttributes.setToolTipText(tr("edit network attributes"));
 		networkAttributes.setBorder(BorderFactory.createEmptyBorder());
-		networkAttributes.addActionListener(new ActionListener() {
-			@Override
-			// open dialog that allows editing of global network attributes
-			public void actionPerformed(ActionEvent e) {
-				NetworkAttributes dialog = new NetworkAttributes();
-				JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				JDialog dlg = pane.createDialog(Main.parent, tr("Network Attributes"));
-				dlg.setAlwaysOnTop(true);
-				dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				dlg.setVisible(true);
-				if (pane.getValue() != null) {
-					if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-						dialog.apply();
-					}
+		networkAttributes.addActionListener(e -> {
+			NetworkAttributes dialog = new NetworkAttributes();
+			JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+			JDialog dlg = pane.createDialog(Main.parent, tr("Network Attributes"));
+			dlg.setAlwaysOnTop(true);
+			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			dlg.setVisible(true);
+			if (pane.getValue() != null) {
+				if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
+					dialog.apply();
 				}
-				dlg.dispose();
 			}
+			dlg.dispose();
 		});
 		this.titleBar.add(networkAttributes, this.titleBar.getComponentCount() - 3);
 	}
 
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
-		OsmDataLayer layer = Main.main.getEditLayer();
+		OsmDataLayer layer = Main.getLayerManager().getEditLayer();
 		if (networkModel != null) {
 			networkModel.removeListener(this);
 		}
@@ -276,7 +259,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
 			links.clear();
 			if (networkModel != null) {
-				DataSet currentDataSet = Main.main.getCurrentDataSet();
+				DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
 				if (currentDataSet != null) {
 					currentDataSet.clearHighlightedWaySegments();
 					int i = 0;
@@ -299,7 +282,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		// highlight and zoom to way segments that refer to the selected link in
 		// the table
 		public void valueChanged(ListSelectionEvent e) {
-			DataSet currentDataSet = Main.main.getCurrentDataSet();
+			DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
 			if (currentDataSet != null) {
 				if (table_links.getSelectedRow() != -1) {
 					int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
@@ -323,7 +306,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		private final JTextField capacityPeriodValue = new JTextField();
 
 		public NetworkAttributes() {
-			Layer layer = Main.main.getActiveLayer();
+			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
 				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
@@ -335,7 +318,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		}
 
 		void apply() {
-			Layer layer = Main.main.getActiveLayer();
+			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 				String lW = laneWidthValue.getText();
 				String cP = capacityPeriodValue.getText();
@@ -358,11 +341,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		if(Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
 			for(Test test: OsmValidator.getTests()) {
-				if(test instanceof NetworkTest) {
-					test.enabled = true;
-				} else {
-					test.enabled = false;
-				}
+				test.enabled = test instanceof NetworkTest;
 			}
 		} else {
 			for(Test test: OsmValidator.getTests()) {
