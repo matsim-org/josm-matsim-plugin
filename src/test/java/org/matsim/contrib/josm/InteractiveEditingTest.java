@@ -162,11 +162,11 @@ public class InteractiveEditingTest {
 		Preferences.setTransitLite(true);
 		MATSimLayer matsimLayer = PtTutorialScenario.layer();
 		Main.getLayerManager().addLayer(matsimLayer);
-		Assert.assertEquals(4, matsimLayer.getNetworkModel().getScenario().getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(4, matsimLayer.getNetworkModel().stopAreas().size());
 
 		Node node2 = findNode2(matsimLayer);
 		new MoveCommand(node2, new LatLon(node2.getCoor().lat()+0.01, node2.getCoor().lon()+0.01)).executeCommand();
-		Assert.assertEquals(4, matsimLayer.getNetworkModel().getScenario().getTransitSchedule().getFacilities().size());
+		Assert.assertEquals(4, matsimLayer.getNetworkModel().stopAreas().size());
 	}
 
 	private Node findNode2(MATSimLayer matsimLayer) {

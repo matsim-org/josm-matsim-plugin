@@ -1,17 +1,9 @@
 // License: GPL. For details, see LICENSE file.
 package org.matsim.contrib.josm.actions;
 
-import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.event.ActionEvent;
-import java.io.File;
-
-import javax.swing.JOptionPane;
-
-import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
-import org.matsim.contrib.josm.scenario.EditableScenario;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.DiskAccessAction;
@@ -21,6 +13,13 @@ import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.progress.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.tools.ImageProvider;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+
+import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 public class TransitScheduleExportAction extends DiskAccessAction implements org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
 
@@ -74,7 +73,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					EditableScenario targetScenario = Export.toScenario(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel());
+					Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel());
 					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 

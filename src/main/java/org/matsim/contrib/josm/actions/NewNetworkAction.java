@@ -1,12 +1,7 @@
 package org.matsim.contrib.josm.actions;
 
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.osm.DataSet;
@@ -14,7 +9,6 @@ import org.openstreetmap.josm.tools.Shortcut;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 

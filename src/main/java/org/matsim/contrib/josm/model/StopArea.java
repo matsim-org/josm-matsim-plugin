@@ -5,7 +5,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.josm.scenario.EditableTransitStopFacility;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.Node;
@@ -16,28 +16,20 @@ import org.openstreetmap.josm.tools.Geometry;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-public class StopArea extends EditableTransitStopFacility {
+public class StopArea {
 	private final Relation relation;
 
 	private final ListProperty<Node> stopPositionOsmNodes = new SimpleListProperty<>(FXCollections.observableArrayList());
+	private boolean isBlockingLane;
+
+	private Id<Link> linkId;
 
 	public StopArea(Relation relation) {
-		super(Id.create(relation.getUniqueId(), TransitStopFacility.class));
-		setIsBlockingLane(true);
 		this.relation = relation;
+		setIsBlockingLane(true);
 	}
 
-	public Id<TransitStopFacility> getOrigId() {
-		if (relation.hasKey("ref")) {
-			return Id.create(relation.get("ref"), TransitStopFacility.class);
-		} else {
-			return getId();
-		}
-	}
-
-	@Override
 	public String getName() {
 		if (relation.hasKey("name")) {
 			return relation.get("name");
@@ -45,12 +37,6 @@ public class StopArea extends EditableTransitStopFacility {
 		return null;
 	}
 
-	@Override
-	public String getStopPostAreaId() {
-		return null;
-	}
-
-	@Override
 	public Coord getCoord() {
 		EastNorth eN = platformLocation();
 		if (eN != null) {
@@ -111,27 +97,28 @@ public class StopArea extends EditableTransitStopFacility {
 		}
 	}
 
-	@Override
-	public Map<String, Object> getCustomAttributes() {
-		return null;
-	}
-
-	@Override
-	public void setName(String s) {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public void setStopPostAreaId(String s) {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public void setCoord(Coord coord) {
-		throw new RuntimeException();
-	}
-
 	public Relation getRelation() {
 		return relation;
 	}
+
+	public void setIsBlockingLane(boolean isBlockingLane) {
+		this.isBlockingLane = isBlockingLane;
+	}
+
+	public boolean isBlockingLane() {
+		return isBlockingLane;
+	}
+
+	public Id<Link> getLinkId() {
+		return linkId;
+	}
+
+	public void setLinkId(Id<Link> linkId) {
+		this.linkId = linkId;
+	}
+
+	public Id<TransitStopFacility> getMatsimId() {
+		return relation.get("ref") != null ? Id.create(relation.get("ref"), TransitStopFacility.class) : Id.create(relation.getUniqueId(), TransitStopFacility.class);
+	}
+
 }

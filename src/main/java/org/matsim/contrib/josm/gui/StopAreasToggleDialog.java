@@ -5,6 +5,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
@@ -13,6 +15,7 @@ import javafx.scene.layout.AnchorPane;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.StopArea;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.MainLayerManager;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -73,15 +76,22 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 		Platform.runLater(() -> {
 			if (editLayer != null) {
 				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
+				ObservableList<StopArea> stopAreaList = FXCollections.observableArrayList();
+				networkModel.stopAreas().addListener((MapChangeListener<Relation, StopArea>) change -> {
+					Platform.runLater(() -> stopAreaList.remove(change.getValueRemoved()));
+					if (change.wasAdded()) {
+						Platform.runLater(() -> stopAreaList.add(change.getValueAdded()));
+					}
+				});
 				networkModel.visitAll();
-				list.setItems(networkModel.stopAreaList());
+				list.setItems(stopAreaList);
 				title.bind(Bindings.createStringBinding(() -> {
-					if (networkModel.stopAreaList().isEmpty()) {
+					if (stopAreaList.isEmpty()) {
 						return "Stop areas";
 					} else {
-						return "Stop areas: " + networkModel.stopAreaList().size();
+						return "Stop areas: " + stopAreaList.size();
 					}
-				}, networkModel.stopAreaList()));
+				}, stopAreaList));
 			} else {
 				list.setItems(FXCollections.emptyObservableList());
 			}
