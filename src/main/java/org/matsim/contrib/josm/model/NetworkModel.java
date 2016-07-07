@@ -287,7 +287,7 @@ public class NetworkModel {
 
 		@Override
 		public void visit(Relation relation) {
-			if (relation.hasTag("type", "route_master")) {
+			if (Preferences.isSupportTransit() && relation.hasTag("type", "route_master")) {
 				for (OsmPrimitive osmPrimitive : relation.getMemberPrimitives()) {
 					osmPrimitive.accept(this);
 				}
@@ -475,7 +475,7 @@ public class NetworkModel {
 		@Override
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
-				if (scenario.getConfig().transit().isUseTransit()) {
+				if (Preferences.isSupportTransit()) {
 					Route oldRoute = findRoute(relation);
 					Route newRoute = createTransitRoute(relation, oldRoute);
 					if (oldRoute != null && newRoute == null) {
