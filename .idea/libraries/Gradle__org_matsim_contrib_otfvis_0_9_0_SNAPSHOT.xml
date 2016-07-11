@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: org.matsim.contrib:otfvis:0.9.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/matsim/contrib/otfvis/0.9.0-SNAPSHOT/otfvis-0.9.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

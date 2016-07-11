@@ -1,26 +1,13 @@
 package org.matsim.contrib.josm.model;
 
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.beans.property.ReadOnlyMapProperty;
 import javafx.beans.property.ReadOnlyMapWrapper;
-import javafx.collections.*;
+import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.gui.Preferences;
-import org.matsim.contrib.josm.scenario.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NodeImpl;
-import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.population.routes.RouteUtils;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.*;
@@ -130,13 +117,11 @@ public class NetworkModel {
 						aggregatePrimitivesVisitor.visit(node);
 					}
 					aggregatePrimitivesVisitor.visit(way);
-					List<Link> links = way2Links.get(way);
+					List<MLink> links = way2Links.get(way);
 					if (links != null) {
-						for (Link link : links) {
-							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-									OsmPrimitiveType.NODE));
-							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-									OsmPrimitiveType.NODE));
+						for (MLink link : links) {
+							aggregatePrimitivesVisitor.visit(link.getFromNode().getOsmNode());
+							aggregatePrimitivesVisitor.visit(link.getToNode().getOsmNode());
 						}
 					}
 				} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
@@ -156,13 +141,11 @@ public class NetworkModel {
 			for (Node node : changed.getChangedWay().getNodes()) {
 				aggregatePrimitivesVisitor.visit(node);
 			}
-			List<Link> links = way2Links.get(changed.getChangedWay());
+			List<MLink> links = way2Links.get(changed.getChangedWay());
 			if (links != null) {
-				for (Link link : links) {
-					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-							OsmPrimitiveType.NODE));
-					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-							OsmPrimitiveType.NODE));
+				for (MLink link : links) {
+					aggregatePrimitivesVisitor.visit(link.getFromNode().getOsmNode());
+					aggregatePrimitivesVisitor.visit(link.getToNode().getOsmNode());
 				}
 			}
 			aggregatePrimitivesVisitor.visit((changed.getChangedWay()));
@@ -175,25 +158,22 @@ public class NetworkModel {
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
 
+	private ReadOnlyMapWrapper<Node, MNode> nodes = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
+	private final Map<Way, List<MLink>> way2Links;
 	private ReadOnlyMapWrapper<Relation, StopArea> stopAreas = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
-	private ReadOnlyListWrapper<StopArea> stopAreaList = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
-
-	private final EditableScenario scenario;
-
-	private final Map<Way, List<Link>> way2Links;
-	private final Map<Link, List<WaySegment>> link2Segments;
+	private ReadOnlyMapWrapper<Relation, Line> lines = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
+	private ReadOnlyMapWrapper<Relation, Route> routes = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
 	public static NetworkModel createNetworkModel(DataSet data) {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		return NetworkModel.createNetworkModel(data, EditableScenarioUtils.createScenario(config), new HashMap<>(), new HashMap<>(), new HashMap<>());
+		return NetworkModel.createNetworkModel(data, new HashMap<>());
 	}
 
-	public static NetworkModel createNetworkModel(DataSet data, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-												  Map<Relation, StopArea> stopRelation2TransitStop) {
-		return new NetworkModel(data, Main.pref, scenario, way2Links, link2Segments, stopRelation2TransitStop);
+	public static NetworkModel createNetworkModel(DataSet data, Map<Way, List<MLink>> way2Links) {
+		return new NetworkModel(data, Main.pref, way2Links);
 	}
 
 	public interface ScenarioDataChangedListener {
@@ -214,8 +194,7 @@ public class NetworkModel {
 		listeners.add(listener);
 	}
 
-	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, EditableScenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments,
-						 Map<Relation, StopArea> stopRelation2TransitStop) {
+	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, Map<Way, List<MLink>> way2Links) {
 		this.data = data;
 		this.data.addDataSetListener(new NetworkModelDataSetListener());
 		prefs.addPreferenceChangeListener(e -> {
@@ -229,16 +208,7 @@ public class NetworkModel {
 			visitAll();
 			fireNotifyDataChanged();
 		});
-		this.scenario = scenario;
 		this.way2Links = way2Links;
-		this.link2Segments = link2Segments;
-		this.stopAreas.addListener((MapChangeListener<Relation, StopArea>) change -> {
-			Platform.runLater(() -> stopAreaList.remove(change.getValueRemoved()));
-			if (change.wasAdded()) {
-				Platform.runLater(() -> stopAreaList.add(change.getValueAdded()));
-			}
-		});
-		this.stopAreas.putAll(stopRelation2TransitStop);
 	}
 
 	public void visitAll() {
@@ -329,16 +299,13 @@ public class NetworkModel {
 
 	}
 
-	private void searchAndRemoveRoute(TransitRoute route) {
+	private void searchAndRemoveRoute(Route route) {
 		// We do not know what line the route is in, so we have to search for
 		// it.
-		for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+		for (Line line : lines.values()) {
 			line.removeRoute(route);
 		}
-	}
-
-	public EditableScenario getScenario() {
-		return scenario;
+		routes.remove(route.getRelation());
 	}
 
 	class Convert extends AbstractVisitor {
@@ -358,14 +325,14 @@ public class NetworkModel {
 
 			final Double taggedLength = LinkConversionRules.getTaggedLength(way);
 
-			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null) {
+			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null && (isExplicitelyMatsimTagged(way) || !Preferences.isTransitLite())) {
 				List<Node> nodeOrder = new ArrayList<>();
 				for (Node current : way.getNodes()) {
-					if (scenario.getNetwork().getNodes().containsKey(Id.create(NodeConversionRules.getId(current), org.matsim.api.core.v01.network.Node.class))) {
+					if (nodes().containsKey(current)) {
 						nodeOrder.add(current);
 					}
 				}
-				List<Link> links = new ArrayList<>();
+				List<MLink> links = new ArrayList<>();
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
 					List<WaySegment> segs = new ArrayList<>();
@@ -387,35 +354,31 @@ public class NetworkModel {
 
 					// only create link, if both nodes were found, node could be null, since
 					// nodes outside a layer were dropped
-					Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(NodeConversionRules.getId(nodeFrom), org.matsim.api.core.v01.network.Node.class);
-					Id<org.matsim.api.core.v01.network.Node> toId = Id.create(NodeConversionRules.getId(nodeTo), org.matsim.api.core.v01.network.Node.class);
-					if (scenario.getNetwork().getNodes().get(fromId) != null && scenario.getNetwork().getNodes().get(toId) != null) {
+					if (nodes().get(nodeFrom) != null && nodes().get(nodeTo) != null) {
 						if (forward) {
 							String id = LinkConversionRules.getId(way, increment, false);
 							String origId = LinkConversionRules.getOrigId(way, id, false);
-							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(fromId), scenario.getNetwork().getNodes().get(toId));
+							MLink l = new MLink(nodes.get(nodeFrom), nodes.get(nodeTo));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
 							l.setAllowedModes(modes);
-							((LinkImpl) l).setOrigId(origId);
-							scenario.getNetwork().addLink(l);
-							link2Segments.put(l, segs);
+							l.setOrigId(origId);
+							l.setSegments(segs);
 							links.add(l);
 						}
 						if (backward) {
 							String id = LinkConversionRules.getId(way, increment, true);
 							String origId = LinkConversionRules.getOrigId(way, id, true);
-							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(toId), scenario.getNetwork().getNodes().get(fromId));
+							MLink l = new MLink(nodes.get(nodeTo), nodes.get(nodeFrom));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
 							l.setAllowedModes(modes);
-							((LinkImpl) l).setOrigId(origId);
-							scenario.getNetwork().addLink(l);
-							link2Segments.put(l, segs);
+							l.setOrigId(origId);
+							l.setSegments(segs);
 							links.add(l);
 						}
 					}
@@ -425,25 +388,33 @@ public class NetworkModel {
 			}
 		}
 
+		private boolean isExplicitelyMatsimTagged(Way way) {
+			return way.get(LinkConversionRules.ID) != null;
+		}
+
+		private boolean isExplicitelyMatsimTagged(Node node) {
+			return node.get(NodeConversionRules.ID) != null;
+		}
+
+		private boolean isExplicitelyMatsimTagged(Relation relation) {
+			return relation.get("matsim:id") != null;
+		}
+
 		@Override
 		public void visit(Node node) {
 			if (visited.add(node)) {
-				scenario.getNetwork().removeNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class));
+				nodes.remove(node);
 				if (isRelevant(node)) {
 					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
-					NodeImpl matsimNode = (NodeImpl) scenario
-							.getNetwork()
-							.getFactory()
-							.createNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class),
-									new Coord(eN.getX(), eN.getY()));
+					MNode matsimNode = new MNode(node, new Coord(eN.getX(), eN.getY()));
 					matsimNode.setOrigId(NodeConversionRules.getOrigId(node));
-					scenario.getNetwork().addNode(matsimNode);
+					nodes.put(node, matsimNode);
 				}
 			}
 		}
 
 		private boolean isRelevant(Node node) {
-			if (isUsableAndNotRemoved(node)) {
+			if (isUsableAndNotRemoved(node) && (isExplicitelyMatsimTagged(node) || !Preferences.isTransitLite())) {
 				Way junctionWay = null;
 				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
 					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
@@ -460,13 +431,7 @@ public class NetworkModel {
 		@Override
 		public void visit(Way way) {
 			if (visited.add(way)) {
-				List<Link> oldLinks = way2Links.remove(way);
-				if (oldLinks != null) {
-					for (Link link : oldLinks) {
-						Link removedLink = scenario.getNetwork().removeLink(link.getId());
-						link2Segments.remove(removedLink);
-					}
-				}
+				way2Links.remove(way);
 				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
 				}
@@ -476,29 +441,22 @@ public class NetworkModel {
 		@Override
 		public void visit(Relation relation) {
 			if (visited.add(relation)) {
-				if (scenario.getConfig().transit().isUseTransit()) {
-					EditableTransitRoute oldRoute = findRoute(relation);
-					EditableTransitRoute newRoute = createTransitRoute(relation, oldRoute);
+				if (Preferences.isSupportTransit()) {
+					Route oldRoute = findRoute(relation);
+					Route newRoute = createTransitRoute(relation, oldRoute);
 					if (oldRoute != null && newRoute == null) {
 						oldRoute.setDeleted(true);
 					} else if (oldRoute == null && newRoute != null) {
-						TransitLine tLine = findOrCreateTransitLine(relation);
+						Line tLine = findOrCreateTransitLine(relation);
 						tLine.addRoute(newRoute);
+						routes.put(relation, newRoute);
 					} else if (oldRoute != null) {
-						TransitLine tLine = findOrCreateTransitLine(relation);
+						Line tLine = findOrCreateTransitLine(relation);
 						// The line the route is assigned to might have changed,
 						// so remove it and add it again.
 						searchAndRemoveRoute(oldRoute);
 						tLine.addRoute(newRoute);
-					}
-					if (relation.isDeleted() && relation.hasTag("type", "route_master")) {
-						EditableTransitLine transitLine = (EditableTransitLine) scenario.getTransitSchedule().getTransitLines()
-								.get(Id.create(relation.getUniqueId(), TransitLine.class));
-						if (transitLine != null) {
-							for (EditableTransitRoute route : transitLine.getEditableRoutes().values()) {
-								route.setDeleted(true);
-							}
-						}
+						routes.put(relation, newRoute);
 					}
 					stopAreas.remove(relation);
 					createTransitStopFacility(relation);
@@ -506,94 +464,53 @@ public class NetworkModel {
 			}
 		}
 
-		private EditableTransitRoute createTransitRoute(Relation relation, EditableTransitRoute oldRoute) {
-			if (!relation.isDeleted() && relation.hasTag("type", "route")) {
-				TransitLine line = findOrCreateTransitLine(relation);
+		private Route createTransitRoute(Relation relation, Route oldRoute) {
+			if (!relation.isDeleted() && relation.hasTag("type", "route") && relation.get("route") != null) {
+				Line line = findOrCreateTransitLine(relation);
 				if (line != null) {
-					EditableTransitRoute newRoute;
+					Route newRoute;
 					if (oldRoute == null) {
-						Id<TransitRoute> routeId = Id.create(relation.getUniqueId(), TransitRoute.class);
-						newRoute = new EditableTransitRoute(routeId);
+						newRoute = new Route(relation, stopAreas);
 					} else {
 						// Edit the previous object in place.
 						newRoute = oldRoute;
 						newRoute.setDeleted(false);
 					}
-					if (!Main.pref.getBoolean("matsim_transit_lite")) {
-						NetworkRoute networkRoute = determineNetworkRoute(relation);
+					if (isExplicitelyMatsimTagged(relation) || !Main.pref.getBoolean("matsim_transit_lite")) {
+						List<MLink> networkRoute = determineNetworkRoute(relation);
 						newRoute.setRoute(networkRoute);
 					}
-					newRoute.setTransportMode(relation.get("route"));
-					newRoute.getStops().clear();
-					newRoute.getStops().addAll(createTransitRouteStops(relation));
-					newRoute.setDescription(relation.get("route"));
-					newRoute.setRealId(relation.get("ref") != null ? Id.create(relation.get("ref"), TransitRoute.class) : newRoute.getId());
 					return newRoute;
 				}
 			}
 			return null; // not a route
 		}
 
-		private List<TransitRouteStop> createTransitRouteStops(Relation relation) {
-			List<TransitRouteStop> routeStops = new ArrayList<>();
-			for (RelationMember member : relation.getMembers()) {
-				// can be platforms and stops. we can handle both,
-				// but of course we only create one facility, even if both are present.
-				// the association between the two is handled by a stop area relation,
-				// not by the two of them both being in this route.
-				TransitStopFacility facility = findOrCreateStopFacility(member);
-				if (facility != null && (routeStops.isEmpty() || facility != routeStops.get(routeStops.size()-1).getStopFacility())) {
-					routeStops.add(scenario.getTransitSchedule().getFactory().createTransitRouteStop(facility, 0, 0));
-				}
-			}
-			return routeStops;
-		}
-
-		private TransitStopFacility findOrCreateStopFacility(RelationMember member) {
-			for (OsmPrimitive referrer : member.getMember().getReferrers()) {
-				if (referrer instanceof Relation) {
-					TransitStopFacility facility = stopAreas.get(referrer);
-					if (facility != null) {
-						return facility;
-					}
-					createTransitStopFacility((Relation) referrer);
-					facility = stopAreas.get(referrer);
-					if (facility != null) {
-						return facility;
-					}
-				}
-			}
-			return null; // not a transit stop facility
-		}
-
 		private void createTransitStopFacility(Relation relation) {
 			if (relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
 				StopArea stopArea = new StopArea(relation);
 				if (stopArea.getCoord() != null) {
-					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
-					if (linkId != null) {
-						stopArea.setLinkId(linkId);
-					}
+					stopArea.setLink(determineExplicitMatsimLink(relation));
 					stopAreas.put(relation, stopArea);
 				}
 			}
 		}
 
-		private Id<Link> determineExplicitMatsimLinkId(Relation relation) {
+		private MLink determineExplicitMatsimLink(Relation relation) {
 			for (RelationMember member : relation.getMembers()) {
 				if (member.hasRole("matsim:link") && member.isWay()) {
 					Way way = member.getWay();
-					List<Link> links = way2Links.get(way);
+					List<MLink> links = way2Links.get(way);
 					if (links != null && !links.isEmpty()) {
-						return links.get(links.size() - 1).getId();
+						return links.get(links.size() - 1);
 					}
 				}
 			}
 			return null;
 		}
 
-		private NetworkRoute determineNetworkRoute(Relation relation) {
-			List<Id<Link>> links = new ArrayList<>();
+		private List<MLink> determineNetworkRoute(Relation relation) {
+			List<MLink> links = new ArrayList<>();
 			List<RelationMember> members = relation.getMembers();
 			if (!members.isEmpty()) { // WayConnectionTypeCalculator
 				// will crash otherwise
@@ -603,21 +520,21 @@ public class NetworkModel {
 					RelationMember member = members.get(i);
 					if (member.isWay()) {
 						Way way = member.getWay();
-						List<Link> wayLinks = way2Links.get(way);
+						List<MLink> wayLinks = way2Links.get(way);
 						if (wayLinks != null) {
 							wayLinks = new ArrayList<>(wayLinks);
 							if (connections.get(i).direction.equals(Direction.FORWARD)) {
-								for (Link link : wayLinks) {
+								for (MLink link : wayLinks) {
 									if (!link.getId().toString().endsWith("_r")) {
-										links.add(link.getId());
+										links.add(link);
 									}
 								}
 							} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
 								// reverse order of links if backwards
 								Collections.reverse(wayLinks);
-								for (Link link : wayLinks) {
+								for (MLink link : wayLinks) {
 									if (link.getId().toString().endsWith("_r")) {
-										links.add(link.getId());
+										links.add(link);
 									}
 								}
 							}
@@ -628,7 +545,7 @@ public class NetworkModel {
 			if (links.isEmpty()) {
 				return null;
 			} else {
-				return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
+				return links;
 			}
 		}
 	}
@@ -642,12 +559,12 @@ public class NetworkModel {
 		return osmPrimitive.isUsable() && osmPrimitive.getDataSet() != null;
 	}
 
-	public EditableTransitRoute findRoute(OsmPrimitive maybeRelation) {
-		if (maybeRelation instanceof Relation && scenario.getConfig().transit().isUseTransit()) {
-			for (EditableTransitLine editableTransitLine : scenario.getTransitSchedule().getEditableTransitLines().values()) {
-				for (EditableTransitRoute transitRoute : editableTransitLine.getEditableRoutes().values()) {
-					if (transitRoute.getId().toString().equals(Long.toString(maybeRelation.getUniqueId()))) {
-						return transitRoute;
+	public Route findRoute(OsmPrimitive maybeRelation) {
+		if (maybeRelation instanceof Relation) {
+			for (Line line : lines.values()) {
+				for (Route route : line.getRoutes()) {
+					if (route.getRelation() == maybeRelation) {
+						return route;
 					}
 				}
 			}
@@ -655,60 +572,40 @@ public class NetworkModel {
 		return null;
 	}
 
-	private TransitLine findOrCreateTransitLine(Relation route) {
-
-		Id<TransitLine> transitLineId = null;
+	private Line findOrCreateTransitLine(Relation route) {
 		for (OsmPrimitive primitive : route.getReferrers()) {
 			if (primitive instanceof Relation && primitive.hasTag("type", "route_master")) {
-				transitLineId = Id.create(primitive.getUniqueId(), TransitLine.class);
+				for (Line line : lines.values()) {
+					if (line.getRelation() == primitive) {
+						return line;
+					}
+				}
+				Line tLine = new Line((Relation) primitive);
+				lines.put(tLine.getRelation(), tLine);
+				return tLine;
 			}
 		}
-
-		if (transitLineId == null) {
-			return null;
-		}
-		EditableTransitLine tLine;
-
-		if (!scenario.getTransitSchedule().getTransitLines().containsKey(transitLineId)) {
-			tLine = new EditableTransitLine(transitLineId);
-			scenario.getTransitSchedule().addTransitLine(tLine);
-		} else {
-			tLine = scenario.getTransitSchedule().getEditableTransitLines().get(transitLineId);
-		}
-
-		Relation maybeLineRelation = ((Relation) data.getPrimitiveById(Long.parseLong(transitLineId.toString()), OsmPrimitiveType.RELATION));
-
-		fixTransitLineId(tLine, maybeLineRelation);
-		return tLine;
+		return null;
 	}
 
-	private void fixTransitLineId(EditableTransitLine tLine, Relation maybeLineRelation) {
-		if (maybeLineRelation != null) {
-			String ref = maybeLineRelation.get("ref");
-			if (ref != null) {
-				tLine.setRealId(Id.create(ref, TransitLine.class));
-			} else {
-				tLine.setRealId(tLine.getId());
-			}
-		} else {
-			tLine.setRealId(tLine.getId());
-		}
-	}
-
-	public Map<Way, List<Link>> getWay2Links() {
+	public Map<Way, List<MLink>> getWay2Links() {
 		return way2Links;
 	}
 
-	public Map<Link, List<WaySegment>> getLink2Segments() {
-		return link2Segments;
+	public ReadOnlyMapProperty<Node, MNode> nodes() {
+		return nodes.getReadOnlyProperty();
 	}
 
 	public ReadOnlyMapProperty<Relation, StopArea> stopAreas() {
 		return stopAreas.getReadOnlyProperty();
 	}
 
-	public ReadOnlyListProperty<StopArea> stopAreaList() {
-		return stopAreaList.getReadOnlyProperty();
+	public ReadOnlyMapProperty<Relation, Line> lines() {
+		return lines.getReadOnlyProperty();
+	}
+
+	public ReadOnlyMapProperty<Relation, Route> routes() {
+		return routes.getReadOnlyProperty();
 	}
 
 }

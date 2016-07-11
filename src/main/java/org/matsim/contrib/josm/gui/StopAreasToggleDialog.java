@@ -5,6 +5,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
@@ -13,12 +15,14 @@ import javafx.scene.layout.AnchorPane;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.StopArea;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.layer.MainLayerManager;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 
 import javax.swing.*;
 
-public class StopAreasToggleDialog extends ToggleDialog {
+public class StopAreasToggleDialog extends ToggleDialog implements MainLayerManager.ActiveLayerChangeListener {
 
 	private final JFXPanel fxPanel = new JFXPanel();
 	private OsmDataLayer editLayer;
@@ -49,26 +53,66 @@ public class StopAreasToggleDialog extends ToggleDialog {
 			root.getChildren().add(list);
 			Scene scene = new Scene(root);
 			fxPanel.setScene(scene);
-			Main.getLayerManager().addActiveLayerChangeListener(activeLayerChangeEvent -> {
-				editLayer = Main.getLayerManager().getEditLayer();
-				Platform.runLater(() -> {
-					if (editLayer != null) {
-						NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
-						networkModel.visitAll();
-						list.setItems(networkModel.stopAreaList());
-						title.bind(Bindings.createStringBinding(() -> {
-							if (networkModel.stopAreaList().isEmpty()) {
-								return "Stop areas";
-							} else {
-								return "Stop areas: " + networkModel.stopAreaList().size();
-							}
-						}, networkModel.stopAreaList()));
-					} else {
-						list.setItems(FXCollections.emptyObservableList());
+		});
+	}
+
+	public void init() {
+		enabledness();
+	}
+
+	@Override
+	public void showNotify() {
+		Main.getLayerManager().addActiveLayerChangeListener(this);
+	}
+
+	@Override
+	public void hideNotify() {
+		Main.getLayerManager().removeActiveLayerChangeListener(this);
+	}
+
+	@Override
+	public void activeOrEditLayerChanged(MainLayerManager.ActiveLayerChangeEvent activeLayerChangeEvent) {
+		editLayer = Main.getLayerManager().getEditLayer();
+		Platform.runLater(() -> {
+			if (editLayer != null) {
+				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
+				ObservableList<StopArea> stopAreaList = FXCollections.observableArrayList();
+				networkModel.stopAreas().addListener((MapChangeListener<Relation, StopArea>) change -> {
+					Platform.runLater(() -> stopAreaList.remove(change.getValueRemoved()));
+					if (change.wasAdded()) {
+						Platform.runLater(() -> stopAreaList.add(change.getValueAdded()));
 					}
 				});
-			});
+				networkModel.visitAll();
+				list.setItems(stopAreaList);
+				title.bind(Bindings.createStringBinding(() -> {
+					if (stopAreaList.isEmpty()) {
+						return "Stop areas";
+					} else {
+						return "Stop areas: " + stopAreaList.size();
+					}
+				}, stopAreaList));
+			} else {
+				list.setItems(FXCollections.emptyObservableList());
+			}
 		});
+	}
+
+	@Override
+	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+		super.preferenceChanged(preferenceChangeEvent);
+		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
+			enabledness();
+		}
+	}
+
+	private void enabledness() {
+		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		getButton().setEnabled(enabled);
+		if (isShowing() && !enabled) {
+			hideDialog();
+			hideNotify();
+		}
 	}
 
 }

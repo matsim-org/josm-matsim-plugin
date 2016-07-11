@@ -1,11 +1,10 @@
 package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.gui.OTFDialog;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.otfvis.OTFVis;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Injector;
@@ -18,31 +17,10 @@ import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.utils.CreateVehiclesForSchedule;
-import org.matsim.vis.otfvis.OTFClient;
-import org.matsim.vis.otfvis.OTFClientControl;
-import org.matsim.vis.otfvis.OTFVisConfigGroup;
-import org.matsim.vis.otfvis.OnTheFlyServer;
-import org.matsim.vis.otfvis.caching.SimpleSceneLayer;
-import org.matsim.vis.otfvis.data.OTFClientQuadTree;
-import org.matsim.vis.otfvis.data.OTFConnectionManager;
-import org.matsim.vis.otfvis.data.OTFServerQuadTree;
-import org.matsim.vis.otfvis.data.fileio.SettingsSaver;
-import org.matsim.vis.otfvis.gui.OTFControlBar;
-import org.matsim.vis.otfvis.gui.OTFHostControl;
-import org.matsim.vis.otfvis.gui.OTFQueryControl;
-import org.matsim.vis.otfvis.gui.OTFQueryControlToolBar;
-import org.matsim.vis.otfvis.handler.FacilityDrawer;
-import org.matsim.vis.otfvis.handler.OTFAgentsListHandler;
-import org.matsim.vis.otfvis.handler.OTFLinkAgentsHandler;
-import org.matsim.vis.otfvis.opengl.drawer.OTFOGLDrawer;
-import org.matsim.vis.otfvis.opengl.layer.OGLSimpleQuadDrawer;
-import org.matsim.vis.otfvis.opengl.layer.OGLSimpleStaticNetLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.tools.Shortcut;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -59,7 +37,7 @@ public class OTFVisAction extends JosmAction {
 	public void actionPerformed(ActionEvent e) {
 		NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
 		networkModel.visitAll();
-		EditableScenario scenario = Export.toScenario(networkModel);
+		Scenario scenario = Export.toScenario(networkModel);
 
 		long departureId = 0;
 		for (TransitLine transitLine : scenario.getTransitSchedule().getTransitLines().values()) {

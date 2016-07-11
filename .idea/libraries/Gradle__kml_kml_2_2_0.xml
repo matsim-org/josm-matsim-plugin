@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: kml:kml:2.2.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/kml/kml/2.2.0/kml-2.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

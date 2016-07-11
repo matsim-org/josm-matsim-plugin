@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.MapRenderer;
 import org.matsim.contrib.josm.actions.NetworkTest;
 import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.core.network.LinkImpl;
 import org.matsim.core.network.NetworkImpl;
@@ -15,7 +16,6 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
-import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
@@ -35,8 +35,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -59,18 +57,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	private final JButton networkAttributes = new JButton(new ImageProvider("dialogs", "edit").setWidth(16).get());
 	private NetworkModel networkModel;
 
-	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(new DataSetListenerAdapter.Listener() {
-		@Override
-		public void processDatasetEvent(AbstractDatasetChangedEvent abstractDatasetChangedEvent) {
-			notifyDataChanged();
-		}
-	});
-	private final SelectionChangedListener selectionListener = new SelectionChangedListener() {
-		@Override
-		public void selectionChanged(Collection<? extends OsmPrimitive> osmPrimitives) {
-			notifyDataChanged();
-		}
-	};
+	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(e -> notifyDataChanged());
+	private final SelectionChangedListener selectionListener = osmPrimitives -> notifyDataChanged();
 
 	@Override
 	public void showNotify() {
@@ -105,30 +93,26 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		networkAttributes.setToolTipText(tr("edit network attributes"));
 		networkAttributes.setBorder(BorderFactory.createEmptyBorder());
-		networkAttributes.addActionListener(new ActionListener() {
-			@Override
-			// open dialog that allows editing of global network attributes
-			public void actionPerformed(ActionEvent e) {
-				NetworkAttributes dialog = new NetworkAttributes();
-				JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				JDialog dlg = pane.createDialog(Main.parent, tr("Network Attributes"));
-				dlg.setAlwaysOnTop(true);
-				dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				dlg.setVisible(true);
-				if (pane.getValue() != null) {
-					if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-						dialog.apply();
-					}
+		networkAttributes.addActionListener(e -> {
+			NetworkAttributes dialog = new NetworkAttributes();
+			JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+			JDialog dlg = pane.createDialog(Main.parent, tr("Network Attributes"));
+			dlg.setAlwaysOnTop(true);
+			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			dlg.setVisible(true);
+			if (pane.getValue() != null) {
+				if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
+					dialog.apply();
 				}
-				dlg.dispose();
 			}
+			dlg.dispose();
 		});
 		this.titleBar.add(networkAttributes, this.titleBar.getComponentCount() - 3);
 	}
 
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
-		OsmDataLayer layer = Main.main.getEditLayer();
+		OsmDataLayer layer = Main.getLayerManager().getEditLayer();
 		if (networkModel != null) {
 			networkModel.removeListener(this);
 		}
@@ -165,8 +149,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	@Override
 	public void notifyDataChanged() {
 		if (networkModel != null) {
-			setTitle(tr("Links: {0} / Nodes: {1}", networkModel.getScenario().getNetwork().getLinks().size(), networkModel.getScenario()
-					.getNetwork().getNodes().size()));
+			setTitle(tr("Links: {0} / Nodes: {1}", networkModel.getWay2Links().values().stream().mapToInt(List::size).sum(), networkModel.nodes().size()));
 		} else {
 			setTitle(tr("No MATSim layer active"));
 		}
@@ -206,7 +189,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		private final String[] columnNames = { "id", "internal-id", "length", "freespeed", "capacity", "permlanes", "modes" };
 
-		private Map<Integer, Id<Link>> links;
+		private Map<Integer, MLink> links;
 
 		MATSimTableModel_links() {
 			this.links = new HashMap<>();
@@ -250,10 +233,9 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			Id<Link> id = links.get(rowIndex);
-			Link link = networkModel.getScenario().getNetwork().getLinks().get(id);
+			MLink link = links.get(rowIndex);
 			if (columnIndex == 0) {
-				return ((LinkImpl) link).getOrigId();
+				return link.getOrigId();
 			} else if (columnIndex == 1) {
 				return link.getId().toString();
 			} else if (columnIndex == 2) {
@@ -266,6 +248,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 				return link.getNumberOfLanes();
 			} else if (columnIndex == 6) {
 				return link.getAllowedModes().toString();
+			} else if (columnIndex == 7) {
+				return link;
 			}
 			throw new RuntimeException();
 		}
@@ -276,15 +260,15 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
 			links.clear();
 			if (networkModel != null) {
-				DataSet currentDataSet = Main.main.getCurrentDataSet();
+				DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
 				if (currentDataSet != null) {
 					currentDataSet.clearHighlightedWaySegments();
 					int i = 0;
 					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
 						if (primitive instanceof Way) {
 							if (networkModel.getWay2Links().containsKey(primitive)) {
-								for (Link link : networkModel.getWay2Links().get(primitive)) {
-									links.put(i, link.getId());
+								for (MLink link : networkModel.getWay2Links().get(primitive)) {
+									links.put(i, link);
 									i++;
 								}
 							}
@@ -299,13 +283,13 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		// highlight and zoom to way segments that refer to the selected link in
 		// the table
 		public void valueChanged(ListSelectionEvent e) {
-			DataSet currentDataSet = Main.main.getCurrentDataSet();
+			DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
 			if (currentDataSet != null) {
 				if (table_links.getSelectedRow() != -1) {
 					int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
-					Link link = networkModel.getScenario().getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
-					if (networkModel.getLink2Segments().containsKey(link)) {
-						List<WaySegment> segments = networkModel.getLink2Segments().get(link);
+					MLink link = (MLink) this.getValueAt(row, 7);
+					if (link.getSegments() != null) {
+						List<WaySegment> segments = link.getSegments();
 						currentDataSet.setHighlightedWaySegments(segments);
 					}
 				}
@@ -323,10 +307,10 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		private final JTextField capacityPeriodValue = new JTextField();
 
 		public NetworkAttributes() {
-			Layer layer = Main.main.getActiveLayer();
+			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
-				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
-				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
+//				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
+//				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
 			}
 			add(laneWidth);
 			add(laneWidthValue);
@@ -335,16 +319,16 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		}
 
 		void apply() {
-			Layer layer = Main.main.getActiveLayer();
+			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
-				String lW = laneWidthValue.getText();
-				String cP = capacityPeriodValue.getText();
-				if (!lW.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
-				}
-				if (!cP.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
-				}
+//				String lW = laneWidthValue.getText();
+//				String cP = capacityPeriodValue.getText();
+//				if (!lW.isEmpty()) {
+//					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
+//				}
+//				if (!cP.isEmpty()) {
+//					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
+//				}
 			}
 		}
 	}
@@ -358,11 +342,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		if(Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
 			for(Test test: OsmValidator.getTests()) {
-				if(test instanceof NetworkTest) {
-					test.enabled = true;
-				} else {
-					test.enabled = false;
-				}
+				test.enabled = test instanceof NetworkTest;
 			}
 		} else {
 			for(Test test: OsmValidator.getTests()) {

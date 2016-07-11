@@ -1,44 +1,13 @@
 package org.matsim.contrib.josm.gui;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.Component;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.scenario.EditableScenario;
-import org.matsim.contrib.josm.scenario.EditableScenarioUtils;
-import org.matsim.contrib.josm.scenario.EditableTransitRoute;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.contrib.josm.model.Route;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.SelectionChangedListener;
-import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
-import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
@@ -47,6 +16,19 @@ import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * The ToggleDialog that shows link information of selected ways and route
@@ -81,7 +63,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	}
 
 	public PTToggleDialog() {
-		super("Lines/Routes/Stops", "matsim-scenario.png", "Lines/Routes/Stops", null, 150, true, Preferences.class);
+		super("Lines/Routes", "matsim-scenario.png", "Lines/Routes", null, 150, true, Preferences.class);
 		Main.pref.addPreferenceChangeListener(this);
 
 		// table for route data
@@ -97,21 +79,25 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		createLayout(tableContainer_pt, false, null);
 	}
 
+	public void init() {
+		enabledness();
+	}
+
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
 		if (networkModel != null) {
 			networkModel.removeListener(this);
 		}
-		OsmDataLayer layer = Main.main.getEditLayer();
+		OsmDataLayer layer = Main.getLayerManager().getEditLayer();
 		if (isShowing() && layer instanceof MATSimLayer) {
-			if (((MATSimLayer) layer).getNetworkModel().getScenario().getConfig().transit().isUseTransit()) {
+			if (Preferences.isSupportTransit()) {
 				networkModel = ((MATSimLayer) layer).getNetworkModel(); // MATSim
 			}
 		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
 			networkModel = NetworkModel.createNetworkModel(layer.data);
 			networkModel.visitAll();
 		} else { // empty data mappings if no data layer is active
-			setTitle(tr("Lines/Stops/Routes"));
+			setTitle(tr("Lines/Routes"));
 		}
 		if (networkModel != null) {
 			networkModel.addListener(this);
@@ -121,55 +107,13 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	@Override
 	public void notifyDataChanged() {
-		if (networkModel != null && networkModel.getScenario().getConfig().transit().isUseTransit()) {
-			setTitle(tr("Lines: {0} / Routes: {1} / Stops: {2}", countTransitLines(networkModel.getScenario()),
-					countTransitRoutes(networkModel.getScenario()), countStopFacilities(networkModel.getScenario())));
+		if (networkModel != null && Preferences.isSupportTransit()) {
+			setTitle(tr("Lines: {0} / Routes: {1}", networkModel.lines().size(), networkModel.routes().size()));
 		} else {
 			setTitle(tr("No MATSim transit schedule active"));
 		}
 		tableModel_pt.selectionChanged();
 	}
-
-	private int countStopFacilities(Scenario scenario) {
-		if (scenario.getConfig().transit().isUseTransit()) {
-			return scenario.getTransitSchedule().getFacilities().size();
-		} else {
-			return 0;
-		}
-	}
-
-	private int countTransitRoutes(Scenario scenario) {
-		int nRoutes = 0;
-		if (scenario.getConfig().transit().isUseTransit()) {
-			for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-				nRoutes += countRoutes(line);
-			}
-		}
-		return nRoutes;
-	}
-
-	private int countTransitLines(Scenario scenario) {
-		int nLines = 0;
-		if (scenario.getConfig().transit().isUseTransit()) {
-			for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
-				if (countRoutes(line) > 0) {
-					nLines++;
-				}
-			}
-		}
-		return nLines;
-	}
-
-	private int countRoutes(TransitLine line) {
-		int nRoutes = 0;
-		for (TransitRoute transitRoute : line.getRoutes().values()) {
-			if (!((EditableTransitRoute) transitRoute).isDeleted()) {
-				nRoutes++;
-			}
-		}
-		return nRoutes;
-	}
-
 
 	private class MATSimTableRenderer extends DefaultTableCellRenderer {
 		@Override
@@ -184,7 +128,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 		private final String[] columnNames = { "route id", "mode", "#stops", "#links" };
 
-		private List<TransitRoute> routes;
+		private List<Route> routes;
 
 		private HighlightHelper highlightHelper = new HighlightHelper();
 
@@ -223,7 +167,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			EditableTransitRoute route = (EditableTransitRoute) routes.get(rowIndex);
+			Route route = routes.get(rowIndex);
 			if (columnIndex == 0) {
 				return route.getRealId().toString();
 			} else if (columnIndex == 1) {
@@ -231,7 +175,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			} else if (columnIndex == 2) {
 				return route.getStops().size();
 			} else if (columnIndex == 3) {
-				return route.getRoute() != null ? route.getRoute().getLinkIds().size() + 2 : 0;
+				return route.getRoute() != null ? route.getRoute().size() : 0;
 			}
 			throw new RuntimeException();
 		}
@@ -241,12 +185,11 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		void selectionChanged() {
 			this.routes.clear();
 			if (networkModel != null) {
-				DataSet currentDataSet = Main.main.getCurrentDataSet();
-				if (currentDataSet != null) {
-					Set<TransitRoute> uniqueRoutes = new LinkedHashSet<>();
+				if (Main.getLayerManager().getEditDataSet() != null) {
+					Set<Route> uniqueRoutes = new LinkedHashSet<>();
 					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
 						for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-							EditableTransitRoute route = networkModel.findRoute(maybeRelation);
+							Route route = networkModel.findRoute(maybeRelation);
 							if (route != null && !route.isDeleted()) {
 								uniqueRoutes.add(route);
 							}
@@ -260,14 +203,13 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			DataSet currentDataSet = Main.main.getCurrentDataSet();
-			if (currentDataSet != null && !e.getValueIsAdjusting()) {
+			if (Main.getLayerManager().getEditDataSet() != null && !e.getValueIsAdjusting()) {
 				highlightHelper.clear();
-				currentDataSet.clearHighlightedWaySegments();
+				Main.getLayerManager().getEditDataSet().clearHighlightedWaySegments();
 				int selectedRow = table_pt.getSelectedRow();
 				if (selectedRow != -1) {
 					Long id = Long.parseLong(routes.get(table_pt.convertRowIndexToModel(selectedRow)).getId().toString());
-					Relation route = (Relation) currentDataSet.getPrimitiveById(id, OsmPrimitiveType.RELATION);
+					Relation route = (Relation) Main.getLayerManager().getEditDataSet().getPrimitiveById(id, OsmPrimitiveType.RELATION);
 					highlightHelper.highlight(route.getMemberPrimitivesList());
 				}
 				Main.map.mapView.repaint();
@@ -275,14 +217,26 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		}
 	}
 
-	// react to active layer (active data set) changes by setting the current
-	// data mappings
-	// MATSim layers contain data mappings while OsmDataLayers must first be
-	// converted
-	// also adjusts standard file export formats
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		notifyEverythingChanged();
+	}
+
+	@Override
+	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+		super.preferenceChanged(preferenceChangeEvent);
+		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
+			enabledness();
+		}
+	}
+
+	private void enabledness() {
+		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		getButton().setEnabled(enabled);
+		if (isShowing() && !enabled) {
+			hideDialog();
+			hideNotify();
+		}
 	}
 
 }
