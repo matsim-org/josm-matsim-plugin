@@ -14,14 +14,17 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import org.matsim.contrib.josm.actions.MyOverpassDownloader;
 import org.matsim.contrib.josm.model.Line;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.Route;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadReferrersTask;
+import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
+import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.SelectionChangedListener;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
@@ -29,7 +32,11 @@ import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.progress.*;
+import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
+import org.openstreetmap.josm.io.OsmServerReader;
+import org.openstreetmap.josm.io.OsmTransferException;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -91,7 +98,24 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 					Collection<Relation> relations = new ArrayList<>();
 					relations.add(row.getItem().getRelation());
 					Main.worker.submit(new DownloadRelationTask(relations, Main.getLayerManager().getEditLayer()));
-					Main.worker.submit(new DownloadReferrersTask(Main.getLayerManager().getEditLayer(), row.getItem().getStopsAndPlatforms()));
+					DownloadOsmTask task = new DownloadOsmTask();
+					StringBuilder query = new StringBuilder();
+					query.append(String.format("[timeout:%d];", MyOverpassDownloader.TIMEOUT_S));
+					query.append("(");
+					for (OsmPrimitive osmPrimitive : row.getItem().getStopsAndPlatforms()) {
+						if (osmPrimitive instanceof Node) {
+							query.append(String.format("node(%d);", osmPrimitive.getId()));
+						} else if (osmPrimitive instanceof Way) {
+							query.append(String.format("way(%d);", osmPrimitive.getId()));
+						}
+					}
+					query.append(") -> .primitives;");
+					query.append("(");
+					query.append("rel(bn.primitives)[public_transport=stop_area];");
+					query.append("rel(bw.primitives)[public_transport=stop_area];");
+					query.append(");");
+					query.append("out meta;");
+					Main.worker.submit(new PostDownloadHandler(task, task.download(new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
 				});
 				rowMenu.getItems().addAll(downloadItem);
 

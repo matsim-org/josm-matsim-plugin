@@ -1,13 +1,7 @@
 package org.matsim.contrib.josm.actions;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.event.ActionEvent;
-import java.io.InputStream;
-import java.util.concurrent.Future;
-
-import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.josm.gui.DownloadDialog;
+import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
@@ -20,6 +14,11 @@ import org.openstreetmap.josm.io.OsmServerReader;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.HttpClient;
+
+import java.awt.event.ActionEvent;
+import java.io.InputStream;
+
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Action that opens a connection to the osm server and downloads MATSim-related
@@ -45,14 +44,8 @@ public class DownloadAction extends JosmAction {
 		if (!dialog.isCanceled()) {
 			dialog.rememberSettings();
 			Bounds area = dialog.getSelectedDownloadArea();
-			DownloadOsmTask task = new DownloadOsmTask() {
-				@Override
-				public Future<?> download(boolean newLayer, Bounds downloadArea, ProgressMonitor progressMonitor) {
-					return download(new FilteredDownloader(downloadArea), newLayer, downloadArea, progressMonitor);
-				}
-			};
-			Future<?> future = task.download(dialog.isNewLayerRequired(), area, null);
-			Main.worker.submit(new PostDownloadHandler(task, future));
+			DownloadOsmTask task = new DownloadOsmTask();
+			Main.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
 		}
 	}
 

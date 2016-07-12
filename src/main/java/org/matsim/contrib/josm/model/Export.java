@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.gui.Preferences;
+import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -20,8 +21,12 @@ import java.util.stream.IntStream;
 public class Export {
 
 	public static Scenario toScenario(NetworkModel networkModel) {
-		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+		Config config = ConfigUtils.createConfig();
+		if (Preferences.isSupportTransit()) {
+			config.transit().setUseTransit(true);
+		}
 
+		Scenario scenario = ScenarioUtils.createScenario(config);
 		for (MNode node : networkModel.nodes().values()) {
 			Node newNode = scenario.getNetwork().getFactory().createNode(Id.createNodeId(node.getOrigId()), node.getCoord());
 			scenario.getNetwork().addNode(newNode);
