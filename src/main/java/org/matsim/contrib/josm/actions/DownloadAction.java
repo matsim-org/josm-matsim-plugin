@@ -34,7 +34,7 @@ public class DownloadAction extends JosmAction {
 	 * Constructs a new {@code DownloadAction}.
 	 */
 	public DownloadAction() {
-		super(tr("Download from Overpass API ..."), null, tr("Download data from Overpass API, filtered by relevance for MATSim."), null, true);
+		super(tr("Download from Overpass API..."), null, tr("Download data from Overpass API, filtered by relevance for MATSim."), null, true);
 	}
 
 	@Override

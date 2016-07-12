@@ -542,11 +542,7 @@ public class NetworkModel {
 					}
 				}
 			}
-			if (links.isEmpty()) {
-				return null;
-			} else {
-				return links;
-			}
+			return links;
 		}
 	}
 

@@ -1,12 +1,10 @@
 package org.matsim.contrib.josm.model;
 
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.beans.property.SimpleListProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
@@ -18,16 +16,20 @@ import java.util.List;
 import java.util.Map;
 
 public class Route {
-	private final Relation relation;
+	private final ObjectProperty<Relation> relation = new SimpleObjectProperty<>();
 	private final Map<Relation, StopArea> allStopAreas;
 	private boolean deleted;
-	private List<MLink> route;
+	private ListProperty<MLink> route = new SimpleListProperty<>(FXCollections.observableArrayList());
 	private ReadOnlyListWrapper<RouteStop> stops = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 	private ListProperty<Departure> departures = new SimpleListProperty<>(FXCollections.observableArrayList());
+	private StringProperty realId = new SimpleStringProperty();
+	private StringProperty transportMode = new SimpleStringProperty();
 
-	public Route(Relation relation, Map<Relation, StopArea> stopAreas) {
-		this.relation = relation;
+	public Route(Relation _relation, Map<Relation, StopArea> stopAreas) {
+		this.relation.setValue(_relation);
 		this.allStopAreas = stopAreas;
+		realId.bind(Bindings.createStringBinding(() -> relation.get().get("ref") != null ? relation.get().get("ref") : getId() , relation));
+		transportMode.bind(Bindings.createStringBinding(() -> relation.get().get("route"), relation));
 	}
 
 	public void setDeleted(boolean deleted) {
@@ -39,12 +41,12 @@ public class Route {
 	}
 
 	public void setRoute(List<MLink> route) {
-		this.route = route;
+		this.route.setAll(route);
 	}
 
-	public List<RouteStop> getStops() {
+	public ObservableList<RouteStop> getStops() {
 		stops.clear();
-		for (RelationMember member : relation.getMembers()) {
+		for (RelationMember member : relation.getValue().getMembers()) {
 			// can be platforms and stops. we can handle both,
 			// but of course we only create one facility, even if both are present.
 			// the association between the two is handled by a stop area relation,
@@ -58,12 +60,16 @@ public class Route {
 		return stops;
 	}
 
-	public Object getId() {
-		return Id.create(relation.getUniqueId(), TransitRoute.class);
+	public String getId() {
+		return Long.toString(relation.getValue().getUniqueId());
 	}
 
-	public Object getRealId() {
-		return relation.get("ref") != null ? Id.create(relation.get("ref"), TransitRoute.class) : getId();
+	public String getRealId() {
+		return realId.get();
+	}
+
+	public StringProperty realIdProperty() {
+		return realId;
 	}
 
 	public void addDeparture(Departure departure) {
@@ -71,10 +77,10 @@ public class Route {
 	}
 
 	public Relation getRelation() {
-		return relation;
+		return relation.get();
 	}
 
-	public List<MLink> getRoute() {
+	public ObservableList<MLink> getRoute() {
 		return route;
 	}
 
@@ -97,11 +103,15 @@ public class Route {
 	}
 
 	public Id<TransitRoute> getMatsimId() {
-		return relation.get("ref") != null ? Id.create(relation.get("ref"), TransitRoute.class) : Id.create(relation.getUniqueId(), TransitRoute.class);
+		return relation.get().get("ref") != null ? Id.create(relation.get().get("ref"), TransitRoute.class) : Id.create(relation.get().getUniqueId(), TransitRoute.class);
 	}
 
 	public String getTransportMode() {
-		return relation.get("route");
+		return transportMode.get();
+	}
+
+	public StringProperty transportModeProperty() {
+		return transportMode;
 	}
 
 }
