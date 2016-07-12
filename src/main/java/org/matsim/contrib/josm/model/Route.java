@@ -11,6 +11,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -46,17 +47,16 @@ public class Route {
 
 	public ObservableList<RouteStop> getStops() {
 		stops.clear();
-		for (RelationMember member : relation.getValue().getMembers()) {
-			// can be platforms and stops. we can handle both,
+		for (Relation stopAreaRelation : getStopAreaRelations()) {
+			// can be from platforms and stops. we can handle both,
 			// but of course we only create one facility, even if both are present.
 			// the association between the two is handled by a stop area relation,
 			// not by the two of them both being in this route.
-			StopArea facility = findStopArea(member);
-			if (facility != null && (stops.isEmpty() || facility != stops.get(stops.size()-1).getStopArea())) {
+			StopArea facility = allStopAreas.get(stopAreaRelation);
+			if (facility != null && (stops.isEmpty() || facility != stops.get(stops.size() - 1).getStopArea())) {
 				stops.add(new RouteStop(facility, 0, 0));
 			}
 		}
-
 		return stops;
 	}
 
@@ -88,18 +88,26 @@ public class Route {
 		return departures;
 	}
 
-	private StopArea findStopArea(RelationMember member) {
-		if (member.hasRole("stop", "platform")) {
-			for (OsmPrimitive referrer : member.getMember().getReferrers()) {
+	public List<Relation> getStopAreaRelations() {
+		List<Relation> result = new ArrayList<>();
+		for (OsmPrimitive osmPrimitive : getStopsAndPlatforms()) {
+			for (OsmPrimitive referrer : osmPrimitive.getReferrers()) {
 				if (referrer instanceof Relation) {
-					StopArea facility = allStopAreas.get(referrer);
-					if (facility != null) {
-						return facility;
-					}
+					result.add((Relation) referrer);
 				}
 			}
 		}
-		return null; // not a transit stop facility
+		return result;
+	}
+
+	public List<OsmPrimitive> getStopsAndPlatforms() {
+		List<OsmPrimitive> result = new ArrayList<>();
+		for (RelationMember member : relation.getValue().getMembers()) {
+			if (member.hasRole("stop", "platform")) {
+				result.add(member.getMember());
+			}
+		}
+		return result;
 	}
 
 	public Id<TransitRoute> getMatsimId() {

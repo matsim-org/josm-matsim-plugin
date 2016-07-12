@@ -12,25 +12,28 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import org.matsim.contrib.josm.model.Line;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.Route;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.actions.downloadtasks.DownloadReferrersTask;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -80,6 +83,27 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			TableColumn<Route, Number> routeSizeColumn = new TableColumn<>("#links");
 			routeSizeColumn.setCellValueFactory(r -> Bindings.size(r.getValue().getRoute()));
 			table_pt.getColumns().setAll(idColumn, modeColumn, stopsSizeColumn, routeSizeColumn);
+			table_pt.setRowFactory(v -> {
+				TableRow<Route> row = new TableRow<>();
+				final ContextMenu rowMenu = new ContextMenu();
+				MenuItem downloadItem = new MenuItem("Download members and stop areas");
+				downloadItem.setOnAction(event -> {
+					Collection<Relation> relations = new ArrayList<>();
+					relations.add(row.getItem().getRelation());
+					Main.worker.submit(new DownloadRelationTask(relations, Main.getLayerManager().getEditLayer()));
+					Main.worker.submit(new DownloadReferrersTask(Main.getLayerManager().getEditLayer(), row.getItem().getStopsAndPlatforms()));
+				});
+				rowMenu.getItems().addAll(downloadItem);
+
+				// only display context menu for non-null items:
+				row.contextMenuProperty().bind(
+						Bindings.when(Bindings.isNotNull(row.itemProperty()))
+								.then(rowMenu)
+								.otherwise((ContextMenu)null));
+				return row;
+			});
+
+
 			HighlightHelper highlightHelper = new HighlightHelper();
 			table_pt.getSelectionModel().getSelectedItems().addListener(new InvalidationListener() {
 				@Override
