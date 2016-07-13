@@ -396,10 +396,6 @@ public class NetworkModel {
 			return node.get(NodeConversionRules.ID) != null;
 		}
 
-		private boolean isExplicitelyMatsimTagged(Relation relation) {
-			return relation.get("matsim:id") != null;
-		}
-
 		@Override
 		public void visit(Node node) {
 			if (visited.add(node)) {
@@ -470,15 +466,11 @@ public class NetworkModel {
 				if (line != null) {
 					Route newRoute;
 					if (oldRoute == null) {
-						newRoute = new Route(relation, stopAreas);
+						newRoute = new Route(relation, stopAreas, way2Links);
 					} else {
 						// Edit the previous object in place.
 						newRoute = oldRoute;
 						newRoute.setDeleted(false);
-					}
-					if (isExplicitelyMatsimTagged(relation) || !Main.pref.getBoolean("matsim_transit_lite")) {
-						List<MLink> networkRoute = determineNetworkRoute(relation);
-						newRoute.setRoute(networkRoute);
 					}
 					return newRoute;
 				}
@@ -509,41 +501,6 @@ public class NetworkModel {
 			return null;
 		}
 
-		private List<MLink> determineNetworkRoute(Relation relation) {
-			List<MLink> links = new ArrayList<>();
-			List<RelationMember> members = relation.getMembers();
-			if (!members.isEmpty()) { // WayConnectionTypeCalculator
-				// will crash otherwise
-				WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-				List<WayConnectionType> connections = calc.updateLinks(members);
-				for (int i=0; i<members.size(); i++) {
-					RelationMember member = members.get(i);
-					if (member.isWay()) {
-						Way way = member.getWay();
-						List<MLink> wayLinks = way2Links.get(way);
-						if (wayLinks != null) {
-							wayLinks = new ArrayList<>(wayLinks);
-							if (connections.get(i).direction.equals(Direction.FORWARD)) {
-								for (MLink link : wayLinks) {
-									if (!link.getId().toString().endsWith("_r")) {
-										links.add(link);
-									}
-								}
-							} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
-								// reverse order of links if backwards
-								Collections.reverse(wayLinks);
-								for (MLink link : wayLinks) {
-									if (link.getId().toString().endsWith("_r")) {
-										links.add(link);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			return links;
-		}
 	}
 
 

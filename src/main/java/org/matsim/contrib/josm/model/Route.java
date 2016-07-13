@@ -5,18 +5,20 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.matsim.pt.transitSchedule.api.Departure;
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
+import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Route {
 	private final ObjectProperty<Relation> relation = new SimpleObjectProperty<>();
 	private final Map<Relation, StopArea> allStopAreas;
+	private final Map<Way, List<MLink>> allLinks;
 	private boolean deleted;
 	private ListProperty<MLink> route = new SimpleListProperty<>(FXCollections.observableArrayList());
 	private ReadOnlyListWrapper<RouteStop> stops = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
@@ -24,9 +26,10 @@ public class Route {
 	private StringProperty id = new SimpleStringProperty();
 	private StringProperty transportMode = new SimpleStringProperty();
 
-	public Route(Relation _relation, Map<Relation, StopArea> stopAreas) {
+	public Route(Relation _relation, Map<Relation, StopArea> stopAreas, Map<Way, List<MLink>> way2Links) {
 		this.relation.setValue(_relation);
 		this.allStopAreas = stopAreas;
+		this.allLinks = way2Links;
 		id.bind(Bindings.createStringBinding(this::computeMatsimId, relation));
 		transportMode.bind(Bindings.createStringBinding(() -> relation.get().get("route"), relation));
 	}
@@ -37,10 +40,6 @@ public class Route {
 
 	public boolean isDeleted() {
 		return deleted;
-	}
-
-	public void setRoute(List<MLink> route) {
-		this.route.setAll(route);
 	}
 
 	public ObservableList<RouteStop> getStops() {
@@ -71,7 +70,51 @@ public class Route {
 	}
 
 	public ObservableList<MLink> getRoute() {
+		if (isExplicitelyMatsimTagged(relation.get()) || !Main.pref.getBoolean("matsim_transit_lite")) {
+			List<MLink> networkRoute = determineNetworkRoute(relation.get());
+			this.route.setAll(networkRoute);
+		}
 		return route;
+	}
+
+	private boolean isExplicitelyMatsimTagged(Relation relation) {
+		return relation.get("matsim:id") != null;
+	}
+
+	private List<MLink> determineNetworkRoute(Relation relation) {
+		List<MLink> links = new ArrayList<>();
+		List<RelationMember> members = relation.getMembers();
+		if (!members.isEmpty()) { // WayConnectionTypeCalculator
+			// will crash otherwise
+			WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
+			List<WayConnectionType> connections = calc.updateLinks(members);
+			for (int i=0; i<members.size(); i++) {
+				RelationMember member = members.get(i);
+				if (member.isWay()) {
+					Way way = member.getWay();
+					List<MLink> wayLinks = allLinks.get(way);
+					if (wayLinks != null) {
+						wayLinks = new ArrayList<>(wayLinks);
+						if (connections.get(i).direction.equals(WayConnectionType.Direction.FORWARD)) {
+							for (MLink link : wayLinks) {
+								if (!link.getId().toString().endsWith("_r")) {
+									links.add(link);
+								}
+							}
+						} else if (connections.get(i).direction.equals(WayConnectionType.Direction.BACKWARD)) {
+							// reverse order of links if backwards
+							Collections.reverse(wayLinks);
+							for (MLink link : wayLinks) {
+								if (link.getId().toString().endsWith("_r")) {
+									links.add(link);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return links;
 	}
 
 	public Collection<Departure> getDepartures() {
