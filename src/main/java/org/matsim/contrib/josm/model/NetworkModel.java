@@ -379,6 +379,7 @@ public class NetworkModel {
 							l.setAllowedModes(modes);
 							l.setOrigId(origId);
 							l.setSegments(segs);
+							l.setReverseWayDirection(true);
 							links.add(l);
 						}
 					}

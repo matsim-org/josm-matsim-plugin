@@ -46,7 +46,6 @@ public class NetworkTest extends Test {
 	 * list.
 	 */
 	private Map<String, ArrayList<Node>> nodeIds;
-	private MATSimLayer layer;
 	private Network network;
 
 	/**
@@ -66,7 +65,6 @@ public class NetworkTest extends Test {
 	 * Integer code for doubtful link attribute(s).
 	 */
 	private final static int DOUBTFUL_LINK_ATTRIBUTE = 3003;
-	private Scenario scenario;
 	private NetworkModel networkModel;
 
 	/**
@@ -85,9 +83,8 @@ public class NetworkTest extends Test {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
 		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
-			networkModel = layer.getNetworkModel();
-			scenario = Export.toScenario(networkModel);
-			layer = (MATSimLayer) Main.main.getActiveLayer();
+			networkModel = ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel();
+			Scenario scenario = Export.toScenario(networkModel);
 			this.network = scenario.getNetwork();
 		}
 		super.startTest(monitor);
@@ -100,7 +97,7 @@ public class NetworkTest extends Test {
 	@Override
 	public void visit(Way w) {
 		if (this.network != null) {
-			for (MLink link : layer.getNetworkModel().getWay2Links().get(w)) {
+			for (MLink link : ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel().getWay2Links().get(w)) {
 				String origId = link.getOrigId();
 				if (!linkIds.containsKey(origId)) {
 					linkIds.put(origId, new ArrayList<>());

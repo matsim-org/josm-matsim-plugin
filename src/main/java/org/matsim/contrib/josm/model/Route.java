@@ -97,7 +97,7 @@ public class Route {
 						wayLinks = new ArrayList<>(wayLinks);
 						if (connections.get(i).direction.equals(WayConnectionType.Direction.FORWARD)) {
 							for (MLink link : wayLinks) {
-								if (!link.getId().toString().endsWith("_r")) {
+								if (!link.isReverseWayDirection()) {
 									links.add(link);
 								}
 							}
@@ -105,7 +105,7 @@ public class Route {
 							// reverse order of links if backwards
 							Collections.reverse(wayLinks);
 							for (MLink link : wayLinks) {
-								if (link.getId().toString().endsWith("_r")) {
+								if (link.isReverseWayDirection()) {
 									links.add(link);
 								}
 							}

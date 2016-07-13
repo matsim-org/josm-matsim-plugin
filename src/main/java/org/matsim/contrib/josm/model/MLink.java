@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public class MLink {
+	private boolean reverseWayDirection = false;
 	private Double length;
 	private Double freespeed;
 	private Double capacity;
@@ -90,5 +91,13 @@ public class MLink {
 
 	public MNode getToNode() {
 		return toNode;
+	}
+
+	public boolean isReverseWayDirection() {
+		return reverseWayDirection;
+	}
+
+	public void setReverseWayDirection(boolean reverseWayDirection) {
+		this.reverseWayDirection = reverseWayDirection;
 	}
 }
