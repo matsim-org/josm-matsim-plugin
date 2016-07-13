@@ -60,7 +60,7 @@ public class Importer {
 		for (Line line : networkModel.lines().values()) {
 			TransitLine matsimLine = sourceScenario.getTransitSchedule().getTransitLines().get(line.getMatsimId());
 			for (Route route : line.getRoutes()) {
-				TransitRoute matsimRoute = matsimLine.getRoutes().get(route.getMatsimId());
+				TransitRoute matsimRoute = matsimLine.getRoutes().get(Id.create(route.getId(), TransitRoute.class));
 				for (Departure departure : matsimRoute.getDepartures().values()) {
 					route.addDeparture(departure);
 				}
@@ -194,7 +194,6 @@ public class Importer {
 				routeRelation.put("type", "route");
 				routeRelation.put("route", route.getTransportMode());
 				routeRelation.put("matsim:id", route.getId().toString());
-				routeRelation.put("ref", route.getId().toString());
 				dataSet.addPrimitive(routeRelation);
 				lineRelation.addMember(new RelationMember(null, routeRelation));
 			}

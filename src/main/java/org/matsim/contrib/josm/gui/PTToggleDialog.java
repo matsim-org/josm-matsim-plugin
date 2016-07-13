@@ -20,11 +20,13 @@ import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.Route;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
-import org.openstreetmap.josm.actions.downloadtasks.DownloadReferrersTask;
 import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.SelectionChangedListener;
-import org.openstreetmap.josm.data.osm.*;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
@@ -32,11 +34,7 @@ import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.progress.*;
-import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
-import org.openstreetmap.josm.io.OsmServerReader;
-import org.openstreetmap.josm.io.OsmTransferException;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -82,7 +80,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		Platform.runLater(() -> {
 			title.addListener((InvalidationListener) -> SwingUtilities.invokeLater(() -> setTitle(title.get())));
 			TableColumn<Route, String> idColumn = new TableColumn<>("route id");
-			idColumn.setCellValueFactory(r -> r.getValue().realIdProperty());
+			idColumn.setCellValueFactory(r -> r.getValue().idProperty());
 			TableColumn<Route, String> modeColumn = new TableColumn<>("mode");
 			modeColumn.setCellValueFactory(r -> r.getValue().transportModeProperty());
 			TableColumn<Route, Number> stopsSizeColumn = new TableColumn<>("#stops");
@@ -115,7 +113,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 					query.append("rel(bw.primitives)[public_transport=stop_area];");
 					query.append(");");
 					query.append("out meta;");
-					Main.worker.submit(new PostDownloadHandler(task, task.download(new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
+					Main.worker.submit(new PostDownloadHandler(task, task.download(
+							new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
 				});
 				rowMenu.getItems().addAll(downloadItem);
 

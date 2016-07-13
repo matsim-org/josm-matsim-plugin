@@ -4,9 +4,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.Departure;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
@@ -23,13 +21,13 @@ public class Route {
 	private ListProperty<MLink> route = new SimpleListProperty<>(FXCollections.observableArrayList());
 	private ReadOnlyListWrapper<RouteStop> stops = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 	private ListProperty<Departure> departures = new SimpleListProperty<>(FXCollections.observableArrayList());
-	private StringProperty realId = new SimpleStringProperty();
+	private StringProperty id = new SimpleStringProperty();
 	private StringProperty transportMode = new SimpleStringProperty();
 
 	public Route(Relation _relation, Map<Relation, StopArea> stopAreas) {
 		this.relation.setValue(_relation);
 		this.allStopAreas = stopAreas;
-		realId.bind(Bindings.createStringBinding(() -> relation.get().get("ref") != null ? relation.get().get("ref") : getId() , relation));
+		id.bind(Bindings.createStringBinding(this::computeMatsimId, relation));
 		transportMode.bind(Bindings.createStringBinding(() -> relation.get().get("route"), relation));
 	}
 
@@ -60,16 +58,8 @@ public class Route {
 		return stops;
 	}
 
-	public String getId() {
-		return Long.toString(relation.getValue().getUniqueId());
-	}
-
-	public String getRealId() {
-		return realId.get();
-	}
-
-	public StringProperty realIdProperty() {
-		return realId;
+	public StringProperty idProperty() {
+		return id;
 	}
 
 	public void addDeparture(Departure departure) {
@@ -110,8 +100,20 @@ public class Route {
 		return result;
 	}
 
-	public Id<TransitRoute> getMatsimId() {
-		return relation.get().get("ref") != null ? Id.create(relation.get().get("ref"), TransitRoute.class) : Id.create(relation.get().getUniqueId(), TransitRoute.class);
+	public String getId() {
+		return id.get();
+	}
+
+	private String computeMatsimId() {
+		if (relation.get().get("matsim:id") != null) {
+			return relation.get().get("matsim:id");
+		} else if (relation.get().get("name") != null) {
+			return relation.get().get("name");
+		} else if (relation.get().get("ref") != null) {
+			return relation.get().get("ref");
+		} else {
+			return Long.toString(relation.get().getUniqueId());
+		}
 	}
 
 	public String getTransportMode() {

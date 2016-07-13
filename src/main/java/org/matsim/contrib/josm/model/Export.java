@@ -114,7 +114,7 @@ public class Export {
 						newTRStops.add(newTRStop);
 					});
 
-					TransitRoute newTRoute = scenario.getTransitSchedule().getFactory().createTransitRoute(route.getMatsimId(), allLinks.isEmpty() ? null : RouteUtils.createNetworkRoute(allLinks.stream().map(Identifiable::getId).collect(Collectors.toList()), scenario.getNetwork()), newTRStops,
+					TransitRoute newTRoute = scenario.getTransitSchedule().getFactory().createTransitRoute(Id.create(route.getId(), TransitRoute.class), allLinks.isEmpty() ? null : RouteUtils.createNetworkRoute(allLinks.stream().map(Identifiable::getId).collect(Collectors.toList()), scenario.getNetwork()), newTRStops,
 							route.getTransportMode());
 					for (Departure departure : route.getDepartures()) {
 						newTRoute.addDeparture(departure);
