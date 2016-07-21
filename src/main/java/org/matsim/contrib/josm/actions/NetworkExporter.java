@@ -8,7 +8,7 @@ import javax.swing.JOptionPane;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.core.network.NetworkWriter;
+import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
