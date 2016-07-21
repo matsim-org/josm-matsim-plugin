@@ -12,7 +12,7 @@ import org.matsim.contrib.osm.MasterRoutesTest;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.NetworkWriter;
+import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
