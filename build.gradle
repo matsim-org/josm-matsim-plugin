@@ -29,26 +29,21 @@ repositories {
 
 // Declare a configuration for our external dependency (MATSim) so we can later take its classes and zip them into our jar.
 configurations {
-    zipIntoJar.exclude(group: 'org.geotools')
-    zipIntoJar.exclude(group: 'kml')
-    zipIntoJar.exclude(group: 'org.jfree')
-    zipIntoJar.exclude(group: 'commons-logging')
+    provided
+    compile.extendsFrom(provided)
+    compile.exclude(group: 'org.geotools')
+    compile.exclude(group: 'kml')
+    compile.exclude(group: 'org.jfree')
+    compile.exclude(group: 'commons-logging')
 }
 
 dependencies {
-    zipIntoJar ('org.matsim:matsim:0.9.0-SNAPSHOT') {changing = true}
-    zipIntoJar ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {changing = true}
-
-
-    // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
-    // the dependency.
-    // We use zipIntoJar as a middleman, so that it has a name and we can later address its classes.
-    // We add it to compile, so that it becomes a dependency of our project.
-    compile (configurations.zipIntoJar.dependencies)
+    compile ('org.matsim:matsim:0.9.0-SNAPSHOT') {changing = true}
+    compile ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {changing = true}
 
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
-    compile files("libs/josm-latest.jar")
+    provided files("libs/josm-latest.jar")
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
@@ -89,7 +84,7 @@ jar {
     // Now take the dependencies of zipIntoJar (currently only MATSim), and put them into
     // our target jar.
     from {
-        configurations.zipIntoJar.collect { zipTree(it) }
+        (configurations.compile - configurations.provided).collect { zipTree(it) }
     }
 }
 
