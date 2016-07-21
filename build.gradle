@@ -18,7 +18,6 @@ apply plugin: "eclipse"
 // For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
-    mavenLocal()
     maven {
         url 'http://dl.bintray.com/matsim/matsim'
     }
@@ -30,18 +29,16 @@ repositories {
 
 // Declare a configuration for our external dependency (MATSim) so we can later take its classes and zip them into our jar.
 configurations {
-    zipIntoJar
+    zipIntoJar.exclude(group: 'org.geotools')
+    zipIntoJar.exclude(group: 'kml')
+    zipIntoJar.exclude(group: 'org.jfree')
+    zipIntoJar.exclude(group: 'commons-logging')
 }
 
 dependencies {
-    zipIntoJar ('org.matsim:matsim:0.9.0-SNAPSHOT') {
-        exclude group: 'org.geotools'
-        exclude group: 'kml'
-        exclude group: 'org.jfree'
-    }
-    zipIntoJar ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {
-        exclude group: 'commons-logging'
-    }
+    zipIntoJar ('org.matsim:matsim:0.9.0-SNAPSHOT') {changing = true}
+    zipIntoJar ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {changing = true}
+
 
     // Compile is the distinguished configuration of the Java plug-in which actually needs to contain
     // the dependency.
@@ -55,6 +52,7 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
 
 // I (michaz) seem to need this when debugging from IntelliJ.
 // With the default setting (build/resources/main),
