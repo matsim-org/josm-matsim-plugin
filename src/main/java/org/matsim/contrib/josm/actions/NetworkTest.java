@@ -81,8 +81,8 @@ public class NetworkTest extends Test {
 	public void startTest(ProgressMonitor monitor) {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
-		if (Main.main.getActiveLayer() instanceof MATSimLayer) {
-			layer = (MATSimLayer) Main.main.getActiveLayer();
+		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
+			layer = (MATSimLayer) Main.getLayerManager().getActiveLayer();
 			this.network = layer.getNetworkModel().getScenario().getNetwork();
 		}
 		super.startTest(monitor);
