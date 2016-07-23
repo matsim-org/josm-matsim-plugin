@@ -57,8 +57,17 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	private final TableView<Route> table_pt = new TableView<>();
 	private final StringProperty title = new SimpleStringProperty("Lines/Routes");
 
-	private final SelectionChangedListener selectionListener = osmPrimitives -> selectionChanged();
 	private FilteredList<Route> selectedRoutes;
+	private final SelectionChangedListener selectionListener = osmPrimitives -> {
+		if (Main.getLayerManager().getEditDataSet() != null) {
+			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
+			Platform.runLater(() -> selectedRoutes.setPredicate(route ->
+					selection.contains(route.getRelation()) ||
+							!Collections.disjoint(selection, route.getRelation().getMemberPrimitives())));
+		} else {
+			Platform.runLater(() -> selectedRoutes.setPredicate(route -> false));
+		}
+	};
 
 	@Override
 	public void showNotify() {
@@ -156,22 +165,12 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 		enabledness();
 	}
 
-	void selectionChanged() {
-		if (Main.getLayerManager().getEditDataSet() != null) {
-			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
-			Platform.runLater(() -> selectedRoutes.setPredicate(route ->
-					selection.contains(route.getRelation()) ||
-					!Collections.disjoint(selection, route.getRelation().getMemberPrimitives())));
-		} else {
-			Platform.runLater(() -> selectedRoutes.setPredicate(route -> false));
-		}
-	}
-
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		OsmDataLayer editLayer = Main.getLayerManager().getEditLayer();
-		Platform.runLater(() -> {
-			if (editLayer != null) {
+		if (editLayer != null) {
+			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
+			Platform.runLater(() -> {
 				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
 				ObservableList<Line> lineList = FXCollections.observableArrayList();
 				ObservableList<Route> routeList = FXCollections.observableArrayList();
@@ -190,7 +189,9 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 				networkModel.visitAll();
 				selectedRoutes = new FilteredList<>(routeList);
 				table_pt.setItems(selectedRoutes);
-				selectionChanged();
+				selectedRoutes.setPredicate(route ->
+						selection.contains(route.getRelation()) ||
+						!Collections.disjoint(selection, route.getRelation().getMemberPrimitives()));
 				FilteredList<Line> selectedLines = new FilteredList<>(lineList, line -> !Collections.disjoint(line.getRoutes(), selectedRoutes));
 				title.bind(Bindings.createStringBinding(() -> {
 					if (selectedRoutes.isEmpty()) {
@@ -199,11 +200,13 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 						return tr("Lines: {0} / Routes: {1}", selectedLines.size(), selectedRoutes.size());
 					}
 				}, selectedLines, selectedRoutes));
-			} else {
+			});
+		} else {
+			Platform.runLater(() -> {
 				table_pt.setItems(FXCollections.emptyObservableList());
 				title.bind(Bindings.createStringBinding(() -> "Lines/Routes"));
-			}
-		});
+			});
+		}
 	}
 
 	@Override
