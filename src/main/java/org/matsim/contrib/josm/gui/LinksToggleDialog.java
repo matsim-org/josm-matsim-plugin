@@ -1,13 +1,10 @@
 package org.matsim.contrib.josm.gui;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.MapRenderer;
 import org.matsim.contrib.josm.actions.NetworkTest;
 import org.matsim.contrib.josm.model.MATSimLayer;
+import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NetworkImpl;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.SelectionChangedListener;
@@ -148,8 +145,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	@Override
 	public void notifyDataChanged() {
 		if (networkModel != null) {
-			setTitle(tr("Links: {0} / Nodes: {1}", networkModel.getScenario().getNetwork().getLinks().size(), networkModel.getScenario()
-					.getNetwork().getNodes().size()));
+			setTitle(tr("Links: {0} / Nodes: {1}", networkModel.getWay2Links().values().stream().mapToInt(List::size).sum(), networkModel.nodes().size()));
 		} else {
 			setTitle(tr("No MATSim layer active"));
 		}
@@ -189,7 +185,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		private final String[] columnNames = { "id", "internal-id", "length", "freespeed", "capacity", "permlanes", "modes" };
 
-		private Map<Integer, Id<Link>> links;
+		private Map<Integer, MLink> links;
 
 		MATSimTableModel_links() {
 			this.links = new HashMap<>();
@@ -233,10 +229,9 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			Id<Link> id = links.get(rowIndex);
-			Link link = networkModel.getScenario().getNetwork().getLinks().get(id);
+			MLink link = links.get(rowIndex);
 			if (columnIndex == 0) {
-				return ((LinkImpl) link).getOrigId();
+				return link.getOrigId();
 			} else if (columnIndex == 1) {
 				return link.getId().toString();
 			} else if (columnIndex == 2) {
@@ -249,6 +244,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 				return link.getNumberOfLanes();
 			} else if (columnIndex == 6) {
 				return link.getAllowedModes().toString();
+			} else if (columnIndex == 7) {
+				return link;
 			}
 			throw new RuntimeException();
 		}
@@ -266,8 +263,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
 						if (primitive instanceof Way) {
 							if (networkModel.getWay2Links().containsKey(primitive)) {
-								for (Link link : networkModel.getWay2Links().get(primitive)) {
-									links.put(i, link.getId());
+								for (MLink link : networkModel.getWay2Links().get(primitive)) {
+									links.put(i, link);
 									i++;
 								}
 							}
@@ -286,9 +283,9 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 			if (currentDataSet != null) {
 				if (table_links.getSelectedRow() != -1) {
 					int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
-					Link link = networkModel.getScenario().getNetwork().getLinks().get(Id.create((String) this.getValueAt(row, 1), Link.class));
-					if (networkModel.getLink2Segments().containsKey(link)) {
-						List<WaySegment> segments = networkModel.getLink2Segments().get(link);
+					MLink link = (MLink) this.getValueAt(row, 7);
+					if (link.getSegments() != null) {
+						List<WaySegment> segments = link.getSegments();
 						currentDataSet.setHighlightedWaySegments(segments);
 					}
 				}
@@ -308,8 +305,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		public NetworkAttributes() {
 			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
-				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
-				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
+//				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
+//				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
 			}
 			add(laneWidth);
 			add(laneWidthValue);
@@ -320,14 +317,14 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		void apply() {
 			Layer layer = Main.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
-				String lW = laneWidthValue.getText();
-				String cP = capacityPeriodValue.getText();
-				if (!lW.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
-				}
-				if (!cP.isEmpty()) {
-					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
-				}
+//				String lW = laneWidthValue.getText();
+//				String cP = capacityPeriodValue.getText();
+//				if (!lW.isEmpty()) {
+//					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setEffectiveLaneWidth(Double.parseDouble(lW));
+//				}
+//				if (!cP.isEmpty()) {
+//					((NetworkImpl) ((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork()).setCapacityPeriod(Double.parseDouble(cP));
+//				}
 			}
 		}
 	}

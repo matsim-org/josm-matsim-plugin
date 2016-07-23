@@ -8,7 +8,7 @@ import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.NetworkReaderMatsimV1;
+import org.matsim.core.network.io.NetworkReaderMatsimV1;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 

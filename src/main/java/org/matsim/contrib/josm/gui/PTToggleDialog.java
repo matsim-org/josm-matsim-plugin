@@ -1,32 +1,46 @@
 package org.matsim.contrib.josm.gui;
 
-import org.matsim.contrib.josm.model.MATSimLayer;
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import org.matsim.contrib.josm.actions.MyOverpassDownloader;
+import org.matsim.contrib.josm.model.Line;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.Route;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
+import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
+import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.SelectionChangedListener;
+import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.OsmPrimitiveType;
 import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
+import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
 
@@ -38,188 +52,158 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 
 @SuppressWarnings("serial")
-public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener, NetworkModel.ScenarioDataChangedListener {
-	private final JTable table_pt;
-	private NetworkModel networkModel;
+public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener {
+	private final JFXPanel fxPanel = new JFXPanel();
+	private final TableView<Route> table_pt = new TableView<>();
+	private final StringProperty title = new SimpleStringProperty("Lines/Routes");
 
-	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(abstractDatasetChangedEvent -> notifyDataChanged());
-	private final SelectionChangedListener selectionListener = osmPrimitives -> notifyDataChanged();
-	private final MATSimTableModel_pt tableModel_pt;
+	private final SelectionChangedListener selectionListener = osmPrimitives -> selectionChanged();
+	private FilteredList<Route> selectedRoutes;
 
 	@Override
 	public void showNotify() {
-		DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 		Main.getLayerManager().addActiveLayerChangeListener(this);
-		notifyEverythingChanged();
 	}
 
 	@Override
 	public void hideNotify() {
-		DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
 		SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
 		Main.getLayerManager().removeActiveLayerChangeListener(this);
-		notifyEverythingChanged();
 	}
 
 	public PTToggleDialog() {
 		super("Lines/Routes", "matsim-scenario.png", "Lines/Routes", null, 150, true, Preferences.class);
+		Platform.setImplicitExit(false); // http://stackoverflow.com/questions/29302837/javafx-platform-runlater-never-running
 		Main.pref.addPreferenceChangeListener(this);
+		createLayout(fxPanel, false, null);
+		Platform.runLater(() -> {
+			title.addListener((InvalidationListener) -> SwingUtilities.invokeLater(() -> setTitle(title.get())));
+			TableColumn<Route, String> idColumn = new TableColumn<>("route id");
+			idColumn.setCellValueFactory(r -> r.getValue().idProperty());
+			TableColumn<Route, String> modeColumn = new TableColumn<>("mode");
+			modeColumn.setCellValueFactory(r -> r.getValue().transportModeProperty());
+			TableColumn<Route, Number> stopsSizeColumn = new TableColumn<>("#stops");
+			stopsSizeColumn.setCellValueFactory(r -> Bindings.size(r.getValue().getStops()));
+			TableColumn<Route, Number> routeSizeColumn = new TableColumn<>("#links");
+			routeSizeColumn.setCellValueFactory(r -> Bindings.size(r.getValue().getRoute()));
+			table_pt.getColumns().setAll(idColumn, modeColumn, stopsSizeColumn, routeSizeColumn);
+			table_pt.setRowFactory(v -> {
+				TableRow<Route> row = new TableRow<>();
+				final ContextMenu rowMenu = new ContextMenu();
+				MenuItem downloadItem = new MenuItem("Download members and stop areas");
+				downloadItem.setOnAction(event -> {
+					Collection<Relation> relations = new ArrayList<>();
+					relations.add(row.getItem().getRelation());
+					Main.worker.submit(new DownloadRelationTask(relations, Main.getLayerManager().getEditLayer()));
+					DownloadOsmTask task = new DownloadOsmTask();
+					StringBuilder query = new StringBuilder();
+					query.append(String.format("[timeout:%d];", MyOverpassDownloader.TIMEOUT_S));
+					query.append("(");
+					for (OsmPrimitive osmPrimitive : row.getItem().getStopsAndPlatforms()) {
+						if (osmPrimitive instanceof Node) {
+							query.append(String.format("node(%d);", osmPrimitive.getId()));
+						} else if (osmPrimitive instanceof Way) {
+							query.append(String.format("way(%d);", osmPrimitive.getId()));
+						}
+					}
+					query.append(") -> .primitives;");
+					query.append("(");
+					query.append("rel(bn.primitives)[public_transport=stop_area];");
+					query.append("rel(bw.primitives)[public_transport=stop_area];");
+					query.append(");");
+					query.append("out meta;");
+					Main.worker.submit(new PostDownloadHandler(task, task.download(
+							new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
+				});
+				rowMenu.getItems().addAll(downloadItem);
 
-		// table for route data
-		table_pt = new JTable();
-		table_pt.setDefaultRenderer(Object.class, new MATSimTableRenderer());
-		table_pt.setAutoCreateRowSorter(true);
-		table_pt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		tableModel_pt = new MATSimTableModel_pt();
-		table_pt.setModel(tableModel_pt);
-		table_pt.getSelectionModel().addListSelectionListener(tableModel_pt);
+				// only display context menu for non-null items:
+				row.contextMenuProperty().bind(
+						Bindings.when(Bindings.isNotNull(row.itemProperty()))
+								.then(rowMenu)
+								.otherwise((ContextMenu)null));
+				return row;
+			});
 
-		JScrollPane tableContainer_pt = new JScrollPane(table_pt);
-		createLayout(tableContainer_pt, false, null);
+
+			HighlightHelper highlightHelper = new HighlightHelper();
+			table_pt.getSelectionModel().getSelectedItems().addListener(new InvalidationListener() {
+				@Override
+				public void invalidated(Observable observable) {
+					if (Main.getLayerManager().getEditDataSet() != null) {
+						highlightHelper.clear();
+						Main.getLayerManager().getEditDataSet().clearHighlightedWaySegments();
+						for (Route route : table_pt.getSelectionModel().getSelectedItems()) {
+							highlightHelper.highlight(route.getRelation().getMemberPrimitivesList());
+						}
+						Main.map.mapView.repaint();
+					}
+				}
+			});
+			AnchorPane root = new AnchorPane();
+			AnchorPane.setTopAnchor(table_pt, 0.0);
+			AnchorPane.setLeftAnchor(table_pt, 0.0);
+			AnchorPane.setRightAnchor(table_pt, 0.0);
+			AnchorPane.setBottomAnchor(table_pt, 0.0);
+			root.getChildren().add(table_pt);
+			Scene scene = new Scene(root);
+			fxPanel.setScene(scene);
+		});
 	}
 
 	public void init() {
 		enabledness();
 	}
 
-	// called when MATSim data changes to update the data in this dialog
-	private void notifyEverythingChanged() {
-		if (networkModel != null) {
-			networkModel.removeListener(this);
-		}
-		OsmDataLayer layer = Main.getLayerManager().getEditLayer();
-		if (isShowing() && layer instanceof MATSimLayer) {
-			if (((MATSimLayer) layer).getNetworkModel().getScenario().getConfig().transit().isUseTransit()) {
-				networkModel = ((MATSimLayer) layer).getNetworkModel(); // MATSim
-			}
-		} else if (isShowing() && layer != null && Preferences.isSupportTransit()) {
-			networkModel = NetworkModel.createNetworkModel(layer.data);
-			networkModel.visitAll();
-		} else { // empty data mappings if no data layer is active
-			setTitle(tr("Lines/Routes"));
-		}
-		if (networkModel != null) {
-			networkModel.addListener(this);
-		}
-		notifyDataChanged();
-	}
-
-	@Override
-	public void notifyDataChanged() {
-		if (networkModel != null && networkModel.getScenario().getConfig().transit().isUseTransit()) {
-			setTitle(tr("Lines: {0} / Routes: {1}", networkModel.lines().size(), networkModel.routes().size()));
+	void selectionChanged() {
+		if (Main.getLayerManager().getEditDataSet() != null) {
+			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
+			Platform.runLater(() -> selectedRoutes.setPredicate(route ->
+					selection.contains(route.getRelation()) ||
+					!Collections.disjoint(selection, route.getRelation().getMemberPrimitives())));
 		} else {
-			setTitle(tr("No MATSim transit schedule active"));
-		}
-		tableModel_pt.selectionChanged();
-	}
-
-	private class MATSimTableRenderer extends DefaultTableCellRenderer {
-		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			setBackground(null);
-			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		}
-	}
-
-	// handles the underlying data of the routes table
-	private class MATSimTableModel_pt extends AbstractTableModel implements ListSelectionListener {
-
-		private final String[] columnNames = { "route id", "mode", "#stops", "#links" };
-
-		private List<Route> routes;
-
-		private HighlightHelper highlightHelper = new HighlightHelper();
-
-		MATSimTableModel_pt() {
-			this.routes = new ArrayList<>();
-		}
-
-		@Override
-		public Class<?> getColumnClass(int columnIndex) {
-			if (columnIndex == 0) {
-				return String.class;
-			} else if (columnIndex == 1) {
-				return String.class;
-			} else if (columnIndex == 2) {
-				return Integer.class;
-			} else if (columnIndex == 3) {
-				return Integer.class;
-			}
-			throw new RuntimeException();
-		}
-
-		@Override
-		public String getColumnName(int column) {
-			return columnNames[column];
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnNames.length;
-		}
-
-		@Override
-		public int getRowCount() {
-			return routes.size();
-		}
-
-		@Override
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			Route route = routes.get(rowIndex);
-			if (columnIndex == 0) {
-				return route.getRealId().toString();
-			} else if (columnIndex == 1) {
-				return route.getTransportMode();
-			} else if (columnIndex == 2) {
-				return route.getStops().size();
-			} else if (columnIndex == 3) {
-				return route.getRoute() != null ? route.getRoute().getLinkIds().size() + 2 : 0;
-			}
-			throw new RuntimeException();
-		}
-
-		// change shown route information of selected elements when selection
-		// changes
-		void selectionChanged() {
-			this.routes.clear();
-			if (networkModel != null) {
-				if (Main.getLayerManager().getEditDataSet() != null) {
-					Set<Route> uniqueRoutes = new LinkedHashSet<>();
-					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
-						for (OsmPrimitive maybeRelation : primitive.getReferrers()) {
-							Route route = networkModel.findRoute(maybeRelation);
-							if (route != null && !route.isDeleted()) {
-								uniqueRoutes.add(route);
-							}
-						}
-					}
-					routes.addAll(uniqueRoutes);
-				}
-			}
-			fireTableDataChanged();
-		}
-
-		@Override
-		public void valueChanged(ListSelectionEvent e) {
-			if (Main.getLayerManager().getEditDataSet() != null && !e.getValueIsAdjusting()) {
-				highlightHelper.clear();
-				Main.getLayerManager().getEditDataSet().clearHighlightedWaySegments();
-				int selectedRow = table_pt.getSelectedRow();
-				if (selectedRow != -1) {
-					Long id = Long.parseLong(routes.get(table_pt.convertRowIndexToModel(selectedRow)).getId().toString());
-					Relation route = (Relation) Main.getLayerManager().getEditDataSet().getPrimitiveById(id, OsmPrimitiveType.RELATION);
-					highlightHelper.highlight(route.getMemberPrimitivesList());
-				}
-				Main.map.mapView.repaint();
-			}
+			Platform.runLater(() -> selectedRoutes.setPredicate(route -> false));
 		}
 	}
 
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-		notifyEverythingChanged();
+		OsmDataLayer editLayer = Main.getLayerManager().getEditLayer();
+		Platform.runLater(() -> {
+			if (editLayer != null) {
+				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
+				ObservableList<Line> lineList = FXCollections.observableArrayList();
+				ObservableList<Route> routeList = FXCollections.observableArrayList();
+				networkModel.lines().addListener((MapChangeListener<Relation, Line>) change -> {
+					Platform.runLater(() -> lineList.remove(change.getValueRemoved()));
+					if (change.wasAdded()) {
+						Platform.runLater(() -> lineList.add(change.getValueAdded()));
+					}
+				});
+				networkModel.routes().addListener((MapChangeListener<Relation, Route>) change -> {
+					Platform.runLater(() -> routeList.remove(change.getValueRemoved()));
+					if (change.wasAdded()) {
+						Platform.runLater(() -> routeList.add(change.getValueAdded()));
+					}
+				});
+				networkModel.visitAll();
+				selectedRoutes = new FilteredList<>(routeList);
+				table_pt.setItems(selectedRoutes);
+				selectionChanged();
+				FilteredList<Line> selectedLines = new FilteredList<>(lineList, line -> !Collections.disjoint(line.getRoutes(), selectedRoutes));
+				title.bind(Bindings.createStringBinding(() -> {
+					if (selectedRoutes.isEmpty()) {
+						return "Lines/Routes";
+					} else {
+						return tr("Lines: {0} / Routes: {1}", selectedLines.size(), selectedRoutes.size());
+					}
+				}, selectedLines, selectedRoutes));
+			} else {
+				table_pt.setItems(FXCollections.emptyObservableList());
+				title.bind(Bindings.createStringBinding(() -> "Lines/Routes"));
+			}
+		});
 	}
 
 	@Override

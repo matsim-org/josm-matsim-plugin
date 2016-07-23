@@ -5,16 +5,9 @@ import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NodeImpl;
-import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.population.routes.RouteUtils;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.*;
@@ -124,13 +117,11 @@ public class NetworkModel {
 						aggregatePrimitivesVisitor.visit(node);
 					}
 					aggregatePrimitivesVisitor.visit(way);
-					List<Link> links = way2Links.get(way);
+					List<MLink> links = way2Links.get(way);
 					if (links != null) {
-						for (Link link : links) {
-							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-									OsmPrimitiveType.NODE));
-							aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-									OsmPrimitiveType.NODE));
+						for (MLink link : links) {
+							aggregatePrimitivesVisitor.visit(link.getFromNode().getOsmNode());
+							aggregatePrimitivesVisitor.visit(link.getToNode().getOsmNode());
 						}
 					}
 				} else if (primitive instanceof org.openstreetmap.josm.data.osm.Node) {
@@ -150,13 +141,11 @@ public class NetworkModel {
 			for (Node node : changed.getChangedWay().getNodes()) {
 				aggregatePrimitivesVisitor.visit(node);
 			}
-			List<Link> links = way2Links.get(changed.getChangedWay());
+			List<MLink> links = way2Links.get(changed.getChangedWay());
 			if (links != null) {
-				for (Link link : links) {
-					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getFromNode().getId().toString()),
-							OsmPrimitiveType.NODE));
-					aggregatePrimitivesVisitor.visit((Node) data.getPrimitiveById(Long.parseLong(link.getToNode().getId().toString()),
-							OsmPrimitiveType.NODE));
+				for (MLink link : links) {
+					aggregatePrimitivesVisitor.visit(link.getFromNode().getOsmNode());
+					aggregatePrimitivesVisitor.visit(link.getToNode().getOsmNode());
 				}
 			}
 			aggregatePrimitivesVisitor.visit((changed.getChangedWay()));
@@ -169,25 +158,22 @@ public class NetworkModel {
 	final static String TAG_HIGHWAY = "highway";
 	final static String TAG_RAILWAY = "railway";
 
+	private ReadOnlyMapWrapper<Node, MNode> nodes = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
+	private final Map<Way, List<MLink>> way2Links;
 	private ReadOnlyMapWrapper<Relation, StopArea> stopAreas = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
 	private ReadOnlyMapWrapper<Relation, Line> lines = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
 	private ReadOnlyMapWrapper<Relation, Route> routes = new ReadOnlyMapWrapper<>(FXCollections.observableHashMap());
-
-	private final Scenario scenario;
-
-	private final Map<Way, List<Link>> way2Links;
-	private final Map<Link, List<WaySegment>> link2Segments;
 	private DataSet data;
 	private Collection<ScenarioDataChangedListener> listeners = new ArrayList<>();
 
 	public static NetworkModel createNetworkModel(DataSet data) {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
-		return NetworkModel.createNetworkModel(data, ScenarioUtils.createScenario(config), new HashMap<>(), new HashMap<>());
+		return NetworkModel.createNetworkModel(data, new HashMap<>());
 	}
 
-	public static NetworkModel createNetworkModel(DataSet data, Scenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments) {
-		return new NetworkModel(data, Main.pref, scenario, way2Links, link2Segments);
+	public static NetworkModel createNetworkModel(DataSet data, Map<Way, List<MLink>> way2Links) {
+		return new NetworkModel(data, Main.pref, way2Links);
 	}
 
 	public interface ScenarioDataChangedListener {
@@ -208,7 +194,7 @@ public class NetworkModel {
 		listeners.add(listener);
 	}
 
-	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, Scenario scenario, Map<Way, List<Link>> way2Links, Map<Link, List<WaySegment>> link2Segments) {
+	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, Map<Way, List<MLink>> way2Links) {
 		this.data = data;
 		this.data.addDataSetListener(new NetworkModelDataSetListener());
 		prefs.addPreferenceChangeListener(e -> {
@@ -222,9 +208,7 @@ public class NetworkModel {
 			visitAll();
 			fireNotifyDataChanged();
 		});
-		this.scenario = scenario;
 		this.way2Links = way2Links;
-		this.link2Segments = link2Segments;
 	}
 
 	public void visitAll() {
@@ -324,10 +308,6 @@ public class NetworkModel {
 		routes.remove(route.getRelation());
 	}
 
-	public Scenario getScenario() {
-		return scenario;
-	}
-
 	class Convert extends AbstractVisitor {
 
 		final Collection<OsmPrimitive> visited = new HashSet<>();
@@ -348,11 +328,11 @@ public class NetworkModel {
 			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null && (isExplicitelyMatsimTagged(way) || !Preferences.isTransitLite())) {
 				List<Node> nodeOrder = new ArrayList<>();
 				for (Node current : way.getNodes()) {
-					if (scenario.getNetwork().getNodes().containsKey(Id.create(NodeConversionRules.getId(current), org.matsim.api.core.v01.network.Node.class))) {
+					if (nodes().containsKey(current)) {
 						nodeOrder.add(current);
 					}
 				}
-				List<Link> links = new ArrayList<>();
+				List<MLink> links = new ArrayList<>();
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
 					List<WaySegment> segs = new ArrayList<>();
@@ -374,35 +354,32 @@ public class NetworkModel {
 
 					// only create link, if both nodes were found, node could be null, since
 					// nodes outside a layer were dropped
-					Id<org.matsim.api.core.v01.network.Node> fromId = Id.create(NodeConversionRules.getId(nodeFrom), org.matsim.api.core.v01.network.Node.class);
-					Id<org.matsim.api.core.v01.network.Node> toId = Id.create(NodeConversionRules.getId(nodeTo), org.matsim.api.core.v01.network.Node.class);
-					if (scenario.getNetwork().getNodes().get(fromId) != null && scenario.getNetwork().getNodes().get(toId) != null) {
+					if (nodes().get(nodeFrom) != null && nodes().get(nodeTo) != null) {
 						if (forward) {
 							String id = LinkConversionRules.getId(way, increment, false);
 							String origId = LinkConversionRules.getOrigId(way, id, false);
-							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(fromId), scenario.getNetwork().getNodes().get(toId));
+							MLink l = new MLink(nodes.get(nodeFrom), nodes.get(nodeTo));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
 							l.setAllowedModes(modes);
-							((LinkImpl) l).setOrigId(origId);
-							scenario.getNetwork().addLink(l);
-							link2Segments.put(l, segs);
+							l.setOrigId(origId);
+							l.setSegments(segs);
 							links.add(l);
 						}
 						if (backward) {
 							String id = LinkConversionRules.getId(way, increment, true);
 							String origId = LinkConversionRules.getOrigId(way, id, true);
-							Link l = scenario.getNetwork().getFactory().createLink(Id.create(id, Link.class), scenario.getNetwork().getNodes().get(toId), scenario.getNetwork().getNodes().get(fromId));
+							MLink l = new MLink(nodes.get(nodeTo), nodes.get(nodeFrom));
 							l.setLength(segmentLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
 							l.setAllowedModes(modes);
-							((LinkImpl) l).setOrigId(origId);
-							scenario.getNetwork().addLink(l);
-							link2Segments.put(l, segs);
+							l.setOrigId(origId);
+							l.setSegments(segs);
+							l.setReverseWayDirection(true);
 							links.add(l);
 						}
 					}
@@ -420,23 +397,15 @@ public class NetworkModel {
 			return node.get(NodeConversionRules.ID) != null;
 		}
 
-		private boolean isExplicitelyMatsimTagged(Relation relation) {
-			return relation.get("matsim:id") != null;
-		}
-
 		@Override
 		public void visit(Node node) {
 			if (visited.add(node)) {
-				scenario.getNetwork().removeNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class));
+				nodes.remove(node);
 				if (isRelevant(node)) {
 					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
-					NodeImpl matsimNode = (NodeImpl) scenario
-							.getNetwork()
-							.getFactory()
-							.createNode(Id.create(NodeConversionRules.getId(node), org.matsim.api.core.v01.network.Node.class),
-									new Coord(eN.getX(), eN.getY()));
+					MNode matsimNode = new MNode(node, new Coord(eN.getX(), eN.getY()));
 					matsimNode.setOrigId(NodeConversionRules.getOrigId(node));
-					scenario.getNetwork().addNode(matsimNode);
+					nodes.put(node, matsimNode);
 				}
 			}
 		}
@@ -459,13 +428,7 @@ public class NetworkModel {
 		@Override
 		public void visit(Way way) {
 			if (visited.add(way)) {
-				List<Link> oldLinks = way2Links.remove(way);
-				if (oldLinks != null) {
-					for (Link link : oldLinks) {
-						Link removedLink = scenario.getNetwork().removeLink(link.getId());
-						link2Segments.remove(removedLink);
-					}
-				}
+				way2Links.remove(way);
 				if (isUsableAndNotRemoved(way)) {
 					convertWay(way);
 				}
@@ -504,15 +467,11 @@ public class NetworkModel {
 				if (line != null) {
 					Route newRoute;
 					if (oldRoute == null) {
-						newRoute = new Route(relation, stopAreas);
+						newRoute = new Route(relation, stopAreas, way2Links);
 					} else {
 						// Edit the previous object in place.
 						newRoute = oldRoute;
 						newRoute.setDeleted(false);
-					}
-					if (isExplicitelyMatsimTagged(relation) || !Main.pref.getBoolean("matsim_transit_lite")) {
-						NetworkRoute networkRoute = determineNetworkRoute(relation);
-						newRoute.setRoute(networkRoute);
 					}
 					return newRoute;
 				}
@@ -524,67 +483,25 @@ public class NetworkModel {
 			if (relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
 				StopArea stopArea = new StopArea(relation);
 				if (stopArea.getCoord() != null) {
-					Id<Link> linkId = determineExplicitMatsimLinkId(relation);
-					if (linkId != null) {
-						stopArea.setLinkId(linkId);
-					}
+					stopArea.setLink(determineExplicitMatsimLink(relation));
 					stopAreas.put(relation, stopArea);
 				}
 			}
 		}
 
-		private Id<Link> determineExplicitMatsimLinkId(Relation relation) {
+		private MLink determineExplicitMatsimLink(Relation relation) {
 			for (RelationMember member : relation.getMembers()) {
 				if (member.hasRole("matsim:link") && member.isWay()) {
 					Way way = member.getWay();
-					List<Link> links = way2Links.get(way);
+					List<MLink> links = way2Links.get(way);
 					if (links != null && !links.isEmpty()) {
-						return links.get(links.size() - 1).getId();
+						return links.get(links.size() - 1);
 					}
 				}
 			}
 			return null;
 		}
 
-		private NetworkRoute determineNetworkRoute(Relation relation) {
-			List<Id<Link>> links = new ArrayList<>();
-			List<RelationMember> members = relation.getMembers();
-			if (!members.isEmpty()) { // WayConnectionTypeCalculator
-				// will crash otherwise
-				WayConnectionTypeCalculator calc = new WayConnectionTypeCalculator();
-				List<WayConnectionType> connections = calc.updateLinks(members);
-				for (int i=0; i<members.size(); i++) {
-					RelationMember member = members.get(i);
-					if (member.isWay()) {
-						Way way = member.getWay();
-						List<Link> wayLinks = way2Links.get(way);
-						if (wayLinks != null) {
-							wayLinks = new ArrayList<>(wayLinks);
-							if (connections.get(i).direction.equals(Direction.FORWARD)) {
-								for (Link link : wayLinks) {
-									if (!link.getId().toString().endsWith("_r")) {
-										links.add(link.getId());
-									}
-								}
-							} else if (connections.get(i).direction.equals(Direction.BACKWARD)) {
-								// reverse order of links if backwards
-								Collections.reverse(wayLinks);
-								for (Link link : wayLinks) {
-									if (link.getId().toString().endsWith("_r")) {
-										links.add(link.getId());
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			if (links.isEmpty()) {
-				return null;
-			} else {
-				return RouteUtils.createNetworkRoute(links, scenario.getNetwork());
-			}
-		}
 	}
 
 
@@ -625,12 +542,12 @@ public class NetworkModel {
 		return null;
 	}
 
-	public Map<Way, List<Link>> getWay2Links() {
+	public Map<Way, List<MLink>> getWay2Links() {
 		return way2Links;
 	}
 
-	public Map<Link, List<WaySegment>> getLink2Segments() {
-		return link2Segments;
+	public ReadOnlyMapProperty<Node, MNode> nodes() {
+		return nodes.getReadOnlyProperty();
 	}
 
 	public ReadOnlyMapProperty<Relation, StopArea> stopAreas() {

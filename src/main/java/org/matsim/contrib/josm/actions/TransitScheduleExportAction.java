@@ -2,6 +2,7 @@
 package org.matsim.contrib.josm.actions;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
@@ -105,7 +106,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 	}
 
 	private boolean shouldBeEnabled() {
-		return getEditLayer() instanceof MATSimLayer && ((MATSimLayer) getEditLayer()).getNetworkModel().getScenario().getConfig().transit().isUseTransit();
+		return getEditLayer() instanceof MATSimLayer && Preferences.isSupportTransit();
 	}
 
 }

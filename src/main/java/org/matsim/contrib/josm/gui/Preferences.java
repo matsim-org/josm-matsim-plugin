@@ -214,6 +214,10 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		return Main.pref.getBoolean("matsim_supportTransit", false);
 	}
 
+	public static void setSupportTransit(boolean supportTransit) {
+		Main.pref.put("matsim_supportTransit", supportTransit);
+	}
+
 	public static boolean isTransitLite() {
 		return Main.pref.getBoolean("matsim_transit_lite", false);
 	}

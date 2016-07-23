@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.Node;
@@ -23,7 +22,7 @@ public class StopArea {
 	private final ListProperty<Node> stopPositionOsmNodes = new SimpleListProperty<>(FXCollections.observableArrayList());
 	private boolean isBlockingLane;
 
-	private Id<Link> linkId;
+	private MLink link;
 
 	public StopArea(Relation relation) {
 		this.relation = relation;
@@ -109,12 +108,12 @@ public class StopArea {
 		return isBlockingLane;
 	}
 
-	public Id<Link> getLinkId() {
-		return linkId;
+	public MLink getLink() {
+		return link;
 	}
 
-	public void setLinkId(Id<Link> linkId) {
-		this.linkId = linkId;
+	public void setLink(MLink link) {
+		this.link = link;
 	}
 
 	public Id<TransitStopFacility> getMatsimId() {

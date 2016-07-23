@@ -1,9 +1,8 @@
 package org.matsim.contrib.josm;
 
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
-import org.matsim.core.network.LinkImpl;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
@@ -43,9 +42,9 @@ public class MapRenderer extends StyledMapRenderer {
 	/**
 	 * Maps links to their corresponding way.
 	 */
-	private static Map<Way, List<Link>> way2Links = new HashMap<>();
+	private static Map<Way, List<MLink>> way2Links = new HashMap<>();
 
-	public static void setWay2Links(Map<Way, List<Link>> way2LinksTmp) {
+	public static void setWay2Links(Map<Way, List<MLink>> way2LinksTmp) {
 		way2Links = way2LinksTmp;
 		Main.map.repaint();
 	}
@@ -172,8 +171,8 @@ public class MapRenderer extends StyledMapRenderer {
 		public String compose(OsmPrimitive prim) {
 			StringBuilder sB = new StringBuilder();
 			if (way2Links.containsKey(prim)) {
-				for (Link link : way2Links.get(prim)) {
-					sB.append(" [").append(((LinkImpl) link).getOrigId()).append("] ");
+				for (MLink link : way2Links.get(prim)) {
+					sB.append(" [").append(link.getOrigId()).append("] ");
 				}
 			}
 			return sB.toString();

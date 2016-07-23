@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -93,64 +94,66 @@ public class OSMDataTest {
 			}
 		}
 
-		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0,incompleteWayListener.nodes().size());
 		Command changeNodes = new ChangeNodesCommand(way, nodes);
 		changeNodes.executeCommand();
 		Assert.assertEquals(1,incompleteWayLayer.data.getWays().size());
-		Assert.assertEquals(4,incompleteWayListener.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(6,incompleteWayListener.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(4,incompleteWayListener.nodes().size());
+		Assert.assertEquals(6,incompleteWayListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 
 		nodes.remove(way.lastNode());
 		Command changeNodes2 = new ChangeNodesCommand(way, nodes);
 		changeNodes2.executeCommand();
 
 		Assert.assertEquals(1,incompleteWayLayer.data.getWays().size());
-		Assert.assertEquals(3,incompleteWayListener.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(4,incompleteWayListener.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(3,incompleteWayListener.nodes().size());
+		Assert.assertEquals(4,incompleteWayListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 
 		changeNodes2.undoCommand();
-		Assert.assertEquals(4,incompleteWayListener.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(6,incompleteWayListener.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(4,incompleteWayListener.nodes().size());
+		Assert.assertEquals(6,incompleteWayListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 
 		changeNodes.undoCommand();
-		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getNodes().size());
-		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0,incompleteWayListener.nodes().size());
+		Assert.assertEquals(0,incompleteWayListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
 
 	@Test
 	public void testIncompleteWay() {
 		Assert.assertEquals(1,incompleteWayLayer.data.getWays().size());
-		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(0,incompleteWayListener.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0,incompleteWayListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(0,incompleteWayListener.nodes().size());
 
 		MATSimLayer matsimLayer = LayerConverter.convertWithFullTransit(incompleteWayLayer);
 		Assert.assertEquals(0, matsimLayer.data.getWays().size());
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 
 	}
 
 	@Test
 	public void testBusRoute() {
-		Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(6,busRouteListener.getScenario().getNetwork().getNodes().size());
+		Preferences.setSupportTransit(true);
+
+		Assert.assertEquals(10,busRouteListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(6,busRouteListener.nodes().size());
 		Assert.assertEquals(4,busRouteListener.stopAreas().size());
 		Assert.assertEquals(1,busRouteListener.lines().size());
 		Assert.assertEquals(2,countRoutes(busRouteListener));
 		for (Route route: busRouteListener.lines().values().iterator().next().getRoutes()) {
 			Assert.assertEquals(4, route.getStops().size());
-			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
+			Assert.assertEquals(5, route.getRoute().size());
 		}
 
 		Main.pref.put("matsim_keepPaths", true);
-		Assert.assertEquals(18,busRouteListener.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(18,busRouteListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(10,busRouteListener.nodes().size());
 		Assert.assertEquals(4,busRouteListener.stopAreas().size());
 		Assert.assertEquals(1,busRouteListener.lines().size());
 		Assert.assertEquals(2,countRoutes(busRouteListener));
 		for (Route route: busRouteListener.lines().values().iterator().next().getRoutes()) {
 			Assert.assertEquals(4, route.getStops().size());
-			Assert.assertEquals(7, route.getRoute().getLinkIds().size());
+			Assert.assertEquals(9, route.getRoute().size());
 		}
 
 		Scenario scenario = Export.toScenario(busRouteListener);
@@ -163,14 +166,14 @@ public class OSMDataTest {
 		Assert.assertEquals(1, nStopsWithLink);
 
 		Main.pref.put("matsim_keepPaths", false);
-		Assert.assertEquals(10,busRouteListener.getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(6,busRouteListener.getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(10,busRouteListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(6,busRouteListener.nodes().size());
 		Assert.assertEquals(4,busRouteListener.stopAreas().size());
 		Assert.assertEquals(1,busRouteListener.lines().size());
 		Assert.assertEquals(2,countRoutes(busRouteListener));
 		for (Route route: busRouteListener.lines().values().iterator().next().getRoutes()) {
 			Assert.assertEquals(4, route.getStops().size());
-			Assert.assertEquals(3, route.getRoute().getLinkIds().size());
+			Assert.assertEquals(5, route.getRoute().size());
 		}
 
 		scenario = Export.toScenario(busRouteListener);
@@ -204,35 +207,35 @@ public class OSMDataTest {
 
 	@Test
 	public void testIntersections() {
-		 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
 		 Command delete = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(14, OsmPrimitiveType.NODE)), false, true);
 		 delete.executeCommand();
-		 Assert.assertEquals(9,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(9,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(11,intersectionsListener.nodes().size());
 
 		 delete.undoCommand();
-		 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
 		 Command delete2 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(2, OsmPrimitiveType.NODE)), false, true);
 		 delete2.executeCommand();
-		 Assert.assertEquals(10,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(10,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
 		 delete2.undoCommand();
-		 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
 		 Command delete3 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(3, OsmPrimitiveType.WAY)), false, true);
 		 delete3.executeCommand();
-		 Assert.assertEquals(8,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(9,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(8,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(9,intersectionsListener.nodes().size());
 
 		 delete3.undoCommand();
-		 Assert.assertEquals(11,intersectionsListener.getScenario().getNetwork().getLinks().size());
-		 Assert.assertEquals(12,intersectionsListener.getScenario().getNetwork().getNodes().size());
+		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
+		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 	}
 
     private long countRoutes(NetworkModel transitSchedule) {

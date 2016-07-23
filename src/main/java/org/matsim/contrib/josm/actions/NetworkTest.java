@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.core.network.LinkImpl;
-import org.matsim.core.network.NodeImpl;
+import org.matsim.contrib.josm.model.MLink;
+import org.matsim.contrib.josm.model.MNode;
+import org.matsim.contrib.josm.model.NetworkModel;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.Node;
@@ -45,7 +46,6 @@ public class NetworkTest extends Test {
 	 * list.
 	 */
 	private Map<String, ArrayList<Node>> nodeIds;
-	private MATSimLayer layer;
 	private Network network;
 
 	/**
@@ -65,6 +65,7 @@ public class NetworkTest extends Test {
 	 * Integer code for doubtful link attribute(s).
 	 */
 	private final static int DOUBTFUL_LINK_ATTRIBUTE = 3003;
+	private NetworkModel networkModel;
 
 	/**
 	 * Creates a new {@code MATSimTest}.
@@ -82,23 +83,24 @@ public class NetworkTest extends Test {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
 		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			layer = (MATSimLayer) Main.getLayerManager().getActiveLayer();
-			this.network = layer.getNetworkModel().getScenario().getNetwork();
+			networkModel = ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel();
+			Scenario scenario = Export.toScenario(networkModel);
+			this.network = scenario.getNetwork();
 		}
 		super.startTest(monitor);
 	}
 
 	/**
 	 * Visits a way and stores the Ids of the represented links. Also checks
-	 * links for {@link #doubtfulAttributes(Link)}.
+	 * links for {@link #doubtfulAttributes(MLink)}.
 	 */
 	@Override
 	public void visit(Way w) {
 		if (this.network != null) {
-			for (Link link : layer.getNetworkModel().getWay2Links().get(w)) {
-				String origId = ((LinkImpl) link).getOrigId();
+			for (MLink link : ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel().getWay2Links().get(w)) {
+				String origId = link.getOrigId();
 				if (!linkIds.containsKey(origId)) {
-					linkIds.put(origId, new ArrayList<Way>());
+					linkIds.put(origId, new ArrayList<>());
 				}
 
 				linkIds.get(origId).add(w);
@@ -118,11 +120,11 @@ public class NetworkTest extends Test {
 	@Override
 	public void visit(Node n) {
 		if (this.network != null) {
-			org.matsim.api.core.v01.network.Node node = network.getNodes().get(Id.create(n.getUniqueId(), org.matsim.api.core.v01.network.Node.class));
+			MNode node = networkModel.nodes().get(n);
 			if (node != null) {
-				String origId = ((NodeImpl) node).getOrigId();
+				String origId = node.getOrigId();
 				if (!nodeIds.containsKey(origId)) {
-					nodeIds.put(origId, new ArrayList<Node>());
+					nodeIds.put(origId, new ArrayList<>());
 				}
 				nodeIds.get(origId).add(n);
 			}
@@ -138,7 +140,7 @@ public class NetworkTest extends Test {
 	 * @return <code>true</code> if the {@code link} contains doubtful link
 	 *         attributes. <code>false</code> otherwise
 	 */
-	private boolean doubtfulAttributes(Link link) {
+	private boolean doubtfulAttributes(MLink link) {
 		return link.getFreespeed() == 0 || link.getCapacity() == 0 || link.getLength() == 0 || link.getNumberOfLanes() == 0;
 	}
 
@@ -153,10 +155,10 @@ public class NetworkTest extends Test {
 			if (entry.getValue().size() > 1) {
 				List<WaySegment> segments = new ArrayList<>();
 				for (Way way : entry.getValue()) {
-					List<Link> links = layer.getNetworkModel().getWay2Links().get(way);
-					for (Link link : links) {
-						if (((LinkImpl) link).getOrigId().equalsIgnoreCase(entry.getKey())) {
-							segments.addAll(layer.getNetworkModel().getLink2Segments().get(link));
+					List<MLink> links = networkModel.getWay2Links().get(way);
+					for (MLink link : links) {
+						if (link.getOrigId().equalsIgnoreCase(entry.getKey())) {
+							segments.addAll(link.getSegments());
 						}
 					}
 				}
@@ -204,18 +206,17 @@ public class NetworkTest extends Test {
 				if (primitive instanceof Way) {
 					if (links2Fix.containsKey(testError)) {
 						String id2Fix = links2Fix.get(testError);
-						for (Link link : layer.getNetworkModel().getWay2Links().get(primitive)) {
-							if (((LinkImpl) link).getOrigId().equalsIgnoreCase(id2Fix)) {
-								((LinkImpl) link).setOrigId(id2Fix + "(" + i + ")");
+						for (MLink link : networkModel.getWay2Links().get(primitive)) {
+							if (link.getOrigId().equalsIgnoreCase(id2Fix)) {
+								link.setOrigId(id2Fix + "(" + i + ")");
 								i++;
 							}
 						}
 					}
 				} else if (primitive instanceof Node) {
-					org.matsim.api.core.v01.network.Node node = this.network.getNodes().get(
-							Id.create(primitive.getUniqueId(), org.matsim.api.core.v01.network.Node.class));
-					String origId = ((NodeImpl) node).getOrigId();
-					((NodeImpl) node).setOrigId(origId + "(" + j + ")");
+					MNode node = this.networkModel.nodes().get(primitive);
+					String origId = node.getOrigId();
+					node.setOrigId(origId + "(" + j + ")");
 					j++;
 				}
 			}

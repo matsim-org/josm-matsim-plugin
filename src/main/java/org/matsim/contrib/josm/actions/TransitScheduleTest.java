@@ -86,7 +86,7 @@ public class TransitScheduleTest extends Test {
 			}
 		}
 
-		Map<Id<TransitRoute>, List<Route>> routeIds = networkModel.routes().values().stream().collect(Collectors.groupingBy(Route::getMatsimId));
+		Map<Id<TransitRoute>, List<Route>> routeIds = networkModel.routes().values().stream().collect(Collectors.groupingBy(route -> Id.create(route.getId(), TransitRoute.class)));
 		for (Entry<Id<TransitRoute>, List<Route>> entry : routeIds.entrySet()) {
 			if (entry.getValue().size() > 1) {
 
@@ -152,7 +152,7 @@ public class TransitScheduleTest extends Test {
 		if (testError.getCode() == DUPLICATE_ROUTE_ID) {
 			for (OsmPrimitive primitive : testError.getPrimitives()) {
 				Route route = networkModel.routes().get(primitive);
-				commands.add(new ChangePropertyCommand(primitive, "ref", (route.getMatsimId() + "(" + j + ")")));
+				commands.add(new ChangePropertyCommand(primitive, "ref", (route.getId() + "(" + j + ")")));
 				j++;
 			}
 		}

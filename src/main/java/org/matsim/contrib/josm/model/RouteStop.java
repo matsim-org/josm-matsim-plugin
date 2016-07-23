@@ -38,4 +38,8 @@ public class RouteStop {
 	public boolean isAwaitDepartureTime() {
 		return this.awaitDepartureTime;
 	}
+
+	public boolean getAwaitDepartureTime() {
+		return awaitDepartureTime;
+	}
 }

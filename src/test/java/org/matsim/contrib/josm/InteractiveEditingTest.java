@@ -17,6 +17,8 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
+import java.util.List;
+
 public class InteractiveEditingTest {
 
 	@Rule
@@ -41,7 +43,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
 		new AddCommand(matsimLayer, way).executeCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
 	@Test
@@ -65,14 +67,14 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.MODES, "car");
 		AddCommand addWay = new AddCommand(matsimLayer, way);
 		addWay.executeCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(2, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(2, matsimLayer.getNetworkModel().nodes().size());
 		addWay.undoCommand();
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 		addNode2.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().nodes().size());
 		addNode1.undoCommand();
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().nodes().size());
 	}
 
 
@@ -97,7 +99,7 @@ public class InteractiveEditingTest {
 		DeleteCommand delete = new DeleteCommand(way);
 		delete.executeCommand();
 		delete.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
 	@Test
@@ -120,8 +122,8 @@ public class InteractiveEditingTest {
 		new AddCommand(matsimLayer, way).executeCommand();
 		DeleteCommand deleteWay = new DeleteCommand(way);
 		deleteWay.executeCommand();
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().nodes().size());
 		DeleteCommand deleteNode1 = new DeleteCommand(node1);
 		deleteNode1.executeCommand();
 		DeleteCommand deleteNode2 = new DeleteCommand(node2);
@@ -129,9 +131,9 @@ public class InteractiveEditingTest {
 		deleteNode2.undoCommand();
 		deleteNode1.undoCommand();
 		// These nodes are not needed for a link yet:
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getNodes().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().nodes().size());
 		deleteWay.undoCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
 
@@ -149,16 +151,17 @@ public class InteractiveEditingTest {
 		way.addNode(node1);
 		way.addNode(node2);
 		new AddCommand(matsimLayer, way).executeCommand();
-		Assert.assertEquals(0, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 		new ChangePropertyCommand(way, LinkConversionRules.FREESPEED, "10.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.CAPACITY, "1000.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.PERMLANES, "1.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.MODES, "car").executeCommand();
-		Assert.assertEquals(1, matsimLayer.getNetworkModel().getScenario().getNetwork().getLinks().size());
+		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
 	@Test
 	public void wiggleRoadWithTransitStop() {
+		Preferences.setSupportTransit(true);
 		Preferences.setTransitLite(true);
 		MATSimLayer matsimLayer = PtTutorialScenario.layer();
 		Main.getLayerManager().addLayer(matsimLayer);
