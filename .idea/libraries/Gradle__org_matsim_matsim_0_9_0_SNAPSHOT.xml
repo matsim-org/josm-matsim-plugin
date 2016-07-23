@@ -1,9 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: org.matsim:matsim:0.9.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/matsim/matsim/0.9.0-SNAPSHOT/matsim-0.9.0-SNAPSHOT.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.matsim/matsim/0.9.0-SNAPSHOT/951c955de94c083148256ed0d3dcc21f420df471/matsim-0.9.0-SNAPSHOT.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.matsim/matsim/0.9.0-SNAPSHOT/666abf06829fb250ec4fc748d3c7886cc614c407/matsim-0.9.0-SNAPSHOT-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

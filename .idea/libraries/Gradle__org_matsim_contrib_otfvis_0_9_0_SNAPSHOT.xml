@@ -1,9 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: org.matsim.contrib:otfvis:0.9.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/matsim/contrib/otfvis/0.9.0-SNAPSHOT/otfvis-0.9.0-SNAPSHOT.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.matsim.contrib/otfvis/0.9.0-SNAPSHOT/dda9266d12183b394aff685daf5dd73456aef744/otfvis-0.9.0-SNAPSHOT.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.matsim.contrib/otfvis/0.9.0-SNAPSHOT/fdc10563b64dc0c53cbba2f65f5e4be8d6d3030/otfvis-0.9.0-SNAPSHOT-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

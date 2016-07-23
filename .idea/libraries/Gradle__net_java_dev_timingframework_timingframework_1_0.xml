@@ -1,9 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: net.java.dev.timingframework:timingframework:1.0">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/timingframework/timingframework/1.0/timingframework-1.0.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.timingframework/timingframework/1.0/2c12a328bfd82ddb0c4389e915229ea3df1740b8/timingframework-1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.timingframework/timingframework/1.0/8efe21266dca7bbbe19079c9f2c0254def5734f2/timingframework-1.0-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

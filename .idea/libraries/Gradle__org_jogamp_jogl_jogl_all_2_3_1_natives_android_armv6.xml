@@ -1,9 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: org.jogamp.jogl:jogl-all:2.3.1:natives-android-armv6">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/jogamp/jogl/jogl-all/2.3.1/jogl-all-2.3.1-natives-android-armv6.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jogamp.jogl/jogl-all/2.3.1/29713ba6291a7315187161b3401490de0143d1a5/jogl-all-2.3.1-natives-android-armv6.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jogamp.jogl/jogl-all/2.3.1/9f5722172fe4c403835a8b99a6d19929c4542ba5/jogl-all-2.3.1-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>
