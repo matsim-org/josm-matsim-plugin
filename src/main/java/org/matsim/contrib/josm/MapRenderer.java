@@ -129,7 +129,7 @@ public class MapRenderer extends StyledMapRenderer {
 	 * @author Nico
 	 *
 	 */
-	static class Properties extends LabelCompositionStrategy implements PreferenceChangedListener {
+	static class Properties implements PreferenceChangedListener, LabelCompositionStrategy  {
 
 		private final static Properties INSTANCE = new Properties();
 		final static Font FONT = new Font("Droid Sans", Font.PLAIN, 14);
