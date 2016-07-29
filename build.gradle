@@ -24,6 +24,9 @@ repositories {
     maven {
         url 'http://oss.jfrog.org/artifactory/libs-snapshot'
     }
+    maven {
+        url 'http://maven.conveyal.com'
+    }
     mavenCentral()
 }
 
@@ -40,6 +43,8 @@ configurations {
 dependencies {
     compile ('org.matsim:matsim:0.9.0-SNAPSHOT') {changing = true}
     compile ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {changing = true}
+    compile ('com.conveyal:gtfs-lib:1.1.0-SNAPSHOT') {changing = true}
+
 
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
     // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
