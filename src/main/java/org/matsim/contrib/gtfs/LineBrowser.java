@@ -3,6 +3,8 @@ package org.matsim.contrib.gtfs;
 import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.*;
 import javafx.application.Application;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -12,8 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.stage.Stage;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class LineBrowser extends Application {
 
@@ -82,24 +83,53 @@ public class LineBrowser extends Application {
 
 		public RootPatternTreeItem(GTFSFeed feed) {
 			super(new RootPattern());
+			Map<String, TreeItem> agencyTreeItems = new HashMap<>();
+			for (Agency agency : feed.agency.values()) {
+				TreeItem agencyTreeItem = new TreeItem(new MyAgency(agency));
+				agencyTreeItems.put(agency.agency_id, agencyTreeItem);
+				getChildren().add(agencyTreeItem);
+			}
 			Map<String, TreeItem> routeTreeItems = new HashMap<>();
 			for (Route route : feed.routes.values()) {
 				TreeItem routeTreeItem = new TreeItem(new MyRoute(route));
 				routeTreeItems.put(route.route_id, routeTreeItem);
-				getChildren().add(routeTreeItem);
+				agencyTreeItems.get(route.agency_id).getChildren().add(routeTreeItem);
 			}
 			for (Pattern pattern : feed.patterns.values()) {
 				for (String routeId : pattern.associatedRoutes) {
-					TreeItem patternTreeItem = new TreeItem(new MyPattern(pattern));
+					((MyRoute) routeTreeItems.get(routeId).getValue()).getPatterns().add(pattern);
+				}
+			}
+			for (TreeItem treeItem : routeTreeItems.values()) {
+				MyRoute route = (MyRoute) treeItem.getValue();
+				List<Pattern> allPatterns = new ArrayList<>(route.getPatterns());
+				route.getPatterns().clear();
+				for (Pattern pattern : allPatterns) {
+					maybeInsert(route, pattern);
+				}
+				for (Pattern pattern : route.getPatterns()) {
+					TreeItem e = new TreeItem(new MyPattern(pattern));
 					for (String stopId : pattern.orderedStops) {
-						Stop stop = feed.stops.get(stopId);
-						patternTreeItem.getChildren().add(new TreeItem(new MyStop(stop)));
+						e.getChildren().add(new TreeItem(new MyStop(feed.stops.get(stopId))));
 					}
-					routeTreeItems.get(routeId).getChildren().add(patternTreeItem);
+					treeItem.getChildren().add(e);
 				}
 			}
 			setExpanded(true);
 		}
+	}
+
+	private void maybeInsert(MyRoute route, Pattern pattern) {
+		ListIterator<Pattern> listIterator = route.getPatterns().listIterator();
+		while (listIterator.hasNext()) {
+			Pattern otherPattern = listIterator.next();
+			if (Collections.indexOfSubList(pattern.orderedStops, otherPattern.orderedStops) != -1) {
+				listIterator.remove();
+			} else if (Collections.indexOfSubList(otherPattern.orderedStops, pattern.orderedStops) != -1) {
+				return;
+			}
+		}
+		route.getPatterns().add(pattern);
 	}
 
 	public static class RootPattern {
@@ -114,6 +144,8 @@ public class LineBrowser extends Application {
 
 		private final Route route;
 
+		private final ListProperty<Pattern> patterns = new SimpleListProperty<>(FXCollections.observableArrayList());
+
 		public MyRoute(Route route) {
 			this.route = route;
 		}
@@ -121,6 +153,10 @@ public class LineBrowser extends Application {
 		public String getName() {
 			return (route.route_short_name == null ? "" : route.route_short_name)
 					+ (route.route_long_name == null ? "" : route.route_long_name);
+		}
+
+		public ObservableList<Pattern> getPatterns() {
+			return patterns;
 		}
 
 	}
@@ -154,5 +190,15 @@ public class LineBrowser extends Application {
 	}
 
 
+	public static class MyAgency extends RootPattern{
+		private final Agency agency;
 
+		public MyAgency(Agency agency) {
+			this.agency = agency;
+		}
+
+		public String getName() {
+			return agency.agency_name;
+		}
+	}
 }
