@@ -110,14 +110,14 @@ public final class FakeGraphics extends Graphics2D {
     // CHECKSTYLE.OFF: ParameterNumber
     @Override
     public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
-            Color bgcolor, ImageObserver observer) {
+							 Color bgcolor, ImageObserver observer) {
         return false;
     }
     // CHECKSTYLE.ON: ParameterNumber
 
     @Override
     public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
-            ImageObserver observer) {
+							 ImageObserver observer) {
         return false;
     }
 
