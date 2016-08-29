@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm;
 
+import javafx.embed.swing.JFXPanel;
 import org.matsim.contrib.josm.actions.*;
 import org.matsim.contrib.josm.gui.LinksToggleDialog;
 import org.matsim.contrib.josm.gui.PTToggleDialog;
@@ -50,6 +51,8 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 	public MATSimPlugin(PluginInformation info) {
 		super(info);
+
+		new JFXPanel(); // super-weird, but we get random deadlocks on OSX when we don't initialize JavaFX early
 
 		// add xml exporter for matsim data
 		ExtensionFileFilter.addExporterFirst(new NetworkExporter());

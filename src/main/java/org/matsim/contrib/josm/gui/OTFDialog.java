@@ -40,7 +40,6 @@ import org.matsim.vis.otfvis.handler.OTFAgentsListHandler;
 import org.matsim.vis.otfvis.handler.OTFLinkAgentsHandler;
 import org.matsim.vis.otfvis.opengl.drawer.OTFOGLDrawer;
 import org.matsim.vis.otfvis.opengl.layer.OGLSimpleQuadDrawer;
-import org.matsim.vis.otfvis.opengl.layer.OGLSimpleStaticNetLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 
@@ -65,7 +64,6 @@ public final class OTFDialog extends ExtendedDialog {
 		connectionManager.connectLinkToWriter(OTFLinkAgentsHandler.Writer.class);
 		connectionManager.connectWriterToReader(OTFLinkAgentsHandler.Writer.class, OTFLinkAgentsHandler.class);
 		connectionManager.connectReaderToReceiver(OTFLinkAgentsHandler.class, OGLSimpleQuadDrawer.class);
-		connectionManager.connectReceiverToLayer(OGLSimpleQuadDrawer.class, OGLSimpleStaticNetLayer.class);
 		connectionManager.connectWriterToReader(OTFAgentsListHandler.Writer.class, OTFAgentsListHandler.class);
 		if (scenario.getConfig().transit().isUseTransit()) {
 			connectionManager.connectWriterToReader(FacilityDrawer.Writer.class, FacilityDrawer.Reader.class);
@@ -85,7 +83,7 @@ public final class OTFDialog extends ExtendedDialog {
 
 		OTFControlBar controlBar = new OTFControlBar(server, otfHostControl, drawer);
 
-		OTFQueryControl queryControl = new OTFQueryControl(server, controlBar, visconf);
+		OTFQueryControl queryControl = new OTFQueryControl(server, visconf);
 		OTFQueryControlToolBar queryControlBar = new OTFQueryControlToolBar(queryControl, visconf);
 		queryControl.setQueryTextField(queryControlBar.getTextField());
 

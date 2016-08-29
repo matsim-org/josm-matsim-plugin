@@ -32,7 +32,6 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 	public StopAreasToggleDialog() {
 		super("Stop areas", "matsim-scenario.png", "Stop areas", null, 150, true, Preferences.class);
 		Platform.setImplicitExit(false); // http://stackoverflow.com/questions/29302837/javafx-platform-runlater-never-running
-		Main.pref.addPreferenceChangeListener(this);
 		createLayout(fxPanel, false, null);
 		Platform.runLater(() -> {
 			title.addListener((InvalidationListener) -> SwingUtilities.invokeLater(() -> setTitle(title.get())));

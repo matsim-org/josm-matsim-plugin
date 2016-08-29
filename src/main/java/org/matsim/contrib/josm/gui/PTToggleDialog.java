@@ -53,9 +53,9 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 @SuppressWarnings("serial")
 public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeListener {
-	private final JFXPanel fxPanel = new JFXPanel();
-	private final TableView<Route> table_pt = new TableView<>();
-	private final StringProperty title = new SimpleStringProperty("Lines/Routes");
+	private final JFXPanel fxPanel;
+	private final TableView<Route> table_pt;
+	private final StringProperty title;
 
 	private FilteredList<Route> selectedRoutes;
 	private final SelectionChangedListener selectionListener = osmPrimitives -> {
@@ -71,8 +71,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	@Override
 	public void showNotify() {
-		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 		Main.getLayerManager().addActiveLayerChangeListener(this);
+		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 	}
 
 	@Override
@@ -84,7 +84,9 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	public PTToggleDialog() {
 		super("Lines/Routes", "matsim-scenario.png", "Lines/Routes", null, 150, true, Preferences.class);
 		Platform.setImplicitExit(false); // http://stackoverflow.com/questions/29302837/javafx-platform-runlater-never-running
-		Main.pref.addPreferenceChangeListener(this);
+		fxPanel = new JFXPanel();
+		table_pt = new TableView<>();
+		title = new SimpleStringProperty("Lines/Routes");
 		createLayout(fxPanel, false, null);
 		Platform.runLater(() -> {
 			title.addListener((InvalidationListener) -> SwingUtilities.invokeLater(() -> setTitle(title.get())));

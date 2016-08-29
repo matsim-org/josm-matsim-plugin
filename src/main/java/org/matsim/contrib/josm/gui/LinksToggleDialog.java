@@ -74,7 +74,6 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 	public LinksToggleDialog() {
 		super("Links/Nodes", "matsim-scenario.png", "Links/Nodes", null, 150, true, Preferences.class);
-		Main.pref.addPreferenceChangeListener(this);
 
 		// table for link data
 		table_links = new JTable();
