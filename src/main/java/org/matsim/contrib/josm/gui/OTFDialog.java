@@ -23,6 +23,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.otfvis.OTFVis;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.qsim.QSim;
+import org.matsim.vis.otfvis.OTFClient;
 import org.matsim.vis.otfvis.OTFClientControl;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 import org.matsim.vis.otfvis.OnTheFlyServer;
@@ -71,24 +72,19 @@ public final class OTFDialog extends ExtendedDialog {
 			connectionManager.connectReceiverToLayer(FacilityDrawer.DataDrawer.class, SimpleSceneLayer.class);
 		}
 
+		Component canvas = OTFOGLDrawer.createGLCanvas(visconf);
+		OTFHostControl hostControl = new OTFHostControl(server, canvas);
 		OTFClientControl.getInstance().setOTFVisConfig(visconf); // has to be set before OTFClientQuadTree.getConstData() is invoked!
 		OTFServerQuadTree serverQuadTree = server.getQuad(connectionManager);
 		OTFClientQuadTree clientQuadTree = serverQuadTree.convertToClient(server, connectionManager);
-		clientQuadTree.getConstData();
 
-		Component canvas = OTFOGLDrawer.createGLCanvas(visconf);
-		OTFHostControl otfHostControl = new OTFHostControl(server, canvas);
-		OTFOGLDrawer drawer = new OTFOGLDrawer(clientQuadTree, visconf, canvas, otfHostControl);
-		OTFClientControl.getInstance().setMainOTFDrawer(drawer);
-
-		OTFControlBar controlBar = new OTFControlBar(server, otfHostControl, drawer);
+		OTFOGLDrawer mainDrawer = new OTFOGLDrawer(clientQuadTree, visconf, canvas, hostControl);
+		OTFControlBar hostControlBar = new OTFControlBar(server, hostControl, mainDrawer);
 
 		OTFQueryControl queryControl = new OTFQueryControl(server, visconf);
 		OTFQueryControlToolBar queryControlBar = new OTFQueryControlToolBar(queryControl, visconf);
 		queryControl.setQueryTextField(queryControlBar.getTextField());
-
-
-		drawer.setQueryHandler(queryControl);
+		mainDrawer.setQueryHandler(queryControl);
 
 		JPanel compositePanel = new JPanel();
 		compositePanel.setBackground(Color.white);
@@ -99,7 +95,7 @@ public final class OTFDialog extends ExtendedDialog {
 		compositePanel.setPreferredSize(new Dimension(screenSize.width/2,screenSize.height/2));
 
 		getContentPane().add(compositePanel, BorderLayout.CENTER);
-		getContentPane().add(controlBar, BorderLayout.NORTH);
+		getContentPane().add(hostControlBar, BorderLayout.NORTH);
 		getContentPane().add(queryControlBar, BorderLayout.SOUTH);
 		pack();
 	}
