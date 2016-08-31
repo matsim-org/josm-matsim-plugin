@@ -3,16 +3,15 @@ package org.matsim.contrib.gtfs;
 import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.*;
 import javafx.application.Application;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.stage.Stage;
+import org.matsim.core.utils.misc.Time;
 
 import java.util.*;
 
@@ -26,7 +25,11 @@ public class LineBrowser extends Application {
 	public void start(Stage stage) throws Exception {
 		GTFSFeed feed = GTFSFeed.fromFile("/Users/michaelzilske/wurst/vbb/380248.zip");
 		feed.findPatterns();
+		stopStage(feed, stage);
+		patternStage(feed, new Stage());
+	}
 
+	private void stopStage(GTFSFeed feed, Stage stage) {
 		TableView<Stop> stopListView = new TableView<>(FXCollections.observableArrayList(feed.stops.values()));
 		TableColumn<Stop, String> id = new TableColumn<>("Id");
 		id.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().stop_id));
@@ -35,46 +38,83 @@ public class LineBrowser extends Application {
 		stopListView.getColumns().addAll(id, name);
 		stage.setScene(new Scene(stopListView));
 		stage.show();
-		lineStage(feed);
-		patternStage(feed);
 	}
 
-	private void lineStage(GTFSFeed feed) {
-		Stage stage = new Stage();
-		TableView<Route> routeListView = new TableView<>(FXCollections.observableArrayList(feed.routes.values()));
-		TableColumn<Route, String> id = new TableColumn<>("Id");
-		id.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().route_id));
-		TableColumn<Route, String> shortName = new TableColumn<>("Short Name");
-		shortName.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().route_short_name));
-		TableColumn<Route, String> longName = new TableColumn<>("Long Name");
-		longName.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().route_long_name));
-		routeListView.getColumns().addAll(id, shortName, longName);
-		stage.setScene(new Scene(routeListView));
+	private void patternStage(GTFSFeed feed, Stage stage) {
+		TreeTableView<RootPattern> tableView = new TreeTableView<>(getPatternData(feed));
+		TreeTableColumn<RootPattern, String> name = new TreeTableColumn<>("Name");
+		name.setCellValueFactory(new TreeItemPropertyValueFactory("name"));
+		TreeTableColumn<RootPattern, List<String>> trips = new TreeTableColumn<>("Trips");
+		trips.setCellValueFactory(new TreeItemPropertyValueFactory<>("trips"));
+		trips.setCellFactory(column -> {
+			TreeTableCell<RootPattern, List<String>> objectObjectTreeTableCell = new TreeTableCell<RootPattern, List<String>>() {
+				@Override protected void updateItem(List<String> item, boolean empty) {
+					if (item == getItem()) return;
+					super.updateItem(item, empty);
+					if (item == null) {
+						super.setText(null);
+						super.setGraphic(null);
+					} else if (item instanceof Node) {
+						super.setText(null);
+						super.setGraphic((Node)item);
+					} else {
+						super.setText(item.toString());
+						super.setGraphic(null);
+					}
+					MenuItem button = new MenuItem("Show trips");
+					button.setOnAction(event -> {
+						tripStage(feed, ((MyPattern) getTreeTableRow().getItem()), new Stage());
+					});
+					ContextMenu contextMenu = new ContextMenu();
+					contextMenu.getItems().add(button);
+					setContextMenu(contextMenu);
+				}
+			};
+			return objectObjectTreeTableCell;
+		});
+		tableView.getColumns().addAll(name, trips);
+		stage.setScene(new Scene(tableView));
+		stage.show();
+	}
+
+	public static class MyStopWithTimes {
+		Stop stop;
+		ListProperty<StopTime> stopTimes = new SimpleListProperty<>(FXCollections.observableArrayList());
+	}
+
+	private void tripStage(GTFSFeed feed, MyPattern pattern, Stage stage) {
+		List<MyStopWithTimes> stops = new ArrayList<>();
+		for (String orderedStop : pattern.pattern.orderedStops) {
+			MyStopWithTimes e = new MyStopWithTimes();
+			e.stop = feed.stops.get(orderedStop);
+			stops.add(e);
+		}
+		TableView<MyStopWithTimes> stopTableView = new TableView<>(FXCollections.observableArrayList(stops));
+		TableColumn<MyStopWithTimes, String> stopColumn = new TableColumn<>("Stop");
+		stopColumn.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().stop.stop_name));
+		stopTableView.getColumns().add(stopColumn);
+		for (int i=0; i<pattern.getTrips().size(); i++) {
+			String tripId = pattern.getTrips().get(i);
+			TableColumn<MyStopWithTimes, String> column = new TableColumn<>();
+			int finalI = i;
+			column.setCellValueFactory(f -> new SimpleObjectProperty<String>(Time.writeTime((int) f.getValue().stopTimes.get(finalI).departure_time)));
+			try {
+				int j=0;
+				for (StopTime stopTime : feed.getInterpolatedStopTimesForTrip(tripId)) {
+					stops.get(j).stopTimes.add(stopTime);
+					++j;
+				}
+			} catch (GTFSFeed.FirstAndLastStopsDoNotHaveTimes firstAndLastStopsDoNotHaveTimes) {
+				firstAndLastStopsDoNotHaveTimes.printStackTrace();
+			}
+			stopTableView.getColumns().add(column);
+		}
+		stage.setScene(new Scene(stopTableView));
 		stage.show();
 	}
 
 
-	private void patternStage(GTFSFeed feed) {
-		Stage stage = new Stage();
-		TableView<Pattern> patternListView = new TableView<>(FXCollections.observableArrayList(feed.patterns.values()));
-		TableColumn<Pattern, String> route = new TableColumn<>("Route");
-		route.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().associatedRoutes.toString()));
-		TableColumn<Pattern, String> name = new TableColumn<>("Name");
-		name.setCellValueFactory(f -> new SimpleStringProperty(f.getValue().name));
-		patternListView.getColumns().addAll(route, name);
-		stage.setScene(new Scene(patternListView));
-		stage.show();
-
-		Stage stage1 = new Stage();
-		TreeTableView tableView = new TreeTableView(getPatternData(feed));
-		TreeTableColumn name1 = new TreeTableColumn("Name");
-		name1.setCellValueFactory(new TreeItemPropertyValueFactory("name"));
-		tableView.getColumns().addAll(name1);
-		stage1.setScene(new Scene(tableView));
-		stage1.show();
-	}
-
-	private TreeItem getPatternData(GTFSFeed feed) {
+	private TreeItem<RootPattern> getPatternData(GTFSFeed feed) {
 		TreeItem patternTreeItemTreeItem = new RootPatternTreeItem(feed);
 		return patternTreeItemTreeItem;
 	}
@@ -171,6 +211,10 @@ public class LineBrowser extends Application {
 
 		public String getName() {
 			return pattern.name;
+		}
+
+		public List<String> getTrips() {
+			return pattern.associatedTrips;
 		}
 
 	}
