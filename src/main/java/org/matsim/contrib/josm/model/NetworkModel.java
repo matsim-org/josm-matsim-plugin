@@ -4,7 +4,6 @@ import javafx.beans.property.ReadOnlyMapProperty;
 import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -14,9 +13,6 @@ import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
-import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType;
-import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionType.Direction;
-import org.openstreetmap.josm.gui.dialogs.relation.sort.WayConnectionTypeCalculator;
 
 import java.util.*;
 
@@ -313,8 +309,7 @@ public class NetworkModel {
 		final Collection<OsmPrimitive> visited = new HashSet<>();
 
 		void convertWay(Way way) {
-			final String wayType = LinkConversionRules.getWayType(way);
-			final OsmConvertDefaults.OsmWayDefaults defaults = wayType != null ? OsmConvertDefaults.getWayDefaults().get(wayType) : null;
+			final OsmConvertDefaults.OsmWayDefaults defaults = LinkConversionRules.getWayDefaults(way);
 
 			final boolean forward = LinkConversionRules.isForward(way, defaults);
 			final boolean backward = LinkConversionRules.isBackward(way, defaults);

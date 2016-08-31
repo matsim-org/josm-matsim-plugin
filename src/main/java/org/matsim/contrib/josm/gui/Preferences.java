@@ -226,4 +226,8 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		Main.pref.put("matsim_transit_lite", transitLite);
 	}
 
+	public static int getMatsimFilterHierarchy() {
+		return Main.pref.getInteger("matsim_filter_hierarchy", 6);
+	}
+
 }

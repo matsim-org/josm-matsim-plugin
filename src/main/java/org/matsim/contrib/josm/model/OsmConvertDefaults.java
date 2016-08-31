@@ -17,7 +17,7 @@ public class OsmConvertDefaults {
 	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
 	public static final List<String> highwayTypes = Arrays.asList("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
-			"secondary", "tertiary", "minor", "unclassified", "residential", "living_street");
+			"secondary", "tertiary", "minor", "unclassified", "residential", "service", "living_street");
 
 	// This is an exhaustive list.
 	// See http://wiki.openstreetmap.org/wiki/Proposed_features/Public_Transport
@@ -30,12 +30,7 @@ public class OsmConvertDefaults {
 	}
 
 	public static void listen(Preferences pref) {
-		pref.addPreferenceChangeListener(new Preferences.PreferenceChangedListener() {
-			@Override
-			public void preferenceChanged(Preferences.PreferenceChangeEvent preferenceChangeEvent) {
-				load();
-			}
-		});
+		pref.addPreferenceChangeListener(preferenceChangeEvent -> load());
 	}
 
 	public static Map<String, OsmWayDefaults> getWayDefaults() {
@@ -56,24 +51,13 @@ public class OsmConvertDefaults {
 		values.put("minor", Main.pref.get("matsim_convertDefaults_minor", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
 		values.put("unclassified", Main.pref.get("matsim_convertDefaults_unclassified", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
 		values.put("residential", Main.pref.get("matsim_convertDefaults_residential", "6;1;" + Double.toString(30. / 3.6) + ";1.0;600;false"));
+		values.put("service", Main.pref.get("matsim_convertDefaults_service", "6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false"));
 		values.put("living_street", Main.pref.get("matsim_convertDefaults_living_street", "6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false"));
 
-		values.put(
-				"rail",
-				Main.pref.get("matsim_convertDefaults_rail", "1;1;" + Double.toString(100 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE)
-						+ ";false"));
-		values.put(
-				"light_rail",
-				Main.pref.get("matsim_convertDefaults_light_rail", "2;1;" + Double.toString(60 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE)
-						+ ";false"));
-		values.put(
-				"tram",
-				Main.pref.get("matsim_convertDefaults_tram", "4;1;" + Double.toString(50 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE)
-						+ ";false"));
-		values.put(
-				"subway",
-				Main.pref.get("matsim_convertDefaults_subway", "3;1;" + Double.toString(80 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE)
-						+ ";false"));
+		values.put("rail", Main.pref.get("matsim_convertDefaults_rail", "1;1;" + Double.toString(100 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put("light_rail", Main.pref.get("matsim_convertDefaults_light_rail", "2;1;" + Double.toString(60 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put("tram", Main.pref.get("matsim_convertDefaults_tram", "4;1;" + Double.toString(50 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE) + ";false"));
+		values.put("subway", Main.pref.get("matsim_convertDefaults_subway", "3;1;" + Double.toString(80 / 3.6) + ";1.0;" + Double.toString(Double.MAX_VALUE) + ";false"));
 
 		for (String type : highwayTypes) {
 			String temp = values.get(type);
@@ -102,6 +86,7 @@ public class OsmConvertDefaults {
 		Main.pref.put("matsim_convertDefaults_minor", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false");
 		Main.pref.put("matsim_convertDefaults_unclassified", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false");
 		Main.pref.put("matsim_convertDefaults_residential", "6;1;" + Double.toString(30. / 3.6) + ";1.0;600;false");
+		Main.pref.put("matsim_convertDefaults_service", "6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false");
 		Main.pref.put("matsim_convertDefaults_living_street", "6;1;" + Double.toString(15. / 3.6) + ";1.0;300;false");
 	}
 

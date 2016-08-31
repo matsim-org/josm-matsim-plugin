@@ -2,7 +2,7 @@ package org.matsim.contrib.josm.model;
 
 
 import org.matsim.api.core.v01.TransportMode;
-import org.openstreetmap.josm.Main;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.openstreetmap.josm.data.osm.Way;
 
 import java.util.Arrays;
@@ -17,16 +17,6 @@ public class LinkConversionRules {
 	public static final String CAPACITY = "matsim:capacity";
 	public static final String MODES = "matsim:modes";
 	public static final String LENGTH = "matsim:length";
-
-	static String getWayType(Way way) {
-		String wayType = null;
-		if (way.getKeys().containsKey(NetworkModel.TAG_HIGHWAY)) {
-			wayType = way.getKeys().get(NetworkModel.TAG_HIGHWAY);
-		} else if (way.getKeys().containsKey(NetworkModel.TAG_RAILWAY)) {
-			wayType = way.getKeys().get(NetworkModel.TAG_RAILWAY);
-		}
-		return wayType;
-	}
 
 	static String getId(Way way, long increment, boolean backward) {
 		return String.valueOf(way.getUniqueId()) + "_" + increment + (backward ? "_r" : "");
@@ -53,7 +43,7 @@ public class LinkConversionRules {
 			} else if (way.hasTag("oneway", "no")) {
 				backward = true;
 			}
-			if (defaults.hierarchy > Main.pref.getInteger("matsim_filter_hierarchy", 6)) {
+			if (defaults.hierarchy > Preferences.getMatsimFilterHierarchy()) {
 				backward = false;
 			}
 			if (way.hasTag("access", "no")) {
@@ -81,7 +71,7 @@ public class LinkConversionRules {
 			} else if (way.hasTag("oneway", "no")) {
 				forward = true;
 			}
-			if (defaults.hierarchy > Main.pref.getInteger("matsim_filter_hierarchy", 6)) {
+			if (defaults.hierarchy > Preferences.getMatsimFilterHierarchy()) {
 				forward = false;
 			}
 			if (way.hasTag("access", "no")) {
@@ -168,8 +158,7 @@ public class LinkConversionRules {
 	}
 
 	static boolean isMatsimWay(Way way) {
-		final String wayType = getWayType(way);
-		final OsmConvertDefaults.OsmWayDefaults defaults = wayType != null ? OsmConvertDefaults.getWayDefaults().get(wayType) : null;
+		final OsmConvertDefaults.OsmWayDefaults defaults = getWayDefaults(way);
 
 		final boolean forward = isForward(way, defaults);
 		final boolean backward = isBackward(way, defaults);
@@ -195,5 +184,15 @@ public class LinkConversionRules {
 		} catch (NumberFormatException e) {
 			return null;
 		}
+	}
+
+	static OsmConvertDefaults.OsmWayDefaults getWayDefaults(Way way) {
+		String wayType = null;
+		if (way.getKeys().containsKey(NetworkModel.TAG_HIGHWAY)) {
+			wayType = way.getKeys().get(NetworkModel.TAG_HIGHWAY);
+		} else if (way.getKeys().containsKey(NetworkModel.TAG_RAILWAY)) {
+			wayType = way.getKeys().get(NetworkModel.TAG_RAILWAY);
+		}
+		return wayType != null ? OsmConvertDefaults.getWayDefaults().get(wayType) : null;
 	}
 }
