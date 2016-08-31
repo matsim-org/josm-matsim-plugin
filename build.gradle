@@ -43,7 +43,7 @@ configurations {
 dependencies {
     compile ('org.matsim:matsim:0.9.0-SNAPSHOT') {changing = true}
     compile ('org.matsim.contrib:otfvis:0.9.0-SNAPSHOT') {changing = true}
-    compile ('com.conveyal:gtfs-lib:1.1.0-SNAPSHOT') {changing = true}
+    compile ('com.conveyal:gtfs-lib:1.1.0')
 
 
     // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
