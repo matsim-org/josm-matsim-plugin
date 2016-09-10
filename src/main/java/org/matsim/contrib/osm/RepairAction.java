@@ -29,7 +29,7 @@ public class RepairAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		DataSet data = Main.main.getCurrentDataSet();
+		DataSet data = Main.getLayerManager().getEditDataSet();
 		PleaseWaitProgressMonitor progMonitor = new PleaseWaitProgressMonitor(
 				"Validation");
 
@@ -58,6 +58,6 @@ public class RepairAction extends JosmAction {
 
 
 	private boolean shouldBeEnabled() {
-		return Main.main.getCurrentDataSet() != null;
+		return Main.getLayerManager().getEditDataSet() != null;
 	}
 }
