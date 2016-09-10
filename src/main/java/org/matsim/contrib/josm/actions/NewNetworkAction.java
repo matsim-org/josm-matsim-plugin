@@ -29,7 +29,7 @@ public class NewNetworkAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Main.main.addLayer(createMatsimLayer());
+		Main.getLayerManager().addLayer(createMatsimLayer());
 	}
 
 	public static MATSimLayer createMatsimLayer() {

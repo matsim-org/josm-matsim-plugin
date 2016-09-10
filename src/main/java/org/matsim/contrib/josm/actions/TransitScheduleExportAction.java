@@ -40,7 +40,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// convertWithFullTransit validator tests
 				test.startTest(progMonitor);
-				test.visit(Main.main.getCurrentDataSet().allPrimitives());
+				test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
 				test.endTest();
 				progMonitor.finishTask();
 				progMonitor.close();
@@ -74,15 +74,15 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.map.mapView.getActiveLayer()).getNetworkModel());
+					Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
 					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 
 				// set up error layer
 				OsmValidator.initializeErrorLayer();
 				Main.map.validatorDialog.unfurlDialog();
-				Main.main.getEditLayer().validationErrors.clear();
-				Main.main.getEditLayer().validationErrors.addAll(test.getErrors());
+				Main.getLayerManager().getEditLayer().validationErrors.clear();
+				Main.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
 				Main.map.validatorDialog.tree.setErrors(test.getErrors());
 
 			}
@@ -106,7 +106,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 	}
 
 	private boolean shouldBeEnabled() {
-		return getEditLayer() instanceof MATSimLayer && Preferences.isSupportTransit();
+		return getLayerManager().getEditLayer() instanceof MATSimLayer && Preferences.isSupportTransit();
 	}
 
 }

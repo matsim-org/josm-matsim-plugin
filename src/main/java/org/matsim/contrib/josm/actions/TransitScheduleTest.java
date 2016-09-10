@@ -65,7 +65,7 @@ public class TransitScheduleTest extends Test {
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
-			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.main.getCurrentDataSet());
+			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
 			networkModel.visitAll();
 			this.networkModel = networkModel;
 		}
