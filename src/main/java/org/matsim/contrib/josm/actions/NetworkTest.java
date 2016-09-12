@@ -83,11 +83,11 @@ public class NetworkTest extends Test {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
 		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			networkModel = ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel();
+			networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
 			Scenario scenario = Export.toScenario(networkModel);
 			this.network = scenario.getNetwork();
+			super.startTest(monitor);
 		}
-		super.startTest(monitor);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class NetworkTest extends Test {
 	@Override
 	public void visit(Way w) {
 		if (this.network != null) {
-			for (MLink link : ((MATSimLayer) Main.main.getActiveLayer()).getNetworkModel().getWay2Links().get(w)) {
+			for (MLink link : networkModel.getWay2Links().get(w)) {
 				String origId = link.getOrigId();
 				if (!linkIds.containsKey(origId)) {
 					linkIds.put(origId, new ArrayList<>());
