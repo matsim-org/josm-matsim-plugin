@@ -71,7 +71,7 @@ public class ImportAction extends JosmAction {
 							// layer = null happens if Exception happens during import,
 							// as Exceptions are handled only after this method is called.
 							if (layer != null) {
-								Main.main.addLayer(layer);
+								Main.getLayerManager().addLayer(layer);
 								Main.getLayerManager().setActiveLayer(layer);
 							}
 						}
