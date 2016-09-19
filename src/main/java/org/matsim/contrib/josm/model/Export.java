@@ -51,11 +51,6 @@ public class Export {
 
 		final Map<StopArea, List<TransitStopFacility>> facilityCopies = createFacilities(networkModel, scenario);
 		assert (scenario.getTransitSchedule().getFacilities().isEmpty());
-		for (List<TransitStopFacility> transitStopFacilities : facilityCopies.values()) {
-			for (TransitStopFacility transitStopFacility : transitStopFacilities) {
-				scenario.getTransitSchedule().addStopFacility(transitStopFacility);
-			}
-		}
 
 		for (Line line : networkModel.lines().values()) {
 			TransitLine newTLine = scenario.getTransitSchedule().getFactory().createTransitLine(line.getMatsimId());
@@ -112,6 +107,9 @@ public class Export {
 							}
 						}
 						newTRStops.add(newTRStop);
+						if (!scenario.getTransitSchedule().getFacilities().containsKey(newTRStop.getStopFacility().getId())) {
+							scenario.getTransitSchedule().addStopFacility(newTRStop.getStopFacility());
+						}
 					});
 
 					TransitRoute newTRoute = scenario.getTransitSchedule().getFactory().createTransitRoute(Id.create(route.getId(), TransitRoute.class), allLinks.isEmpty() ? null : RouteUtils.createNetworkRoute(allLinks.stream().map(Identifiable::getId).collect(Collectors.toList()), scenario.getNetwork()), newTRStops,
