@@ -1,5 +1,8 @@
 package org.matsim.contrib.josm.model;
 
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -8,8 +11,10 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.plugins.jts.JTSUtils;
 import org.openstreetmap.josm.tools.Geometry;
 
 import java.util.ArrayList;
@@ -65,35 +70,22 @@ public class StopArea {
 	}
 
 	private EastNorth platformLocation() {
-		List<Node> nodes = new ArrayList<>();
+		List<OsmPrimitive> nodes = new ArrayList<>();
 		for (RelationMember member : relation.getMembers()) {
 			if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")
 					|| member.hasRole("stop")) {
-				if (member.isWay()) {
-					nodes.addAll(member.getWay().getNodes());
-				} else if (member.isNode()) {
+				if (member.isWay() && !member.getWay().hasIncompleteNodes()) {
+					nodes.add(member.getWay());
+				} else if (member.isNode() && member.getNode().isLatLonKnown()) {
 					nodes.add(member.getNode());
 				}
 			}
 		}
-		Iterator<Node> iterator = nodes.iterator();
-		while (iterator.hasNext()) {
-			Node next = iterator.next();
-			if (! next.isLatLonKnown()) {
-				iterator.remove();
-			}
-		}
-		if (nodes.size() > 2) {
-			return Geometry.getCenter(nodes);
-		} else if (nodes.size() == 2) {
-			Node node0 = nodes.get(0);
-			Node node1 = nodes.get(1);
-			return node0.getEastNorth().getCenter(node1.getEastNorth());
-		} else if (nodes.size() == 1) {
-			return nodes.get(0).getEastNorth();
-		} else {
-			return null;
-		}
+
+		com.vividsolutions.jts.geom.Geometry[] geometries = nodes.stream().map(prim -> JTSUtils.convert(prim)).toArray(size -> new com.vividsolutions.jts.geom.Geometry[size]);
+		GeometryCollection geometryCollection = new GeometryCollection(geometries, new GeometryFactory());
+		Point centroid = geometryCollection.getCentroid();
+		return new EastNorth(centroid.getX(), centroid.getY());
 	}
 
 	public Relation getRelation() {
