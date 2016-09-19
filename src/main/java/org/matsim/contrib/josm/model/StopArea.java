@@ -85,7 +85,11 @@ public class StopArea {
 		com.vividsolutions.jts.geom.Geometry[] geometries = nodes.stream().map(prim -> JTSUtils.convert(prim)).toArray(size -> new com.vividsolutions.jts.geom.Geometry[size]);
 		GeometryCollection geometryCollection = new GeometryCollection(geometries, new GeometryFactory());
 		Point centroid = geometryCollection.getCentroid();
-		return new EastNorth(centroid.getX(), centroid.getY());
+		if (centroid.isEmpty()) {
+			return null;
+		} else {
+			return new EastNorth(centroid.getX(), centroid.getY());
+		}
 	}
 
 	public Relation getRelation() {
