@@ -10,13 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.MNode;
 import org.matsim.contrib.josm.model.NetworkModel;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.Node;
@@ -46,7 +45,6 @@ public class NetworkTest extends Test {
 	 * list.
 	 */
 	private Map<String, ArrayList<Node>> nodeIds;
-	private Network network;
 
 	/**
 	 * Identifies the link id to be fixed from a specific error.
@@ -83,11 +81,15 @@ public class NetworkTest extends Test {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
 		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
-			Scenario scenario = Export.toScenario(networkModel);
-			this.network = scenario.getNetwork();
-			super.startTest(monitor);
+			this.networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
+		} else {
+			Config config = ConfigUtils.createConfig();
+			config.transit().setUseTransit(true);
+			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
+			networkModel.visitAll();
+			this.networkModel = networkModel;
 		}
+		super.startTest(monitor);
 	}
 
 	/**
@@ -96,8 +98,9 @@ public class NetworkTest extends Test {
 	 */
 	@Override
 	public void visit(Way w) {
-		if (this.network != null) {
-			for (MLink link : networkModel.getWay2Links().get(w)) {
+		List<MLink> mLinks = networkModel.getWay2Links().get(w);
+		if (mLinks != null) {
+			for (MLink link : mLinks) {
 				String origId = link.getOrigId();
 				if (!linkIds.containsKey(origId)) {
 					linkIds.put(origId, new ArrayList<>());
@@ -119,15 +122,13 @@ public class NetworkTest extends Test {
 	 */
 	@Override
 	public void visit(Node n) {
-		if (this.network != null) {
-			MNode node = networkModel.nodes().get(n);
-			if (node != null) {
-				String origId = node.getOrigId();
-				if (!nodeIds.containsKey(origId)) {
-					nodeIds.put(origId, new ArrayList<>());
-				}
-				nodeIds.get(origId).add(n);
+		MNode node = networkModel.nodes().get(n);
+		if (node != null) {
+			String origId = node.getOrigId();
+			if (!nodeIds.containsKey(origId)) {
+				nodeIds.put(origId, new ArrayList<>());
 			}
+			nodeIds.get(origId).add(n);
 		}
 	}
 
@@ -182,7 +183,6 @@ public class NetworkTest extends Test {
 			}
 		}
 		super.endTest();
-		network = null;
 		linkIds = null;
 		nodeIds = null;
 	}
