@@ -81,7 +81,7 @@ public class TransitScheduleTest extends Test {
 				// create warning with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
 				List<OsmPrimitive> relations = entry.getValue().stream().map(Line::getRelation).collect(Collectors.toList());
-				TestError error = new TestError(this, Severity.ERROR, msg, DUPLICATE_LINE_ID, relations, relations);
+				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_LINE_ID).message(msg).primitives(relations).highlight(relations).build();
 				errors.add(error);
 			}
 		}
@@ -93,7 +93,7 @@ public class TransitScheduleTest extends Test {
 				// create warning with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
 				List<OsmPrimitive> relations = entry.getValue().stream().map(Route::getRelation).collect(Collectors.toList());
-				TestError error = new TestError(this, Severity.ERROR, msg, DUPLICATE_ROUTE_ID, relations, relations);
+				TestError error = TestError.builder(this, Severity.ERROR,  DUPLICATE_ROUTE_ID).message(msg).primitives(relations).highlight(relations).build();
 				errors.add(error);
 
 			}
@@ -107,9 +107,8 @@ public class TransitScheduleTest extends Test {
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
 				List<OsmPrimitive> relations = entry.getValue().stream().map(StopArea::getRelation).collect(Collectors.toList());
 
-				TestError error = new TestError(this, Severity.ERROR, msg, DUPLICATE_FACILITY_ID, relations, relations);
+				TestError error = TestError.builder(this, Severity.ERROR,  DUPLICATE_FACILITY_ID).message(msg).primitives(relations).highlight(relations).build();
 				errors.add(error);
-
 			}
 		}
 		if (errors.isEmpty()) { // Otherwise, it is possible that we have a condition where Export would throw an Exception
@@ -118,11 +117,13 @@ public class TransitScheduleTest extends Test {
 			Scenario targetScenario = Export.toScenario(networkModel);
 			ValidationResult validationResult = TransitScheduleValidator.validateAll(targetScenario.getTransitSchedule(), targetScenario.getNetwork());
 			for (String errorString : validationResult.getWarnings()) {
-				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+				TestError error = TestError.builder(this, Severity.WARNING,  MATSIM_ERROR_MESSAGE).message(errorString).build();
+				errors.add(error);
 			}
 			for (String errorString : validationResult.getErrors()) {
 				// We call them only Warnings in JOSM because it still can be exported to XML.
-				errors.add(new TestError(this, Severity.WARNING, errorString, MATSIM_ERROR_MESSAGE, Collections.<OsmPrimitive>emptyList()));
+				TestError error = TestError.builder(this, Severity.WARNING,  MATSIM_ERROR_MESSAGE).message(errorString).build();
+				errors.add(error);
 			}
 		}
 		super.endTest();

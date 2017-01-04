@@ -131,8 +131,8 @@ public class UpdateStopTags extends Test {
 
 		for(Entry<OsmPrimitive, TagCorrection> entry: proposals.entrySet()) {
 			String msg = (entry.getKey().getType().toString()+" should be tagged "+entry.getValue().newTag);
-			errors.add(new TestError(this, Severity.WARNING, msg,
-					UPDATETAG, entry.getKey()));
+			TestError error = TestError.builder(this, Severity.WARNING,  UPDATETAG).message(msg).primitives(entry.getKey()).build();
+			errors.add(error);
 		}
 
 		super.endTest();

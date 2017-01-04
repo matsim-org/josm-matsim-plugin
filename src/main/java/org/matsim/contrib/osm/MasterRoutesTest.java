@@ -105,8 +105,8 @@ public class MasterRoutesTest extends Test {
 
 		for(Entry<String, ArrayList<Relation>> entry: routes.entrySet()) {
 			String msg = ("Route(s) "+entry.getKey()+"  with no Route Master");
-			errors.add(new TestError(this, Severity.WARNING, msg,
-					ROUTE_NO_MASTER, entry.getValue()));
+			TestError error = TestError.builder(this, Severity.WARNING,  ROUTE_NO_MASTER).message(msg).primitives(entry.getValue()).build();
+			errors.add(error);
 		}
 		super.endTest();
 	}

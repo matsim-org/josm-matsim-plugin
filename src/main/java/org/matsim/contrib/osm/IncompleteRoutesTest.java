@@ -62,8 +62,8 @@ public class IncompleteRoutesTest extends Test{
 
 		for(Relation relation: incompleteRoutes) {
 			String msg = ("Incomplete route "+relation.get("ref")+" - Auto repair to download missing elements (cannot be undone)");
-			errors.add(new TestError(this, Severity.WARNING, msg,
-					ROUTE_INCOMPLETE, relation));
+			TestError error = TestError.builder(this, Severity.WARNING,  ROUTE_INCOMPLETE).message(msg).primitives(relation).build();
+			errors.add(error);
 		}
 		super.endTest();
 	}

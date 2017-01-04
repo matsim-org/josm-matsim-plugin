@@ -111,7 +111,8 @@ public class NetworkTest extends Test {
 				if (doubtfulAttributes(link)) {
 					String msg = ("Link contains doubtful attributes");
 					Collection<Way> way = Collections.singleton(w);
-					errors.add(new TestError(this, Severity.WARNING, msg, DOUBTFUL_LINK_ATTRIBUTE, way, way));
+					TestError error = TestError.builder(this, Severity.WARNING, DOUBTFUL_LINK_ATTRIBUTE).message(msg).primitives(way).highlight(way).build();
+					errors.add(error);
 				}
 			}
 		}
@@ -166,7 +167,7 @@ public class NetworkTest extends Test {
 
 				// create error with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
-				TestError error = new TestError(this, Severity.ERROR, msg, DUPLICATE_LINK_ID, entry.getValue(), segments);
+				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_LINK_ID).message(msg).primitives(entry.getValue()).highlightWaySegments(segments).build();
 				errors.add(error);
 				links2Fix.put(error, entry.getKey());
 			}
@@ -177,7 +178,7 @@ public class NetworkTest extends Test {
 
 				// create warning with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
-				TestError error = new TestError(this, Severity.ERROR, msg, DUPLICATE_NODE_ID, entry.getValue(), entry.getValue());
+				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_NODE_ID).message(msg).primitives(entry.getValue()).highlight(entry.getValue()).build();
 				errors.add(error);
 
 			}

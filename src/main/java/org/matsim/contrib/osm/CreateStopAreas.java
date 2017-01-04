@@ -154,8 +154,8 @@ public class CreateStopAreas extends Test {
 
 		for(Entry<String, ArrayList<OsmPrimitive>> entry: stops.entrySet()) {
 			String msg = ("Platform / stop position "+entry.getKey()+"  could be a member of a stop area");
-			errors.add(new TestError(this, Severity.WARNING, msg,
-					MISSING_STOP_AREA, entry.getValue()));
+			TestError error = TestError.builder(this, Severity.WARNING,  MISSING_STOP_AREA).message(msg).primitives(entry.getValue()).build();
+			errors.add(error);
 		}
 		super.endTest();
 	}
