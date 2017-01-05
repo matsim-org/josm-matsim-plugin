@@ -89,7 +89,13 @@ public class ConvertAction extends JosmAction {
 		test1.endTest();
 		progMonitor1.finishTask();
 		progMonitor1.close();
-
+		
+		if (test1.getErrors().stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
+			JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
+					"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
+			return test1.getErrors();
+		} 
+		
 		TransitScheduleTest test2 = new TransitScheduleTest();
 		PleaseWaitProgressMonitor progMonitor2 = new PleaseWaitProgressMonitor("Validation");
 		test2.startTest(progMonitor2);
@@ -99,7 +105,7 @@ public class ConvertAction extends JosmAction {
 		progMonitor2.close();
 
 		List<TestError> allErrors = Stream.concat(test1.getErrors().stream(), test2.getErrors().stream()).collect(Collectors.toList());
-		if (allErrors.stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
+		if (test2.getErrors().stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
 			JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
 					"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 			return allErrors;

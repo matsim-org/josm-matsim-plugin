@@ -62,7 +62,7 @@ public final class OTFDialog extends ExtendedDialog {
 		OTFConnectionManager connectionManager = new OTFConnectionManager();
 		connectionManager.connectLinkToWriter(OTFLinkAgentsHandler.Writer.class);
 		connectionManager.connectWriterToReader(OTFLinkAgentsHandler.Writer.class, OTFLinkAgentsHandler.class);
-		connectionManager.connectReaderToReceiver(OTFLinkAgentsHandler.class, OGLSimpleQuadDrawer.class);
+//		connectionManager.connectReaderToReceiver(OTFLinkAgentsHandler.class, OGLSimpleQuadDrawer.class);
 		connectionManager.connectWriterToReader(OTFAgentsListHandler.Writer.class, OTFAgentsListHandler.class);
 		if (scenario.getConfig().transit().isUseTransit()) {
 			connectionManager.connectWriterToReader(FacilityDrawer.Writer.class, FacilityDrawer.Reader.class);
