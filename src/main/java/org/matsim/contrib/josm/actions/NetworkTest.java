@@ -17,7 +17,9 @@ import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
+import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
@@ -111,7 +113,8 @@ public class NetworkTest extends Test {
 				if (doubtfulAttributes(link)) {
 					String msg = ("Link contains doubtful attributes");
 					Collection<Way> way = Collections.singleton(w);
-					TestError error = TestError.builder(this, Severity.WARNING, DOUBTFUL_LINK_ATTRIBUTE).message(msg).primitives(way).highlight(way).build();
+					TestError error = TestError.builder(this, Severity.WARNING, DOUBTFUL_LINK_ATTRIBUTE).message(msg)
+							.primitives(way).highlight(way).build();
 					errors.add(error);
 				}
 			}
@@ -143,7 +146,8 @@ public class NetworkTest extends Test {
 	 *         attributes. <code>false</code> otherwise
 	 */
 	private boolean doubtfulAttributes(MLink link) {
-		return link.getFreespeed() == 0 || link.getCapacity() == 0 || link.getLength() == 0 || link.getNumberOfLanes() == 0;
+		return link.getFreespeed() == 0 || link.getCapacity() == 0 || link.getLength() == 0
+				|| link.getNumberOfLanes() == 0;
 	}
 
 	/**
@@ -167,7 +171,8 @@ public class NetworkTest extends Test {
 
 				// create error with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
-				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_LINK_ID).message(msg).primitives(entry.getValue()).highlightWaySegments(segments).build();
+				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_LINK_ID).message(msg)
+						.primitives(entry.getValue()).highlightWaySegments(segments).build();
 				errors.add(error);
 				links2Fix.put(error, entry.getKey());
 			}
@@ -175,12 +180,11 @@ public class NetworkTest extends Test {
 		}
 		for (Entry<String, ArrayList<Node>> entry : nodeIds.entrySet()) {
 			if (entry.getValue().size() > 1) {
-
 				// create warning with message
 				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
-				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_NODE_ID).message(msg).primitives(entry.getValue()).highlight(entry.getValue()).build();
+				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_NODE_ID).message(msg)
+						.primitives(entry.getValue()).highlight(entry.getValue()).build();
 				errors.add(error);
-
 			}
 		}
 		super.endTest();
@@ -199,6 +203,9 @@ public class NetworkTest extends Test {
 			return null;
 		}
 		if (testError.getCode() == 3001 || testError.getCode() == 3002) {
+
+			List<Command> commands = new ArrayList<>();
+
 			int i = 1;
 			int j = 1;
 			// go through all affected elements and adjust id with incremental
@@ -207,21 +214,18 @@ public class NetworkTest extends Test {
 				if (primitive instanceof Way) {
 					if (links2Fix.containsKey(testError)) {
 						String id2Fix = links2Fix.get(testError);
-						for (MLink link : networkModel.getWay2Links().get(primitive)) {
-							if (link.getOrigId().equalsIgnoreCase(id2Fix)) {
-								link.setOrigId(id2Fix + "(" + i + ")");
-								i++;
-							}
-						}
+						commands.add(new ChangePropertyCommand(primitive, "matsim:id", id2Fix + "(" + i + ")"));
+						i++;
 					}
 				} else if (primitive instanceof Node) {
 					MNode node = this.networkModel.nodes().get(primitive);
 					String origId = node.getOrigId();
-					node.setOrigId(origId + "(" + j + ")");
+					// node.setOrigId(origId + "(" + j + ")");
+					commands.add(new ChangePropertyCommand(primitive, "matsim:id", origId + "(" + j + ")"));
 					j++;
 				}
 			}
-
+			return new SequenceCommand("Commands", commands);
 		}
 		return null;// undoRedo handling done in mergeNodes
 	}
