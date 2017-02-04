@@ -19,19 +19,28 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  */
 public final class Preferences extends DefaultTabPreferenceSetting {
 
-	private final JCheckBox transitFeature = new JCheckBox("Transit support [alpha]");
-	private final JCheckBox transitLite = new JCheckBox("Transit routes lite");
+	//General
+	private final JLabel exportNetworkVersionLabel = new JLabel("Exported network xml version");
+	private final String[] networkVersionOptions = {"v2", "v1"};
+	private final JComboBox<String> exportNetworkVersionCB = new JComboBox<>(networkVersionOptions);
+
+	//Visualization
 	private final JCheckBox renderMatsim = new JCheckBox("Activate MATSim Renderer");
 	private final JCheckBox showIds = new JCheckBox("Show link-Ids");
 	private final JSlider wayOffset = new JSlider(0, 100);
 	private final JLabel wayOffsetLabel = new JLabel("Link offset for overlapping links");
 	private final JCheckBox showInternalIds = new JCheckBox("Show internal Ids in table");
+
+	//Converter
+	private final JCheckBox transitFeature = new JCheckBox("Transit support [alpha]");
+	private final JCheckBox transitLite = new JCheckBox("Transit routes lite");
 	private final JCheckBox cleanNetwork = new JCheckBox("Clean Network");
 	private final JCheckBox keepPaths = new JCheckBox("Keep Paths");
 	private final JButton convertingDefaults = new JButton("Set converting defaults");
 	private final JCheckBox filterActive = new JCheckBox("Activate hierarchy filter");
 	private final JLabel hierarchyLabel = new JLabel("Only convert hierarchies up to: ");
 	private final JTextField hierarchyLayer = new JTextField();
+
 
 	public static class Factory implements PreferenceSettingFactory {
 		@Override
@@ -57,6 +66,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 
 	@Override
 	public boolean ok() {
+		Main.pref.put("matsim_networkVersion", (String)exportNetworkVersionCB.getSelectedItem());
 		Main.pref.put("matsim_supportTransit", transitFeature.isSelected());
 		Main.pref.put("matsim_transit_lite", transitLite.isSelected());
 		Main.pref.put("matsim_showIds", showIds.isSelected());
@@ -72,9 +82,28 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 
 	private JTabbedPane buildContentPane() {
 		JTabbedPane pane = getTabPane();
+		pane.addTab(tr("General"), buildGeneralPanel());
 		pane.addTab(tr("Visualization"), buildVisualizationPanel());
-		pane.addTab(tr("Converter Options"), buildConvertPanel());
+		pane.addTab(tr("Converter"), buildConvertPanel());
 		return pane;
+	}
+
+	private Component buildGeneralPanel() {
+		JPanel pnl = new JPanel(new GridBagLayout());
+		GridBagConstraints cOptions = new GridBagConstraints();
+
+		exportNetworkVersionCB.setSelectedItem(getNetworkExportVersion());
+
+		cOptions.insets = new Insets(4, 4, 4, 4);
+		cOptions.anchor = GridBagConstraints.NORTHWEST;
+		cOptions.gridx = 0;
+		cOptions.gridy = 0;
+		pnl.add(exportNetworkVersionLabel, cOptions);
+		cOptions.gridx = 1;
+		cOptions.weightx = 1;
+		cOptions.weighty=1;
+		pnl.add(exportNetworkVersionCB, cOptions);
+		return pnl;
 	}
 
 	private JPanel buildVisualizationPanel() {
@@ -200,6 +229,10 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		pnl.add(jSep, cOptions);
 
 		return pnl;
+	}
+
+	public static String getNetworkExportVersion() {
+		return Main.pref.get("matsim_networkVersion", "v2");
 	}
 
 	public static boolean isKeepPaths() {

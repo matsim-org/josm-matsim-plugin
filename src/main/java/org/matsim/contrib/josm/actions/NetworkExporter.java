@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.network.io.NetworkWriter;
@@ -116,7 +117,11 @@ public final class NetworkExporter extends FileExporter {
 			if (Main.pref.getBoolean("matsim_cleanNetwork")) {
 				new NetworkCleaner().run(targetScenario.getNetwork());
 			}
-			new NetworkWriter(targetScenario.getNetwork()).write(file.getPath());
+			if(Preferences.getNetworkExportVersion().equals("v1")) {
+				new NetworkWriter(targetScenario.getNetwork()).writeFileV1(file.getPath());
+			} else {
+				new NetworkWriter(targetScenario.getNetwork()).write(file.getPath());
+			}
 		}
 
 		// set up error layer
