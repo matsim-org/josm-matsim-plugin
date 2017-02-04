@@ -76,7 +76,7 @@ jar {
                 "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
                 "Plugin-Version": "v0.7.5",
                 "Plugin-Mainversion": 10786,
-                "10340_Plugin-Url": "v0.6.0;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar",
+                "10340_Plugin-Url": "v0.7.5;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar",
                 "9278_Plugin-Url": "v0.5.9;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar",
                 "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
                 "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
