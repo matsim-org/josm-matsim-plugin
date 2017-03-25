@@ -6,6 +6,7 @@ import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.io.OsmServerReader;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.HttpClient;
+import org.openstreetmap.josm.tools.Utils;
 
 import java.io.InputStream;
 
@@ -53,7 +54,7 @@ public final class MyOverpassDownloader extends OsmServerReader {
 	}
 
 	private String getUrl() {
-		return API+query;
+		return API+ Utils.encodeUrl(query);
 	}
 
 }
