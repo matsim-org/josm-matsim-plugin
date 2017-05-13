@@ -67,7 +67,7 @@ public class ConvertAction extends JosmAction {
 						// it is.
 						// (Perhaps I want to look at the particular are I am viewing right
 						// now.)
-						Main.main.addLayer(layer, (ProjectionBounds) null);
+						Main.getLayerManager().addLayer(layer);
 					}
 				}
 			};

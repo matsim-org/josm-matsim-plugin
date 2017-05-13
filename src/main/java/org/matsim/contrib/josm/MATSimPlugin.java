@@ -91,7 +91,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 				Main.toolbar.register(tp);
 			}
 		}
-		AutoCompletionManager.cachePresets(tps);
+//		AutoCompletionManager.cachePresets(tps);
 		HashMap<TaggingPresetMenu, JMenu> submenus = new HashMap<>();
 		for (final TaggingPreset p : tps) {
 			JMenu m = p.group != null ? submenus.get(p.group) : Main.main.menu.presetsMenu;
