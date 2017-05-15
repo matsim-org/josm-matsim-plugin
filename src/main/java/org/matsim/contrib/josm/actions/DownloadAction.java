@@ -14,6 +14,7 @@ import org.openstreetmap.josm.io.OsmServerReader;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.CheckParameterUtil;
 import org.openstreetmap.josm.tools.HttpClient;
+import org.openstreetmap.josm.tools.Utils;
 
 import java.awt.event.ActionEvent;
 import java.io.InputStream;
@@ -177,7 +178,7 @@ public class DownloadAction extends JosmAction {
 		}
 
 		private String getUrl(String highwayPredicates, String routePredicates, double lon1, double lat1, double lon2, double lat2) {
-			return API+getQuery(highwayPredicates, routePredicates, lon1, lat1, lon2, lat2);
+			return API+ Utils.encodeUrl(getQuery(highwayPredicates, routePredicates, lon1, lat1, lon2, lat2));
 		}
 
 		private String getQuery(String highwayPredicates, String routePredicates, double lon1, double lat1, double lon2, double lat2) {

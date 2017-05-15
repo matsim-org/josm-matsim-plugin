@@ -146,5 +146,5 @@ task wrapper(type: Wrapper) {
 
 task runJosm(type: JavaExec) {
     classpath = configurations.compile
-    main = 'JOSM'
+    main = 'org.openstreetmap.josm.gui.MainApplication'
 }
