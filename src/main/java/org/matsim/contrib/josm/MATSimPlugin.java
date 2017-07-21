@@ -119,7 +119,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 
 		// register for preference changed events
 		Main.pref.addPreferenceChangeListener(this);
-		Main.pref.addPreferenceChangeListener(MapRenderer.Properties.getInstance());
+		Main.pref.addPreferenceChangeListener(MapRenderer.PROPERTIES);
 		OsmConvertDefaults.listen(Main.pref);
 
 		// load default converting parameters

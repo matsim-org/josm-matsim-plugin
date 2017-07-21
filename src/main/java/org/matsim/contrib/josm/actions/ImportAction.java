@@ -21,73 +21,72 @@ import static org.openstreetmap.josm.tools.I18n.tr;
  * The ImportAction that handles network imports.
  *
  * @author Nico
- *
  */
 @SuppressWarnings("serial")
 public class ImportAction extends JosmAction {
 
-	public ImportAction() {
-		super(tr("Import MATSim scenario"), "open.png", tr("Import MATSim scenario"), Shortcut.registerShortcut("menu:matsimImport",
-				tr("Menu: {0}", tr("MATSim Import")), KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
-	}
+    public ImportAction() {
+        super(tr("Import MATSim scenario"), "open.png", tr("Import MATSim scenario"), Shortcut.registerShortcut("menu:matsimImport",
+                tr("Menu: {0}", tr("MATSim Import")), KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
+    }
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
+    @Override
+    public void actionPerformed(ActionEvent e) {
 
-		ImportDialog dialog = new ImportDialog();
-		JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-		
-		JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
-		dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		dlg.setMinimumSize(new Dimension(400, 600));
-		dlg.setVisible(true);
-		if (pane.getValue() != null) {
-			if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
-				if (dialog.getNetworkFile()!=null) {
-					
-					ProjectionChoice pc = dialog.getProjectionChoice();
+        ImportDialog dialog = new ImportDialog();
+        JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 
-				        String id = pc.getId();
-				        ProjectionPreference.setProjection(id, dialog.getPrefs());
+        JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
+        dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dlg.setMinimumSize(new Dimension(400, 600));
+        dlg.setVisible(true);
+        if (pane.getValue() != null) {
+            if (((Integer) pane.getValue()) == JOptionPane.OK_OPTION) {
+                if (dialog.getNetworkFile() != null) {
 
-					final java.io.File network = dialog.getNetworkFile();
-					final java.io.File schedule = dialog.getScheduleFile();
-					PleaseWaitRunnable task = new PleaseWaitRunnable("MATSim Import") {
-						private final Importer importer = new Importer(network, schedule);
+                    ProjectionChoice pc = dialog.getProjectionChoice();
 
-						/**
-						 * @see PleaseWaitRunnable#cancel()
-						 */
-						@Override
-						protected void cancel() {
-						}
+                    String id = pc.getId();
+                    ProjectionPreference.setProjection(id, dialog.getPrefs(), false);
 
-						/**
-						 * @see PleaseWaitRunnable#finish()
-						 */
-						@Override
-						protected void finish() {
-							MATSimLayer layer = importer.createMatsimLayer();
-							// layer = null happens if Exception happens during import,
-							// as Exceptions are handled only after this method is called.
-							if (layer != null) {
-								Main.getLayerManager().addLayer(layer);
-								Main.getLayerManager().setActiveLayer(layer);
-							}
-						}
+                    final java.io.File network = dialog.getNetworkFile();
+                    final java.io.File schedule = dialog.getScheduleFile();
+                    PleaseWaitRunnable task = new PleaseWaitRunnable("MATSim Import") {
+                        private final Importer importer = new Importer(network, schedule);
 
-						/**
-						 * @see PleaseWaitRunnable#realRun()
-						 */
-						@Override
-						protected void realRun() {
-						}
-					};
-					Main.worker.execute(task);
-				}
-			}
-		}
-		dlg.dispose();
-	}
+                        /**
+                         * @see PleaseWaitRunnable#cancel()
+                         */
+                        @Override
+                        protected void cancel() {
+                        }
+
+                        /**
+                         * @see PleaseWaitRunnable#finish()
+                         */
+                        @Override
+                        protected void finish() {
+                            MATSimLayer layer = importer.createMatsimLayer();
+                            // layer = null happens if Exception happens during import,
+                            // as Exceptions are handled only after this method is called.
+                            if (layer != null) {
+                                Main.getLayerManager().addLayer(layer);
+                                Main.getLayerManager().setActiveLayer(layer);
+                            }
+                        }
+
+                        /**
+                         * @see PleaseWaitRunnable#realRun()
+                         */
+                        @Override
+                        protected void realRun() {
+                        }
+                    };
+                    Main.worker.execute(task);
+                }
+            }
+        }
+        dlg.dispose();
+    }
 
 }
