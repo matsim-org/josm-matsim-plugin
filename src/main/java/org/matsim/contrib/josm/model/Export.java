@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.*;
@@ -45,6 +46,9 @@ public class Export {
 				newLink.setLength(link.getLength());
 				newLink.setNumberOfLanes(link.getNumberOfLanes());
 				newLink.setAllowedModes(link.getAllowedModes());
+				if (Preferences.includeRoadType()) {
+					NetworkUtils.setType(newLink, link.getType());
+				}
 				scenario.getNetwork().addLink(newLink);
 			}
 		}

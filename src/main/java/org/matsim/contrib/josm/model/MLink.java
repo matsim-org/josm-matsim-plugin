@@ -18,6 +18,7 @@ public class MLink {
 	private List<WaySegment> segments;
 	private MNode fromNode;
 	private MNode toNode;
+	private String type;
 
 	public MLink(MNode fromNode, MNode toNode) {
 
@@ -81,6 +82,15 @@ public class MLink {
 		return segments;
 	}
 
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getType() {
+		return type;
+	}
+
 	public Id<Link> getId() {
 		return Id.createLinkId(getOrigId());
 	}
@@ -100,4 +110,5 @@ public class MLink {
 	public void setReverseWayDirection(boolean reverseWayDirection) {
 		this.reverseWayDirection = reverseWayDirection;
 	}
+
 }
