@@ -7,6 +7,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -112,6 +113,11 @@ public class Importer {
 			way.put(LinkConversionRules.CAPACITY, String.valueOf(link.getCapacity()));
 			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));
 			way.put(LinkConversionRules.PERMLANES, String.valueOf(link.getNumberOfLanes()));
+
+			if (NetworkUtils.getType(link) != null) {
+				way.put(LinkConversionRules.TYPE, String.valueOf(NetworkUtils.getType(link)));
+			}
+
 			StringBuilder modes = new StringBuilder();
 			for (String mode : link.getAllowedModes()) {
 				modes.append(mode);
@@ -130,6 +136,7 @@ public class Importer {
 			newLink.setNumberOfLanes(link.getNumberOfLanes());
 			newLink.setAllowedModes(link.getAllowedModes());
 			newLink.setOrigId(link.getId().toString());
+			newLink.setType(NetworkUtils.getType(link));
 			newLink.setSegments(Collections.singletonList(new WaySegment(way, 0)));
 			way2Links.put(way, Collections.singletonList(newLink));
 			linkId2Way.put(link.getId(), way);

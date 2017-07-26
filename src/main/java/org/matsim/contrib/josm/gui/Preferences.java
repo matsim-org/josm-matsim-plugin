@@ -37,6 +37,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 	private final JCheckBox cleanNetwork = new JCheckBox("Clean Network");
 	private final JCheckBox keepPaths = new JCheckBox("Keep Paths");
 	private final JButton convertingDefaults = new JButton("Set converting defaults");
+	private final JCheckBox includeRoadType = new JCheckBox("Include road type in output");
 	private final JCheckBox filterActive = new JCheckBox("Activate hierarchy filter");
 	private final JLabel hierarchyLabel = new JLabel("Only convert hierarchies up to: ");
 	private final JTextField hierarchyLayer = new JTextField();
@@ -75,6 +76,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		Main.pref.put("matsim_keepPaths", keepPaths.isSelected());
 		Main.pref.put("matsim_showInternalIds", showInternalIds.isSelected());
 		Main.pref.put("matsim_filterActive", filterActive.isSelected());
+		Main.pref.put("matsim_includeRoadType", includeRoadType.isSelected());
 		Main.pref.putInteger("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
 		Main.pref.putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
 		return false;
@@ -185,6 +187,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 			dlg.dispose();
 		});
 
+		includeRoadType.setSelected(Main.pref.getBoolean("matsim_includeRoadType", false));
 		filterActive.setSelected(Main.pref.getBoolean("matsim_filterActive", false));
 		hierarchyLayer.setText(String.valueOf(Main.pref.getInteger("matsim_filter_hierarchy", 6)));
 
@@ -202,19 +205,22 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		pnl.add(transitLite, cOptions);
 
 		cOptions.gridx = 0;
-		cOptions.gridy = 1;
+		cOptions.gridy++;
 		pnl.add(cleanNetwork, cOptions);
 
-		cOptions.gridy = 2;
+		cOptions.gridy++;
 		pnl.add(keepPaths, cOptions);
 
-		cOptions.gridy = 3;
+		cOptions.gridy++;
 		pnl.add(convertingDefaults, cOptions);
 
-		cOptions.gridy = 4;
+		cOptions.gridy++;
+		pnl.add(includeRoadType, cOptions);
+
+		cOptions.gridy++;
 		pnl.add(filterActive, cOptions);
 
-		cOptions.gridy = 5;
+		cOptions.gridy++;
 		pnl.add(hierarchyLabel, cOptions);
 		cOptions.gridx = 1;
 		pnl.add(hierarchyLayer, cOptions);
@@ -224,7 +230,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		cOptions.fill = GridBagConstraints.HORIZONTAL;
 		cOptions.gridwidth = 2;
 		cOptions.gridx = 0;
-		cOptions.gridy = 6;
+		cOptions.gridy++;
 		JSeparator jSep = new JSeparator(SwingConstants.HORIZONTAL);
 		pnl.add(jSep, cOptions);
 
@@ -250,6 +256,8 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 	public static void setSupportTransit(boolean supportTransit) {
 		Main.pref.put("matsim_supportTransit", supportTransit);
 	}
+
+	public static boolean includeRoadType() { return Main.pref.getBoolean("matsim_includeRoadType", false); }
 
 	public static boolean isTransitLite() {
 		return Main.pref.getBoolean("matsim_transit_lite", false);

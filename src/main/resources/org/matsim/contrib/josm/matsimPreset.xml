@@ -22,6 +22,7 @@
 			<space />
 			<optional>
 				<text key="matsim:length" text="length (estimated if not set)" default="" delete_if_empty="true" />
+				<text key="matsim:type" text="road service type" default="" delete_if_empty="true" />
 			</optional>
 		</item>
 	</group>

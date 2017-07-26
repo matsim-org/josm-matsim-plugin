@@ -17,6 +17,7 @@ public class LinkConversionRules {
 	public static final String CAPACITY = "matsim:capacity";
 	public static final String MODES = "matsim:modes";
 	public static final String LENGTH = "matsim:length";
+	public static final String TYPE = "matsim:type";
 
 	static String getId(Way way, long increment, boolean backward) {
 		return String.valueOf(way.getUniqueId()) + "_" + increment + (backward ? "_r" : "");
@@ -155,6 +156,25 @@ public class LinkConversionRules {
 			}
 		}
 		return freespeed;
+	}
+
+
+	static String getType(Way way, OsmConvertDefaults.OsmWayDefaults defaults) {
+		String type = null;
+		if (way.getKeys().containsKey(TYPE)) {
+			type = way.getKeys().get(TYPE);
+		}
+		if (type == null) {
+			if (way.getKeys().containsKey("highway")) {
+				type = way.getKeys().get("highway");
+				Double freespeed = getFreespeed(way, defaults);
+				if (type != null && freespeed != null) {
+					type = String.format("%s_%d", type, Math.round(freespeed * 3.6));
+				}
+			}
+
+		}
+		return type;
 	}
 
 	static boolean isMatsimWay(Way way) {

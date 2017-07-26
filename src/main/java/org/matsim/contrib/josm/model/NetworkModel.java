@@ -317,6 +317,7 @@ public class NetworkModel {
 			final Double nofLanesPerDirection = LinkConversionRules.getLanesPerDirection(way, defaults, forward, backward);
 			final Double capacity = LinkConversionRules.getCapacity(way, defaults, nofLanesPerDirection);
 			final Set<String> modes = LinkConversionRules.getModes(way, defaults);
+			final String highwayType = LinkConversionRules.getType(way, defaults);
 
 			final Double taggedLength = LinkConversionRules.getTaggedLength(way);
 
@@ -361,6 +362,7 @@ public class NetworkModel {
 							l.setAllowedModes(modes);
 							l.setOrigId(origId);
 							l.setSegments(segs);
+							l.setType(highwayType);
 							links.add(l);
 						}
 						if (backward) {
@@ -374,6 +376,7 @@ public class NetworkModel {
 							l.setAllowedModes(modes);
 							l.setOrigId(origId);
 							l.setSegments(segs);
+							l.setType(highwayType);
 							l.setReverseWayDirection(true);
 							links.add(l);
 						}

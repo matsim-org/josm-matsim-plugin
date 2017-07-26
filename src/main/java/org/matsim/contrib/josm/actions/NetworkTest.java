@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.MNode;
@@ -147,7 +148,8 @@ public class NetworkTest extends Test {
 	 */
 	private boolean doubtfulAttributes(MLink link) {
 		return link.getFreespeed() == 0 || link.getCapacity() == 0 || link.getLength() == 0
-				|| link.getNumberOfLanes() == 0;
+				|| link.getNumberOfLanes() == 0
+				|| (Preferences.includeRoadType() && link.getType() == null);
 	}
 
 	/**
