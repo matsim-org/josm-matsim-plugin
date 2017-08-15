@@ -71,7 +71,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	@Override
 	public void showNotify() {
-		Main.getLayerManager().addActiveLayerChangeListener(this);
+		Main.getLayerManager().addAndFireActiveLayerChangeListener(this);
 		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 	}
 
