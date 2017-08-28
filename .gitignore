@@ -1,2 +1,4 @@
 .idea/**
 libs/**
+/.gradle
+/build

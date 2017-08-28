@@ -44,7 +44,7 @@ public class DownloadAction extends JosmAction {
 		dialog.setVisible(true);
 		if (!dialog.isCanceled()) {
 			dialog.rememberSettings();
-			Bounds area = dialog.getSelectedDownloadArea();
+			Bounds area = dialog.getSelectedDownloadArea().get();
 			DownloadOsmTask task = new DownloadOsmTask();
 			Main.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
 		}
