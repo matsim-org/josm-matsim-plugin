@@ -194,8 +194,11 @@ public class NetworkModel {
 		this.data = data;
 		this.data.addDataSetListener(new NetworkModelDataSetListener());
 		prefs.addPreferenceChangeListener(e -> {
-			if (e.getKey().equalsIgnoreCase("matsim_keepPaths") || e.getKey().equalsIgnoreCase("matsim_filterActive")
-					|| e.getKey().equalsIgnoreCase("matsim_filter_hierarchy") || e.getKey().equalsIgnoreCase("matsim_transit_lite")) {
+			if (e.getKey().equalsIgnoreCase("matsim_keepPaths")
+					|| e.getKey().equalsIgnoreCase("matsim_filterActive")
+					|| e.getKey().equalsIgnoreCase("matsim_filter_hierarchy")
+					|| e.getKey().equalsIgnoreCase("matsim_transit_lite")
+					|| e.getKey().startsWith("matsim_convertDefaults")) {
 				visitAll();
 			}
 			fireNotifyDataChanged();
