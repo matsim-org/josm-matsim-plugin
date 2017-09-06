@@ -1,8 +1,8 @@
 package org.matsim.contrib.josm.actions;
 
+import org.matsim.contrib.josm.gui.ImportDialog;
 import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.matsim.contrib.josm.gui.ImportDialog;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -52,21 +52,15 @@ public class ImportAction extends JosmAction {
                     final java.io.File network = dialog.getNetworkFile();
                     final java.io.File schedule = dialog.getScheduleFile();
                     PleaseWaitRunnable task = new PleaseWaitRunnable("MATSim Import") {
+                        private MATSimLayer layer;
                         private final Importer importer = new Importer(network, schedule);
 
-                        /**
-                         * @see PleaseWaitRunnable#cancel()
-                         */
                         @Override
                         protected void cancel() {
                         }
 
-                        /**
-                         * @see PleaseWaitRunnable#finish()
-                         */
                         @Override
                         protected void finish() {
-                            MATSimLayer layer = importer.createMatsimLayer();
                             // layer = null happens if Exception happens during import,
                             // as Exceptions are handled only after this method is called.
                             if (layer != null) {
@@ -75,11 +69,13 @@ public class ImportAction extends JosmAction {
                             }
                         }
 
-                        /**
-                         * @see PleaseWaitRunnable#realRun()
-                         */
                         @Override
                         protected void realRun() {
+                            try {
+                                layer = importer.createMatsimLayer();
+                            } catch (Exception e) {
+                                JOptionPane.showMessageDialog(Main.parent, "Error while parsing MATSim network file. Maybe it isn't one?", "Error", 1);
+                            }
                         }
                     };
                     Main.worker.execute(task);
