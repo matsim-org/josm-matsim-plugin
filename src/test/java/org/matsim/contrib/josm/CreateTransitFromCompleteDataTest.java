@@ -13,6 +13,7 @@ import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
@@ -40,12 +41,12 @@ public class CreateTransitFromCompleteDataTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
-		Main.getLayerManager().setActiveLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().setActiveLayer(layer);
 
-		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
+		MainApplication.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
-		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
+		Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
 	}

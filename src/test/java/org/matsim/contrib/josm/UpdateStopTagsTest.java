@@ -13,6 +13,7 @@ import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
@@ -21,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 public class UpdateStopTagsTest {
 
 	@Rule
- 	public JOSMTestRules test = new JOSMTestRules().preferences();;
+	public JOSMTestRules test = new JOSMTestRules().preferences();
 
 	private OsmDataLayer layer;
 
@@ -49,7 +50,7 @@ public class UpdateStopTagsTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(data);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
 	}
 
 	private void initializeDataSet(DataSet data) {
