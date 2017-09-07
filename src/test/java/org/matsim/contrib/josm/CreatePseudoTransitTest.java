@@ -15,11 +15,11 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
@@ -54,8 +54,8 @@ public class CreatePseudoTransitTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
-		Main.getLayerManager().setActiveLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().setActiveLayer(layer);
 		System.out.println("Layer added");
 
 		System.out.println("Starting Validations");
@@ -82,7 +82,7 @@ public class CreatePseudoTransitTest {
 			}
 		}
 
-		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(Main.getLayerManager().getEditLayer());
+		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(MainApplication.getLayerManager().getEditLayer());
 		Scenario targetScenario = Export.toScenario(matSimLayer.getNetworkModel());
 		new File("build/test-output").mkdirs();
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("build/test-output/pseudo-network.xml").getPath());
