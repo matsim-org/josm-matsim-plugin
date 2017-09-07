@@ -14,12 +14,12 @@ import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.validation.OsmValidator;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainMenu;
 import org.openstreetmap.josm.gui.MapFrame;
 import org.openstreetmap.josm.gui.download.DownloadSelection;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.data.preferences.sources.ValidatorPrefHelper;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetMenu;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
@@ -57,7 +57,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// add xml exporter for matsim data
 		ExtensionFileFilter.addExporterFirst(new NetworkExporter());
 
-		MainMenu menu = Main.main.menu;
+		MainMenu menu = MainApplication.getMenu();
 
 		JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"),marktr("OSM Repair") , KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
 		jMenu1.add(new JMenuItem(new RepairAction("Create Master Routes", new MasterRoutesTest())));
@@ -88,13 +88,13 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		}
 		for (TaggingPreset tp : tps) {
 			if (!(tp instanceof TaggingPresetSeparator)) {
-				Main.toolbar.register(tp);
+				MainApplication.getToolbar().register(tp);
 			}
 		}
 //		AutoCompletionManager.cachePresets(tps);
 		HashMap<TaggingPresetMenu, JMenu> submenus = new HashMap<>();
 		for (final TaggingPreset p : tps) {
-			JMenu m = p.group != null ? submenus.get(p.group) : Main.main.menu.presetsMenu;
+			JMenu m = p.group != null ? submenus.get(p.group) : MainApplication.getMenu().presetsMenu;
 			if (p instanceof TaggingPresetSeparator) {
 				m.add(new JSeparator());
 			} else if (p instanceof TaggingPresetMenu) {
@@ -140,12 +140,12 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	@Override
 	public void mapFrameInitialized(MapFrame oldFrame, MapFrame newFrame) {
 		if (newFrame != null) {
-			Main.map.addToggleDialog(new LinksToggleDialog());
+			MainApplication.getMap().addToggleDialog(new LinksToggleDialog());
 			PTToggleDialog toggleDialog1 = new PTToggleDialog();
-			Main.map.addToggleDialog(toggleDialog1);
+			MainApplication.getMap().addToggleDialog(toggleDialog1);
 			toggleDialog1.init(); // after being added
 			StopAreasToggleDialog toggleDialog2 = new StopAreasToggleDialog();
-			Main.map.addToggleDialog(toggleDialog2);
+			MainApplication.getMap().addToggleDialog(toggleDialog2);
 			toggleDialog2.init(); // after being added
 		}
 	}

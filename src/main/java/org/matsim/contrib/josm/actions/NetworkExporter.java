@@ -19,6 +19,7 @@ import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.io.importexport.FileExporter;
 import org.openstreetmap.josm.tools.ImageProvider;
 
@@ -126,10 +127,10 @@ public final class NetworkExporter extends FileExporter {
 
 		// set up error layer
 		OsmValidator.initializeErrorLayer();
-		Main.map.validatorDialog.unfurlDialog();
-		Main.getLayerManager().getEditLayer().validationErrors.clear();
-		Main.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
-		Main.map.validatorDialog.tree.setErrors(test.getErrors());
+		MainApplication.getMap().validatorDialog.unfurlDialog();
+		MainApplication.getLayerManager().getEditLayer().validationErrors.clear();
+		MainApplication.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
+		MainApplication.getMap().validatorDialog.tree.setErrors(test.getErrors());
 
 	}
 }

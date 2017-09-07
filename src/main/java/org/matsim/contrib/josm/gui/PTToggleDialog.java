@@ -29,6 +29,7 @@ import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
@@ -59,7 +60,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	private FilteredList<Route> selectedRoutes;
 	private final SelectionChangedListener selectionListener = osmPrimitives -> {
-		if (Main.getLayerManager().getEditDataSet() != null) {
+		if (MainApplication.getLayerManager().getEditDataSet() != null) {
 			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
 			Platform.runLater(() -> selectedRoutes.setPredicate(route ->
 					selection.contains(route.getRelation()) ||
@@ -71,14 +72,14 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	@Override
 	public void showNotify() {
-		Main.getLayerManager().addAndFireActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().addAndFireActiveLayerChangeListener(this);
 		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 	}
 
 	@Override
 	public void hideNotify() {
 		SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
-		Main.getLayerManager().removeActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().removeActiveLayerChangeListener(this);
 	}
 
 	public PTToggleDialog() {
@@ -106,7 +107,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 				downloadItem.setOnAction(event -> {
 					Collection<Relation> relations = new ArrayList<>();
 					relations.add(row.getItem().getRelation());
-					Main.worker.submit(new DownloadRelationTask(relations, Main.getLayerManager().getEditLayer()));
+					MainApplication.worker.submit(new DownloadRelationTask(relations, MainApplication.getLayerManager().getEditLayer()));
 					DownloadOsmTask task = new DownloadOsmTask();
 					StringBuilder query = new StringBuilder();
 					query.append(String.format("[timeout:%d];", MyOverpassDownloader.TIMEOUT_S));
@@ -124,7 +125,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 					query.append("rel(bw.primitives)[public_transport=stop_area];");
 					query.append(");");
 					query.append("out meta;");
-					Main.worker.submit(new PostDownloadHandler(task, task.download(
+					MainApplication.worker.submit(new PostDownloadHandler(task, task.download(
 							new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
 				});
 				rowMenu.getItems().addAll(downloadItem);
@@ -142,13 +143,13 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			table_pt.getSelectionModel().getSelectedItems().addListener(new InvalidationListener() {
 				@Override
 				public void invalidated(Observable observable) {
-					if (Main.getLayerManager().getEditDataSet() != null) {
+					if (MainApplication.getLayerManager().getEditDataSet() != null) {
 						highlightHelper.clear();
-						Main.getLayerManager().getEditDataSet().clearHighlightedWaySegments();
+						MainApplication.getLayerManager().getEditDataSet().clearHighlightedWaySegments();
 						for (Route route : table_pt.getSelectionModel().getSelectedItems()) {
 							highlightHelper.highlight(route.getRelation().getMemberPrimitivesList());
 						}
-						Main.map.mapView.repaint();
+						MainApplication.getMap().mapView.repaint();
 					}
 				}
 			});
@@ -169,7 +170,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-		OsmDataLayer editLayer = Main.getLayerManager().getEditLayer();
+		OsmDataLayer editLayer = MainApplication.getLayerManager().getEditLayer();
 		if (editLayer != null) {
 			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
 			Platform.runLater(() -> {

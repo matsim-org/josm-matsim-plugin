@@ -12,6 +12,7 @@ import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.tools.ImageProvider;
 
@@ -40,7 +41,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// convertWithFullTransit validator tests
 				test.startTest(progMonitor);
-				test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
+				test.visit(MainApplication.getLayerManager().getEditDataSet().allPrimitives());
 				test.endTest();
 				progMonitor.finishTask();
 				progMonitor.close();
@@ -74,16 +75,16 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 
 				// start export task if not aborted
 				if (okToExport) {
-					Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
+					Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
 					new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(file.getPath());
 				}
 
 				// set up error layer
 				OsmValidator.initializeErrorLayer();
-				Main.map.validatorDialog.unfurlDialog();
-				Main.getLayerManager().getEditLayer().validationErrors.clear();
-				Main.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
-				Main.map.validatorDialog.tree.setErrors(test.getErrors());
+				MainApplication.getMap().validatorDialog.unfurlDialog();
+				MainApplication.getLayerManager().getEditLayer().validationErrors.clear();
+				MainApplication.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
+				MainApplication.getMap().validatorDialog.tree.setErrors(test.getErrors());
 
 			}
 		} else {

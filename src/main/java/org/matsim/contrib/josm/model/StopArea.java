@@ -17,7 +17,6 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.plugins.jts.JTSConverter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class StopArea {
