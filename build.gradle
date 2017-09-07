@@ -1,19 +1,12 @@
-buildscript {
-    // Dependencies of this build script (not of the project we are building):
-    // A Gradle plug-in we will use later to download the JOSM binary.
-    // Fetch it from Maven Central.
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'de.undercouch:gradle-download-task:3.2.0'
-    }
+plugins {
+    id 'com.palantir.git-version' version '0.8.0'
+    id 'org.openstreetmap.josm.gradle.plugin' version '0.1.7'
 }
 
 // We use the Java builder and the download plug-in we just fetched.
 apply plugin: "java"
-apply plugin: 'de.undercouch.download'
 apply plugin: "eclipse"
+apply plugin: 'idea'
 
 // For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
@@ -22,33 +15,25 @@ repositories {
         url 'http://dl.bintray.com/matsim/matsim'
     }
     maven {
-        url 'http://oss.jfrog.org/artifactory/libs-snapshot'
+        url 'https://oss.jfrog.org/artifactory/libs-snapshot'
     }
     maven {
         url 'https://jitpack.io'
     }
-    mavenCentral()
 }
 
-// Declare a configuration for our external dependency (MATSim) so we can later take its classes and zip them into our jar.
+// Use the `packIntoJar` configuration from gradle-josm-plugin for our external dependency (MATSim), whose classes get zipped into our jar.
 configurations {
-    provided
-    compile.extendsFrom(provided)
-    compile.exclude(group: 'org.geotools')
-    compile.exclude(group: 'kml')
-    compile.exclude(group: 'org.jfree')
-    compile.exclude(group: 'commons-logging')
+    packIntoJar.exclude(group: 'org.geotools')
+    packIntoJar.exclude(group: 'kml')
+    packIntoJar.exclude(group: 'org.jfree')
+    packIntoJar.exclude(group: 'commons-logging')
 }
 
 dependencies {
-    compile ('org.matsim:matsim:0.10.0-SNAPSHOT') {changing = true}
-    compile ('org.matsim.contrib:otfvis:0.10.0-SNAPSHOT') {changing = true}
-    compile ('com.github.conveyal:gtfs-lib:v1.1.0')
-
-
-    // We also include the JOSM jar, which will be downloaded below. But it will not go into the jar.
-    // Should rather be 'provided', see https://issues.gradle.org/browse/GRADLE-784
-    provided files("libs/josm-latest.jar")
+    packIntoJar ('org.matsim:matsim:0.10.0-SNAPSHOT') {changing = true}
+    packIntoJar ('org.matsim.contrib:otfvis:0.10.0-SNAPSHOT') {changing = true}
+    packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
@@ -63,60 +48,33 @@ sourceSets {
     }
 }
 
-jar.baseName = "matsim"
-jar {
-    metaInf {
-        from("resources") {
-            include "mime.types"
-        }
-    }
-    // Put in the manifest entries which are required for a JOSM plug-in.
+sourceCompatibility = 1.8
+
+version = gitVersion().replace('.dirty', '-dirty')
+archivesBaseName = "matsim"
+josm {
+    josmCompileVersion = 12712
     manifest {
-        attributes(
-                "Plugin-Date": new Date().format("yyyy-MM-dd HH:mm"),
-                "Plugin-Version": "v0.8.3",
-                "Plugin-Mainversion": 12675,
-                "12450_Plugin-Url": "v0.7.9;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.9/matsim.jar",
-                "10340_Plugin-Url": "v0.7.5;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar",
-                "9278_Plugin-Url": "v0.5.9;https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar",
-                "Created-By": System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')',
-                "Built-With": "gradle-${project.getGradle().getGradleVersion()}, groovy-${GroovySystem.getVersion()}",
-                "Author" : "Nico Kuehnel",
-                "Plugin-Class" : "org.matsim.contrib.josm.MATSimPlugin",
-                "Plugin-Description": "Allows to edit and extract network information for the traffic simulation MATSim",
-                "Plugin-Icon" : "images/dialogs/matsim-scenario.png",
-                "Plugin-Link" : "http://www.matsim.org"
-        )
-    }
-    // Now take the dependencies of zipIntoJar (currently only MATSim), and put them into
-    // our target jar.
-    from {
-        (configurations.compile - configurations.provided).collect { zipTree(it) }
+        author = "Nico Kuehnel"
+        description = "Allows to edit and extract network information for the traffic simulation MATSim"
+        iconPath = "images/dialogs/matsim-scenario.png"
+        minJosmVersion = 12675
+        mainClass = "org.matsim.contrib.josm.MATSimPlugin"
+        website = new URL("http://www.matsim.org")
+        oldVersionDownloadLink 12450, 'v0.7.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.9/matsim.jar')
+        oldVersionDownloadLink 10340, 'v0.7.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar')
+        oldVersionDownloadLink  9278, 'v0.5.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar')
     }
 }
 
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+jar {
+    // Exclude these entries of dependencies from the produced *.jar file
+    exclude 'META-INF/DEPENDENCIES'
+    exclude 'META-INF/LICENSE*'
+    exclude 'META-INF/NOTICE*'
+    exclude 'META-INF/maven'
 }
 
-// Download the JOSM binary and put it into its place.
-project.ext.josmUrl = "http://josm.openstreetmap.de/josm-latest.jar"
-task getJosm {
-    description = "Download the latest JOSM build jar from the JOSM website"
-    doLast {
-        if (!file("libs").exists()) {
-            file("libs").mkdir()
-        }
-        if (!file("libs/josm-latest.jar").exists()) {
-            download {
-                src josmUrl
-                dest 'libs'
-            }
-        }
-    }
-}
-compileJava.dependsOn "getJosm"
 
 // Install the plug-in into the local JOSM plug-in directory.
 // You can start JOSM from your IDE and debug the plug-in, but the JOSM
@@ -125,27 +83,20 @@ import org.apache.tools.ant.taskdefs.condition.Os
 task installLocalJosm {
     doLast {
         def josmPluginDir;
+        def homePath = System.properties['user.home']
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             def appDataDir = System.getenv("APPDATA")
             josmPluginDir = appDataDir + "/JOSM/plugins"
-        } else {
-            def homePath = System.properties['user.home']
+        } else if (Os.isFamily(Os.FAMILY_MAC)) {
             josmPluginDir = homePath + "/Library/JOSM/plugins"
+        } else {
+            josmPluginDir = homePath + "/.josm/plugins"
         }
-        ant.copy(todir: josmPluginDir) {
-            fileset(dir: "build/libs") {
-                include(name: "matsim.jar")
-            }
+        logger.lifecycle "Installing the plugin into {}…", josmPluginDir
+        copy {
+          from "$buildDir/dist"
+          into josmPluginDir
         }
     }
 }
-installLocalJosm.dependsOn "jar"
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
-}
-
-task runJosm(type: JavaExec) {
-    classpath = configurations.compile
-    main = 'org.openstreetmap.josm.gui.MainApplication'
-}
+installLocalJosm.dependsOn "renameDistJar"
