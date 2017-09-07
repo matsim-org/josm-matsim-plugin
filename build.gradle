@@ -78,6 +78,7 @@ jar {
     exclude 'META-INF/maven'
 }
 
+tasks.test.outputs.dir("$buildDir/test-output")
 
 // Install the plug-in into the local JOSM plug-in directory.
 // You can start JOSM from your IDE and debug the plug-in, but the JOSM

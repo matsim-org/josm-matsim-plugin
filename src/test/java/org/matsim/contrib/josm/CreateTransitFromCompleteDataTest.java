@@ -46,7 +46,8 @@ public class CreateTransitFromCompleteDataTest {
 		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
 		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
-		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
-		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
+		new File("build/test-output").mkdirs();
+		new NetworkWriter(targetScenario.getNetwork()).write(new File("build/test-output/network-2.xml").getPath());
+		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("build/test-output/transitSchedule-2.xml").getPath());
 	}
 }
