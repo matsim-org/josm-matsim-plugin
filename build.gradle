@@ -6,13 +6,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'de.undercouch:gradle-download-task:1.0'
+        classpath 'de.undercouch:gradle-download-task:3.2.0'
     }
 }
 
 // We use the Java builder and the download plug-in we just fetched.
 apply plugin: "java"
-apply plugin: 'download-task'
+apply plugin: 'de.undercouch.download'
 apply plugin: "eclipse"
 
 // For the dependencies of our project (not of this build script itself), we also need the
@@ -59,7 +59,7 @@ dependencies {
 // resources are not found on the classpath.
 sourceSets {
     main {
-        output.resourcesDir = "build/classes/main"
+        output.resourcesDir = "build/classes/java/main"
     }
 }
 
@@ -110,7 +110,7 @@ task getJosm {
         }
         if (!file("libs/josm-latest.jar").exists()) {
             download {
-                src project.ext.josmUrl
+                src josmUrl
                 dest 'libs'
             }
         }
