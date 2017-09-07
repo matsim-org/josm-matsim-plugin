@@ -28,6 +28,8 @@ configurations {
     packIntoJar.exclude(group: 'kml')
     packIntoJar.exclude(group: 'org.jfree')
     packIntoJar.exclude(group: 'commons-logging')
+    packIntoJar.exclude(group: 'commons-io')
+    packIntoJar.exclude(group: 'org.apache.httpcomponents')
 }
 
 dependencies {
@@ -60,6 +62,7 @@ josm {
         iconPath = "images/dialogs/matsim-scenario.png"
         minJosmVersion = 12675
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
+        pluginDependencies << 'jts' << 'apache-commons' << 'apache-http'
         website = new URL("http://www.matsim.org")
         oldVersionDownloadLink 12450, 'v0.7.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.9/matsim.jar')
         oldVersionDownloadLink 10340, 'v0.7.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar')

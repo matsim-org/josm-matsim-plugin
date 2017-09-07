@@ -14,8 +14,7 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.plugins.jts.JTSUtils;
-import org.openstreetmap.josm.tools.Geometry;
+import org.openstreetmap.josm.plugins.jts.JTSConverter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -82,7 +81,7 @@ public class StopArea {
 			}
 		}
 
-		com.vividsolutions.jts.geom.Geometry[] geometries = nodes.stream().map(prim -> JTSUtils.convert(prim)).toArray(size -> new com.vividsolutions.jts.geom.Geometry[size]);
+		com.vividsolutions.jts.geom.Geometry[] geometries = nodes.stream().map(prim -> new JTSConverter().convert(prim)).toArray(size -> new com.vividsolutions.jts.geom.Geometry[size]);
 		GeometryCollection geometryCollection = new GeometryCollection(geometries, new GeometryFactory());
 		Point centroid = geometryCollection.getCentroid();
 		if (centroid.isEmpty()) {
