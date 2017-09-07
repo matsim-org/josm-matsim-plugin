@@ -17,7 +17,6 @@ import org.matsim.contrib.josm.model.MNode;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
@@ -28,6 +27,7 @@ import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 /**
@@ -83,12 +83,12 @@ public class NetworkTest extends Test {
 	public void startTest(ProgressMonitor monitor) {
 		this.nodeIds = new HashMap<>();
 		this.linkIds = new HashMap<>();
-		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			this.networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
+		if (MainApplication.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
+			this.networkModel = ((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel();
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
-			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
+			NetworkModel networkModel = NetworkModel.createNetworkModel(MainApplication.getLayerManager().getEditDataSet());
 			networkModel.visitAll();
 			this.networkModel = networkModel;
 		}

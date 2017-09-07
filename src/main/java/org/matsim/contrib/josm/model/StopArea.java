@@ -18,7 +18,6 @@ import org.openstreetmap.josm.plugins.jts.JTSUtils;
 import org.openstreetmap.josm.tools.Geometry;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class StopArea {

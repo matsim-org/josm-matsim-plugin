@@ -4,10 +4,10 @@ import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
-import org.openstreetmap.josm.data.ProjectionBounds;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.OsmTransferException;
@@ -54,9 +54,9 @@ public class ConvertAction extends JosmAction {
 				@Override
 				protected void realRun() throws SAXException, IOException, OsmTransferException {
 					if (Main.pref.getBoolean("matsim_transit_lite")) {
-						this.layer = LayerConverter.convertToPseudoNetwork(Main.getLayerManager().getEditLayer());
+						this.layer = LayerConverter.convertToPseudoNetwork(MainApplication.getLayerManager().getEditLayer());
 					} else {
-						this.layer = LayerConverter.convertWithFullTransit(Main.getLayerManager().getEditLayer());
+						this.layer = LayerConverter.convertWithFullTransit(MainApplication.getLayerManager().getEditLayer());
 					}
 				}
 
@@ -67,17 +67,17 @@ public class ConvertAction extends JosmAction {
 						// it is.
 						// (Perhaps I want to look at the particular are I am viewing right
 						// now.)
-						Main.getLayerManager().addLayer(layer);
+						MainApplication.getLayerManager().addLayer(layer);
 					}
 				}
 			};
 			task.run();
 		} else {
 			OsmValidator.initializeErrorLayer();
-			Main.map.validatorDialog.unfurlDialog();
-			Main.getLayerManager().getEditLayer().validationErrors.clear();
-			Main.getLayerManager().getEditLayer().validationErrors.addAll(breakingErrors);
-			Main.map.validatorDialog.tree.setErrors(breakingErrors);
+			MainApplication.getMap().validatorDialog.unfurlDialog();
+			MainApplication.getLayerManager().getEditLayer().validationErrors.clear();
+			MainApplication.getLayerManager().getEditLayer().validationErrors.addAll(breakingErrors);
+			MainApplication.getMap().validatorDialog.tree.setErrors(breakingErrors);
 		}
     }
 
@@ -85,7 +85,7 @@ public class ConvertAction extends JosmAction {
 		NetworkTest test1 = new NetworkTest();
 		PleaseWaitProgressMonitor progMonitor1 = new PleaseWaitProgressMonitor("Validation");
 		test1.startTest(progMonitor1);
-		test1.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
+		test1.visit(MainApplication.getLayerManager().getEditDataSet().allPrimitives());
 		test1.endTest();
 		progMonitor1.finishTask();
 		progMonitor1.close();
@@ -99,7 +99,7 @@ public class ConvertAction extends JosmAction {
 		TransitScheduleTest test2 = new TransitScheduleTest();
 		PleaseWaitProgressMonitor progMonitor2 = new PleaseWaitProgressMonitor("Validation");
 		test2.startTest(progMonitor2);
-		test2.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
+		test2.visit(MainApplication.getLayerManager().getEditDataSet().allPrimitives());
 		test2.endTest();
 		progMonitor2.finishTask();
 		progMonitor2.close();
@@ -116,7 +116,7 @@ public class ConvertAction extends JosmAction {
 
 	@Override
     protected void updateEnabledState() {
-        setEnabled(Main.getLayerManager().getEditLayer() != null && !(Main.getLayerManager().getEditLayer() instanceof MATSimLayer));
+        setEnabled(MainApplication.getLayerManager().getEditLayer() != null && !(MainApplication.getLayerManager().getEditLayer() instanceof MATSimLayer));
     }
 
 }

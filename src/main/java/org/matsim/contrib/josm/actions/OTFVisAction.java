@@ -17,8 +17,8 @@ import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.utils.CreateVehiclesForSchedule;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import java.awt.event.ActionEvent;
@@ -35,7 +35,7 @@ public class OTFVisAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
+		NetworkModel networkModel = NetworkModel.createNetworkModel(MainApplication.getLayerManager().getEditDataSet());
 		networkModel.visitAll();
 		Scenario scenario = Export.toScenario(networkModel);
 

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
 import org.openstreetmap.josm.command.Command;
@@ -19,6 +18,7 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 /**
@@ -153,9 +153,9 @@ public class MasterRoutesTest extends Test {
 					}
 				}
 				newMaster.getMembers().addAll(master.getMembers());
-				commands.add(new ChangeCommand(Main.getLayerManager().getEditLayer(), oldMaster, newMaster));
+				commands.add(new ChangeCommand(MainApplication.getLayerManager().getEditLayer(), oldMaster, newMaster));
 			} else {
-				commands.add(new AddCommand(Main.getLayerManager().getEditLayer(), master));
+				commands.add(new AddCommand(MainApplication.getLayerManager().getEditLayer(), master));
 			}
 			return new SequenceCommand(name, commands);
 		}

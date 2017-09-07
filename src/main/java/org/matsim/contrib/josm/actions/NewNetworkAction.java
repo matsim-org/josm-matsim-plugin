@@ -2,9 +2,9 @@ package org.matsim.contrib.josm.actions;
 
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.tools.Shortcut;
 
 import java.awt.event.ActionEvent;
@@ -29,7 +29,7 @@ public class NewNetworkAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Main.getLayerManager().addLayer(createMatsimLayer());
+		MainApplication.getLayerManager().addLayer(createMatsimLayer());
 	}
 
 	public static MATSimLayer createMatsimLayer() {

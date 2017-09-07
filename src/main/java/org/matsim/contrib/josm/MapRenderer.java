@@ -10,6 +10,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
@@ -49,7 +50,7 @@ public class MapRenderer extends StyledMapRenderer {
 
     public static void setWay2Links(Map<Way, List<MLink>> way2LinksTmp) {
         way2Links = way2LinksTmp;
-        Main.map.repaint();
+        MainApplication.getMap().repaint();
     }
 
     /**

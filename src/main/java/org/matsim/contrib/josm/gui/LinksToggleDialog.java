@@ -17,6 +17,7 @@ import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Test;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
@@ -60,7 +61,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	public void showNotify() {
 		DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
 		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
-		Main.getLayerManager().addActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().addActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
 
@@ -68,7 +69,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	public void hideNotify() {
 		DatasetEventManager.getInstance().removeDatasetListener(dataSetListenerAdapter);
 		SelectionEventManager.getInstance().removeSelectionListener(selectionListener);
-		Main.getLayerManager().removeActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().removeActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
 
@@ -107,7 +108,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 	// called when MATSim data changes to update the data in this dialog
 	private void notifyEverythingChanged() {
-		OsmDataLayer layer = Main.getLayerManager().getEditLayer();
+		OsmDataLayer layer = MainApplication.getLayerManager().getEditLayer();
 		if (networkModel != null) {
 			networkModel.removeListener(this);
 		}
@@ -259,7 +260,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
 			links.clear();
 			if (networkModel != null) {
-				DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
+				DataSet currentDataSet = MainApplication.getLayerManager().getEditDataSet();
 				if (currentDataSet != null) {
 					currentDataSet.clearHighlightedWaySegments();
 					int i = 0;
@@ -282,7 +283,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		// highlight and zoom to way segments that refer to the selected link in
 		// the table
 		public void valueChanged(ListSelectionEvent e) {
-			DataSet currentDataSet = Main.getLayerManager().getEditDataSet();
+			DataSet currentDataSet = MainApplication.getLayerManager().getEditDataSet();
 			if (currentDataSet != null) {
 				if (table_links.getSelectedRow() != -1) {
 					int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
@@ -292,7 +293,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 						currentDataSet.setHighlightedWaySegments(segments);
 					}
 				}
-				Main.map.mapView.repaint();
+				MainApplication.getMap().mapView.repaint();
 			}
 		}
 	}
@@ -306,7 +307,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		private final JTextField capacityPeriodValue = new JTextField();
 
 		public NetworkAttributes() {
-			Layer layer = Main.getLayerManager().getActiveLayer();
+			Layer layer = MainApplication.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 //				laneWidthValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getEffectiveLaneWidth()));
 //				capacityPeriodValue.setText(String.valueOf(((MATSimLayer) layer).getNetworkModel().getScenario().getNetwork().getCapacityPeriod()));
@@ -318,7 +319,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		}
 
 		void apply() {
-			Layer layer = Main.getLayerManager().getActiveLayer();
+			Layer layer = MainApplication.getLayerManager().getActiveLayer();
 			if (layer instanceof MATSimLayer) {
 //				String lW = laneWidthValue.getText();
 //				String cP = capacityPeriodValue.getText();
@@ -339,7 +340,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	// also adjusts standard file export formats
 	@Override
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
-		if(Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
+		if(MainApplication.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
 			for(Test test: OsmValidator.getTests()) {
 				test.enabled = test instanceof NetworkTest;
 			}

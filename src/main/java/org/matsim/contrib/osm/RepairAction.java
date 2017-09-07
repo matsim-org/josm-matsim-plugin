@@ -4,11 +4,11 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.event.ActionEvent;
 
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Test;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
 
 /**
@@ -29,7 +29,7 @@ public class RepairAction extends JosmAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		DataSet data = Main.getLayerManager().getEditDataSet();
+		DataSet data = MainApplication.getLayerManager().getEditDataSet();
 		PleaseWaitProgressMonitor progMonitor = new PleaseWaitProgressMonitor(
 				"Validation");
 
@@ -42,10 +42,10 @@ public class RepairAction extends JosmAction {
 
 		// set up validator layer
 		OsmValidator.initializeErrorLayer();
-		Main.map.validatorDialog.unfurlDialog();
-		Main.getLayerManager().getEditLayer().validationErrors.clear();
-		Main.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
-		Main.map.validatorDialog.tree.setErrors(test.getErrors());
+		MainApplication.getMap().validatorDialog.unfurlDialog();
+		MainApplication.getLayerManager().getEditLayer().validationErrors.clear();
+		MainApplication.getLayerManager().getEditLayer().validationErrors.addAll(test.getErrors());
+		MainApplication.getMap().validatorDialog.tree.setErrors(test.getErrors());
 	}
 
 
@@ -58,6 +58,6 @@ public class RepairAction extends JosmAction {
 
 
 	private boolean shouldBeEnabled() {
-		return Main.getLayerManager().getEditDataSet() != null;
+		return MainApplication.getLayerManager().getEditDataSet() != null;
 	}
 }

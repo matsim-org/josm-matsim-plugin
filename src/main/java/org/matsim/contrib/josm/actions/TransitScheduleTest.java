@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.Line;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.NetworkModel;
@@ -21,9 +19,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.pt.utils.TransitScheduleValidator;
-import org.matsim.pt.utils.TransitScheduleValidator.ValidationResult;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
@@ -31,6 +26,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 
 public class TransitScheduleTest extends Test {
@@ -64,12 +60,12 @@ public class TransitScheduleTest extends Test {
 	 */
 	@Override
 	public void startTest(ProgressMonitor monitor) {
-		if (Main.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
-			this.networkModel = ((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel();
+		if (MainApplication.getLayerManager().getActiveLayer() instanceof MATSimLayer) {
+			this.networkModel = ((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel();
 		} else {
 			Config config = ConfigUtils.createConfig();
 			config.transit().setUseTransit(true);
-			NetworkModel networkModel = NetworkModel.createNetworkModel(Main.getLayerManager().getEditDataSet());
+			NetworkModel networkModel = NetworkModel.createNetworkModel(MainApplication.getLayerManager().getEditDataSet());
 			networkModel.visitAll();
 			this.networkModel = networkModel;
 		}

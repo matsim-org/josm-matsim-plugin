@@ -8,6 +8,7 @@ import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
 import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.io.OsmServerReader;
@@ -46,7 +47,7 @@ public class DownloadAction extends JosmAction {
 			dialog.rememberSettings();
 			Bounds area = dialog.getSelectedDownloadArea().get();
 			DownloadOsmTask task = new DownloadOsmTask();
-			Main.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
+			MainApplication.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
 		}
 	}
 
