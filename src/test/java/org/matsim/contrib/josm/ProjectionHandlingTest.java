@@ -3,18 +3,16 @@ package org.matsim.contrib.josm;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MNode;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
@@ -41,7 +39,7 @@ public class ProjectionHandlingTest {
 	@Test
 	public void test() {
 		
-		Main.getLayerManager().addLayer(matsimLayer);
+		MainApplication.getLayerManager().addLayer(matsimLayer);
 		
 		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), Main.getProjection().toCode());
 		Main.setProjection(ProjectionPreference.wgs84.getProjection());

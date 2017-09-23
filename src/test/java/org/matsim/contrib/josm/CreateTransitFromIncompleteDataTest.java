@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.actions.TransitScheduleTest;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -15,11 +16,11 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.io.IllegalDataException;
@@ -40,7 +41,7 @@ public class CreateTransitFromIncompleteDataTest {
 
 	@org.junit.Test
 	public void createTransit() throws IllegalDataException, IOException {
-		Main.pref.put("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 
 		System.out.println("Fixture initialized");
 
@@ -55,8 +56,8 @@ public class CreateTransitFromIncompleteDataTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
-		Main.getLayerManager().setActiveLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().setActiveLayer(layer);
 		System.out.println("Layer added");
 
 		System.out.println("Starting Validations");
@@ -84,7 +85,7 @@ public class CreateTransitFromIncompleteDataTest {
 		}
 
 		System.out.println("Converting data");
-		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
+		MainApplication.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 		System.out.println("Exporting data");
 
 		TransitScheduleTest test = new TransitScheduleTest();
@@ -92,7 +93,7 @@ public class CreateTransitFromIncompleteDataTest {
 				PleaseWaitProgressMonitor("Validation");
 		// convertWithFullTransit validator tests
 		test.startTest(progMonitor);
-		test.visit(Main.getLayerManager().getEditDataSet().allPrimitives());
+		test.visit(MainApplication.getLayerManager().getEditDataSet().allPrimitives());
 		test.endTest();
 		progMonitor.finishTask();
 		progMonitor.close();
@@ -106,7 +107,7 @@ public class CreateTransitFromIncompleteDataTest {
 			}
 		}
 
-		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
+		Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
 		new NetworkWriter(targetScenario.getNetwork()).write(new File("network.xml").getPath());
 		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule.xml").getPath());
 	}

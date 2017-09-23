@@ -2,7 +2,7 @@ package org.matsim.contrib.josm.gui;
 
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.josm.model.OsmConvertDefaults.OsmWayDefaults;
-import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.ImageProvider;
 
 import javax.swing.*;
@@ -143,7 +143,7 @@ public class OsmConvertDefaultsDialog extends JPanel {
 			double laneCapacity = Double.parseDouble(((JTextField) input.get(i + "_4")).getText());
 			boolean oneway = (((JCheckBox) input.get(i + "_5")).isSelected());
 
-			Main.pref.put("matsim_convertDefaults_" + OsmConvertDefaults.highwayTypes.get(i), hierarchy + ";" + lanes + ";" + freespeed + ";"
+			Config.getPref().put("matsim_convertDefaults_" + OsmConvertDefaults.highwayTypes.get(i), hierarchy + ";" + lanes + ";" + freespeed + ";"
 					+ freespeedFactor + ";" + laneCapacity + ";" + oneway);
 		}
 	}

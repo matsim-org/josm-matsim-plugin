@@ -2,12 +2,13 @@ package org.matsim.contrib.josm.actions;
 
 import org.matsim.contrib.josm.gui.DownloadDialog;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
 import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.preferences.BooleanProperty;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.io.OsmReader;
 import org.openstreetmap.josm.io.OsmServerReader;
@@ -46,7 +47,7 @@ public class DownloadAction extends JosmAction {
 			dialog.rememberSettings();
 			Bounds area = dialog.getSelectedDownloadArea().get();
 			DownloadOsmTask task = new DownloadOsmTask();
-			Main.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
+			MainApplication.worker.submit(new PostDownloadHandler(task, task.download(new FilteredDownloader(area), dialog.isNewLayerRequired(), area, null)));
 		}
 	}
 
@@ -140,7 +141,7 @@ public class DownloadAction extends JosmAction {
 			int counter = 0;
 			StringBuilder routes = new StringBuilder("[\"route\"~\"");
 			for (String route : OsmConvertDefaults.routeTypes) {
-				if (Main.pref.getBoolean("matsim_download_" + route, true)) {
+				if (new BooleanProperty("matsim_download_" + route, true).get()) {
 					routes.append(route);
 					routes.append("|");
 					counter++;
@@ -161,7 +162,7 @@ public class DownloadAction extends JosmAction {
 			int counter = 0;
 			StringBuilder highways = new StringBuilder("[\"highway\"~\"");
 			for (String highway : OsmConvertDefaults.highwayTypes) {
-				if (Main.pref.getBoolean("matsim_download_" + highway, true)) {
+				if (new BooleanProperty("matsim_download_" + highway, true).get()) {
 					highways.append(highway);
 					highways.append("|");
 					counter++;

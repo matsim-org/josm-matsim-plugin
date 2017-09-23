@@ -2,6 +2,7 @@ package org.matsim.contrib.josm.gui;
 
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 
 import javax.swing.*;
@@ -28,7 +29,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 
 		ActionListener cbListener = e -> {
 			JCheckBox cb = (JCheckBox) e.getSource();
-			Main.pref.put("matsim_download_" + cb.getText(), cb.isSelected());
+			Config.getPref().putBoolean("matsim_download_" + cb.getText(), cb.isSelected());
 		};
 
 		JPanel highwaysPnl = new JPanel(new FlowLayout());
@@ -36,7 +37,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 		for (String highwayType : OsmConvertDefaults.highwayTypes) {
 			JCheckBox cb = new JCheckBox(highwayType);
 			cb.setToolTipText(tr("Select to download " + cb.getText() + " highways in the selected download area."));
-			cb.setSelected(Main.pref.getBoolean("matsim_download_" + cb.getText(), true));
+			cb.setSelected(Config.getPref().getBoolean("matsim_download_" + cb.getText(), true));
 			cb.addActionListener(cbListener);
 			highwaysPnl.add(cb, GBC.std());
 		}
@@ -47,7 +48,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 		for (String routeType : OsmConvertDefaults.routeTypes) {
 			JCheckBox cb = new JCheckBox(routeType);
 			cb.setToolTipText(tr("Select to download " + cb.getText() + " routes in the selected download area."));
-			cb.setSelected(Main.pref.getBoolean("matsim_download_" + cb.getText(), true));
+			cb.setSelected(Config.getPref().getBoolean("matsim_download_" + cb.getText(), true));
 			cb.addActionListener(cbListener);
 			routesPnl.add(cb, GBC.std());
 		}
@@ -91,7 +92,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 	 */
 	public void rememberSettings() {
 		if (currentBounds != null) {
-			Main.pref.put("osm-download.bounds", currentBounds.encodeAsString(";"));
+			Config.getPref().put("osm-download.bounds", currentBounds.encodeAsString(";"));
 		}
 	}
 }

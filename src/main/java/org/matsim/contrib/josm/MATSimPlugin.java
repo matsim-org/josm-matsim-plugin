@@ -8,24 +8,25 @@ import org.matsim.contrib.josm.gui.StopAreasToggleDialog;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.osm.*;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.validation.OsmValidator;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.MainMenu;
 import org.openstreetmap.josm.gui.MapFrame;
 import org.openstreetmap.josm.gui.download.DownloadSelection;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
+import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.sources.ValidatorPrefHelper;
-import org.openstreetmap.josm.gui.tagging.ac.AutoCompletionManager;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetMenu;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetSeparator;
 import org.openstreetmap.josm.plugins.Plugin;
 import org.openstreetmap.josm.plugins.PluginInformation;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -57,7 +58,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// add xml exporter for matsim data
 		ExtensionFileFilter.addExporterFirst(new NetworkExporter());
 
-		MainMenu menu = Main.main.menu;
+		MainMenu menu = MainApplication.getMenu();
 
 		JMenu jMenu1 = menu.addMenu(marktr("OSM Repair"),marktr("OSM Repair") , KeyEvent.VK_CIRCUMFLEX, menu.getDefaultMenuPos(), "OSM Repair Tools");
 		jMenu1.add(new JMenuItem(new RepairAction("Create Master Routes", new MasterRoutesTest())));
@@ -74,7 +75,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		jMenu2.add(new JSeparator());
 		jMenu2.add(new RepairAction("Validate TransitSchedule", new TransitScheduleTest()));
 		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
-		Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
+		Config.getPref().addPreferenceChangeListener(transitScheduleExportAction);
 		jMenu2.add(transitScheduleExportAction);
 		jMenu2.add(new OTFVisAction());
 
@@ -88,13 +89,13 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		}
 		for (TaggingPreset tp : tps) {
 			if (!(tp instanceof TaggingPresetSeparator)) {
-				Main.toolbar.register(tp);
+				MainApplication.getToolbar().register(tp);
 			}
 		}
 //		AutoCompletionManager.cachePresets(tps);
 		HashMap<TaggingPresetMenu, JMenu> submenus = new HashMap<>();
 		for (final TaggingPreset p : tps) {
-			JMenu m = p.group != null ? submenus.get(p.group) : Main.main.menu.presetsMenu;
+			JMenu m = p.group != null ? submenus.get(p.group) : MainApplication.getMenu().presetsMenu;
 			if (p instanceof TaggingPresetSeparator) {
 				m.add(new JSeparator());
 			} else if (p instanceof TaggingPresetMenu) {
@@ -111,16 +112,15 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		}
 
 		// register map renderer
-		if (Main.pref.getBoolean("matsim_renderer", false)) {
+		if (new BooleanProperty("matsim_renderer", false).get()) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
 			factory.register(MapRenderer.class, "MATSim Renderer", "This is the MATSim map renderer");
 			factory.activate(MapRenderer.class);
 		}
 
 		// register for preference changed events
-		Main.pref.addPreferenceChangeListener(this);
-		Main.pref.addPreferenceChangeListener(MapRenderer.PROPERTIES);
-		OsmConvertDefaults.listen(Main.pref);
+		Config.getPref().addPreferenceChangeListener(this);
+		OsmConvertDefaults.listen(Config.getPref());
 
 		// load default converting parameters
 
@@ -128,9 +128,9 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		List<String> matsimTests = new ArrayList<>();
 		OsmValidator.addTest(NetworkTest.class);
 		matsimTests.add(NetworkTest.class.getName());
-		
+
 		//make sure MATSim Validators aren't executed before upload
-		Main.pref.putCollection(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
+		Config.getPref().putList(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
 	}
 
 	public void addDownloadSelection(List<DownloadSelection> list) {
@@ -140,12 +140,12 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	@Override
 	public void mapFrameInitialized(MapFrame oldFrame, MapFrame newFrame) {
 		if (newFrame != null) {
-			Main.map.addToggleDialog(new LinksToggleDialog());
+			MainApplication.getMap().addToggleDialog(new LinksToggleDialog());
 			PTToggleDialog toggleDialog1 = new PTToggleDialog();
-			Main.map.addToggleDialog(toggleDialog1);
+			MainApplication.getMap().addToggleDialog(toggleDialog1);
 			toggleDialog1.init(); // after being added
 			StopAreasToggleDialog toggleDialog2 = new StopAreasToggleDialog();
-			Main.map.addToggleDialog(toggleDialog2);
+			MainApplication.getMap().addToggleDialog(toggleDialog2);
 			toggleDialog2.init(); // after being added
 		}
 	}
@@ -159,7 +159,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		if (e.getKey().equalsIgnoreCase("matsim_renderer")) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
-			if (Main.pref.getBoolean("matsim_renderer")) {
+			if (new BooleanProperty("matsim_renderer", false).get()) {
 				factory.register(MapRenderer.class, "MATSim Renderer", "This is the MATSim map renderer");
 				factory.activate(MapRenderer.class);
 			} else {
