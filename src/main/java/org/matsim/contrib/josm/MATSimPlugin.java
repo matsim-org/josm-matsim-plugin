@@ -10,8 +10,8 @@ import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.osm.*;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -131,7 +131,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		matsimTests.add(NetworkTest.class.getName());
 
 		//make sure MATSim Validators aren't executed before upload
-		Main.pref.putCollection(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
+		Config.getPref().putList(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
 	}
 
 	public void addDownloadSelection(List<DownloadSelection> list) {

@@ -196,9 +196,9 @@ public class CreateStopAreas extends Test {
 					newStopArea.addMember(new RelationMember("platform", stop));
 				}
 				newStopArea.getMembers().addAll(stopArea.getMembers());
-				commands.add(new ChangeCommand(MainApplication.getLayerManager().getEditLayer(), oldStopArea, newStopArea));
+				commands.add(new ChangeCommand(MainApplication.getLayerManager().getEditLayer().data, oldStopArea, newStopArea));
 			} else {
-				commands.add(new AddCommand(MainApplication.getLayerManager().getEditLayer(), stopArea));
+				commands.add(new AddCommand(MainApplication.getLayerManager().getEditLayer().data, stopArea));
 			}
 			return new SequenceCommand(name, commands);
 		}

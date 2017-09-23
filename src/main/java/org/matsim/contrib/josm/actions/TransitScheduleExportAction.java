@@ -14,6 +14,8 @@ import org.openstreetmap.josm.data.validation.Severity;
 import org.openstreetmap.josm.data.validation.TestError;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.tools.ImageProvider;
 
 import javax.swing.*;
@@ -23,7 +25,7 @@ import java.io.File;
 import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
-public class TransitScheduleExportAction extends DiskAccessAction implements org.openstreetmap.josm.data.Preferences.PreferenceChangedListener {
+public class TransitScheduleExportAction extends DiskAccessAction implements PreferenceChangedListener {
 
 	public TransitScheduleExportAction() {
 		super(tr("Export MATSim transit schedule..."), null, tr("Export the transit schedule."), null);
@@ -102,7 +104,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements org
 	}
 
 	@Override
-	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+	public void preferenceChanged(PreferenceChangeEvent preferenceChangeEvent) {
 		setEnabled(shouldBeEnabled());
 	}
 

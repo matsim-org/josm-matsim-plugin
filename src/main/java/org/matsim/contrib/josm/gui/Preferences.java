@@ -6,6 +6,7 @@ import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.PreferencePanel;
+import org.openstreetmap.josm.spi.preferences.Config;
 
 import javax.swing.*;
 import java.awt.*;
@@ -67,18 +68,18 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 
 	@Override
 	public boolean ok() {
-		Main.pref.put("matsim_networkVersion", (String)exportNetworkVersionCB.getSelectedItem());
-		Main.pref.put("matsim_supportTransit", transitFeature.isSelected());
-		Main.pref.put("matsim_transit_lite", transitLite.isSelected());
-		Main.pref.put("matsim_showIds", showIds.isSelected());
-		Main.pref.put("matsim_renderer", renderMatsim.isSelected());
-		Main.pref.put("matsim_cleanNetwork", cleanNetwork.isSelected());
-		Main.pref.put("matsim_keepPaths", keepPaths.isSelected());
-		Main.pref.put("matsim_showInternalIds", showInternalIds.isSelected());
-		Main.pref.put("matsim_filterActive", filterActive.isSelected());
-		Main.pref.put("matsim_includeRoadType", includeRoadType.isSelected());
-		Main.pref.putInteger("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
-		Main.pref.putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
+		Config.getPref().put("matsim_networkVersion", (String)exportNetworkVersionCB.getSelectedItem());
+		Config.getPref().putBoolean("matsim_supportTransit", transitFeature.isSelected());
+		Config.getPref().putBoolean("matsim_transit_lite", transitLite.isSelected());
+		Config.getPref().putBoolean("matsim_showIds", showIds.isSelected());
+		Config.getPref().putBoolean("matsim_renderer", renderMatsim.isSelected());
+		Config.getPref().putBoolean("matsim_cleanNetwork", cleanNetwork.isSelected());
+		Config.getPref().putBoolean("matsim_keepPaths", keepPaths.isSelected());
+		Config.getPref().putBoolean("matsim_showInternalIds", showInternalIds.isSelected());
+		Config.getPref().putBoolean("matsim_filterActive", filterActive.isSelected());
+		Config.getPref().putBoolean("matsim_includeRoadType", includeRoadType.isSelected());
+		Config.getPref().putInt("matsim_filter_hierarchy", Integer.parseInt(hierarchyLayer.getText()));
+		Config.getPref().putDouble("matsim_wayOffset", ((double) wayOffset.getValue()) * 0.03);
 		return false;
 	}
 
@@ -189,7 +190,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 
 		includeRoadType.setSelected(Main.pref.getBoolean("matsim_includeRoadType", false));
 		filterActive.setSelected(Main.pref.getBoolean("matsim_filterActive", false));
-		hierarchyLayer.setText(String.valueOf(Main.pref.getInteger("matsim_filter_hierarchy", 6)));
+		hierarchyLayer.setText(String.valueOf(Config.getPref().getInt("matsim_filter_hierarchy", 6)));
 
 		cOptions.anchor = GridBagConstraints.NORTHWEST;
 
@@ -254,7 +255,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 	}
 
 	public static void setSupportTransit(boolean supportTransit) {
-		Main.pref.put("matsim_supportTransit", supportTransit);
+		Config.getPref().putBoolean("matsim_supportTransit", supportTransit);
 	}
 
 	public static boolean includeRoadType() { return Main.pref.getBoolean("matsim_includeRoadType", false); }
@@ -264,11 +265,11 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 	}
 
 	public static void setTransitLite(boolean transitLite) {
-		Main.pref.put("matsim_transit_lite", transitLite);
+		Config.getPref().putBoolean("matsim_transit_lite", transitLite);
 	}
 
 	public static int getMatsimFilterHierarchy() {
-		return Main.pref.getInteger("matsim_filter_hierarchy", 6);
+		return Config.getPref().getInt("matsim_filter_hierarchy", 6);
 	}
 
 }
