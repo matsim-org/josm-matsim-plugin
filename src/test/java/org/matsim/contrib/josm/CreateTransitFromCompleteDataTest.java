@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -30,7 +31,7 @@ public class CreateTransitFromCompleteDataTest {
 
 	@Test
 	public void createTransit() throws IllegalDataException, IOException {
-		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		InputStream stream = getClass().getResourceAsStream("/test-input/OSMData/busRoute-with-complete-tags.osm.xml");
 		DataSet set = OsmReader.parseDataSet(stream, null);
 

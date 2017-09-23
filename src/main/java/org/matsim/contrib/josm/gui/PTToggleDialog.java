@@ -222,7 +222,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	}
 
 	private void enabledness() {
-		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		boolean enabled = Preferences.isSupportTransit();
 		getButton().setEnabled(enabled);
 		if (isShowing() && !enabled) {
 			hideDialog();

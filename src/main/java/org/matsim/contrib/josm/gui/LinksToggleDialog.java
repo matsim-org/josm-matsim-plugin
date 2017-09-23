@@ -15,6 +15,7 @@ import org.openstreetmap.josm.data.osm.WaySegment;
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter;
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
+import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.gui.MainApplication;
@@ -163,7 +164,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 	// hecks if internal-id should be shown
 	private void checkInternalIdColumn() {
-		if (!Main.pref.getBoolean("matsim_showInternalIds", false)) {
+		if (!new BooleanProperty("matsim_showInternalIds", false).get()) {
 			table_links.getColumn("internal-id").setMinWidth(0);
 			table_links.getColumn("internal-id").setMaxWidth(0);
 		} else {

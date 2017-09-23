@@ -8,7 +8,6 @@ import org.matsim.contrib.josm.gui.StopAreasToggleDialog;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.matsim.contrib.osm.*;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
@@ -19,6 +18,7 @@ import org.openstreetmap.josm.gui.MainMenu;
 import org.openstreetmap.josm.gui.MapFrame;
 import org.openstreetmap.josm.gui.download.DownloadSelection;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
+import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.sources.ValidatorPrefHelper;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetMenu;
@@ -75,7 +75,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		jMenu2.add(new JSeparator());
 		jMenu2.add(new RepairAction("Validate TransitSchedule", new TransitScheduleTest()));
 		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
-		Main.pref.addPreferenceChangeListener(transitScheduleExportAction);
+		Config.getPref().addPreferenceChangeListener(transitScheduleExportAction);
 		jMenu2.add(transitScheduleExportAction);
 		jMenu2.add(new OTFVisAction());
 
@@ -112,15 +112,14 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		}
 
 		// register map renderer
-		if (Main.pref.getBoolean("matsim_renderer", false)) {
+		if (new BooleanProperty("matsim_renderer", false).get()) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
 			factory.register(MapRenderer.class, "MATSim Renderer", "This is the MATSim map renderer");
 			factory.activate(MapRenderer.class);
 		}
 
 		// register for preference changed events
-		Main.pref.addPreferenceChangeListener(this);
-		Main.pref.addPreferenceChangeListener(MapRenderer.PROPERTIES);
+		Config.getPref().addPreferenceChangeListener(this);
 		OsmConvertDefaults.listen(Config.getPref());
 
 		// load default converting parameters
@@ -160,7 +159,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		if (e.getKey().equalsIgnoreCase("matsim_renderer")) {
 			MapRendererFactory factory = MapRendererFactory.getInstance();
-			if (Main.pref.getBoolean("matsim_renderer")) {
+			if (new BooleanProperty("matsim_renderer", false).get()) {
 				factory.register(MapRenderer.class, "MATSim Renderer", "This is the MATSim map renderer");
 				factory.activate(MapRenderer.class);
 			} else {

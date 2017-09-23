@@ -51,7 +51,7 @@ public class OSMDataTest {
 
 	@Before
 	public void init() throws IOException, IllegalDataException {
-		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 		URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
 		URL urlIntersections = getClass().getResource("/test-input/OSMData/loops_intersecting_ways.osm.xml");
