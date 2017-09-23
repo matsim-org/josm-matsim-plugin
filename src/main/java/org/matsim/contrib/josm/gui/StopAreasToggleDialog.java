@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm.gui;
 
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
@@ -99,7 +100,7 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 	}
 
 	@Override
-	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+	public void preferenceChanged(PreferenceChangeEvent preferenceChangeEvent) {
 		super.preferenceChanged(preferenceChangeEvent);
 		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
 			enabledness();

@@ -36,6 +36,7 @@ import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -213,7 +214,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	}
 
 	@Override
-	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+	public void preferenceChanged(PreferenceChangeEvent preferenceChangeEvent) {
 		super.preferenceChanged(preferenceChangeEvent);
 		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
 			enabledness();

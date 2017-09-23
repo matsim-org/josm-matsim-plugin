@@ -26,6 +26,7 @@ import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetReader;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetSeparator;
 import org.openstreetmap.josm.plugins.Plugin;
 import org.openstreetmap.josm.plugins.PluginInformation;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -120,7 +121,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		// register for preference changed events
 		Main.pref.addPreferenceChangeListener(this);
 		Main.pref.addPreferenceChangeListener(MapRenderer.PROPERTIES);
-		OsmConvertDefaults.listen(Main.pref);
+		OsmConvertDefaults.listen(Config.getPref());
 
 		// load default converting parameters
 
@@ -128,7 +129,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		List<String> matsimTests = new ArrayList<>();
 		OsmValidator.addTest(NetworkTest.class);
 		matsimTests.add(NetworkTest.class.getName());
-		
+
 		//make sure MATSim Validators aren't executed before upload
 		Main.pref.putCollection(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
 	}
