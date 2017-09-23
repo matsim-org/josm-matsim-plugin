@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.actions.TransitScheduleTest;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -40,7 +41,7 @@ public class CreateTransitFromIncompleteDataTest {
 
 	@org.junit.Test
 	public void createTransit() throws IllegalDataException, IOException {
-		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 
 		System.out.println("Fixture initialized");
 

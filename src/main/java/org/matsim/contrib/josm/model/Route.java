@@ -4,8 +4,9 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.pt.transitSchedule.api.Departure;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
@@ -70,7 +71,7 @@ public class Route {
 	}
 
 	public ObservableList<MLink> getRoute() {
-		if (isExplicitelyMatsimTagged(relation.get()) || !Main.pref.getBoolean("matsim_transit_lite")) {
+		if (isExplicitelyMatsimTagged(relation.get()) || !Preferences.isTransitLite()) {
 			List<MLink> networkRoute = determineNetworkRoute(relation.get());
 			this.route.setAll(networkRoute);
 		}

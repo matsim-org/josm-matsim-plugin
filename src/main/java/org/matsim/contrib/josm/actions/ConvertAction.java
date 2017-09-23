@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm.actions;
 
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.openstreetmap.josm.Main;
@@ -53,7 +54,7 @@ public class ConvertAction extends JosmAction {
 
 				@Override
 				protected void realRun() throws SAXException, IOException, OsmTransferException {
-					if (Main.pref.getBoolean("matsim_transit_lite")) {
+					if (Preferences.isTransitLite()) {
 						this.layer = LayerConverter.convertToPseudoNetwork(MainApplication.getLayerManager().getEditLayer());
 					} else {
 						this.layer = LayerConverter.convertWithFullTransit(MainApplication.getLayerManager().getEditLayer());
@@ -89,13 +90,13 @@ public class ConvertAction extends JosmAction {
 		test1.endTest();
 		progMonitor1.finishTask();
 		progMonitor1.close();
-		
+
 		if (test1.getErrors().stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
 			JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
 					"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 			return test1.getErrors();
-		} 
-		
+		}
+
 		TransitScheduleTest test2 = new TransitScheduleTest();
 		PleaseWaitProgressMonitor progMonitor2 = new PleaseWaitProgressMonitor("Validation");
 		test2.startTest(progMonitor2);

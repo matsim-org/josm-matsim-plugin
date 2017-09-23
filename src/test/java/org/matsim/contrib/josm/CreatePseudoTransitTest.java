@@ -2,6 +2,7 @@ package org.matsim.contrib.josm;
 
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -49,7 +50,7 @@ public class CreatePseudoTransitTest {
 		System.out.println(main);
 		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
-		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);

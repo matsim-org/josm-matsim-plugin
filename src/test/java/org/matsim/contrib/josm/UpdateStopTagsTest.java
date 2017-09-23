@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;
@@ -41,7 +42,7 @@ public class UpdateStopTagsTest {
 
 	@Before
 	public void init() {
-		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		DataSet data = new DataSet();
 		initializeDataSet(data);
 		layer = new OsmDataLayer(data, "test", null);

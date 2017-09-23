@@ -3,18 +3,17 @@ package org.matsim.contrib.josm;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
+import org.openstreetmap.josm.data.preferences.BooleanProperty;
+import org.openstreetmap.josm.data.preferences.DoubleProperty;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.OnLineStrategy;
-import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -72,8 +71,8 @@ public class MapRenderer extends StyledMapRenderer {
 
         if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
             if (!way.isSelected()) {
-                if (Properties.showIds) { // draw id on path
-                    TextLabel label = new MATSimTextLabel(PROPERTIES, PROPERTIES.FONT, Properties.MATSIMCOLOR, 0.f, new Color(0, 145, 190));
+                if (Properties.SHOW_IDS.get()) { // draw id on path
+                    TextLabel label = new MATSimTextLabel(PROPERTIES, Properties.FONT, Properties.MATSIMCOLOR, 0.f, new Color(0, 145, 190));
                     drawText(way, label, new OnLineStrategy(textOffset(way)));
                 }
                 if (way.hasTag("modes", TransportMode.pt)) { // draw
@@ -84,24 +83,24 @@ public class MapRenderer extends StyledMapRenderer {
                     // links
                     float[] dashPhase = {9.f};
                     BasicStroke trainDashes = new BasicStroke(2, 0, 1, 10.f, dashPhase, 9.f);
-                    super.drawWay(way, Properties.MATSIMCOLOR, line, trainDashes, Color.white, Properties.wayOffset * -1, showOrientation,
+                    super.drawWay(way, Properties.MATSIMCOLOR, line, trainDashes, Color.white, Properties.WAY_OFFSET.get().floatValue() * -1, showOrientation,
                             showHeadArrowOnly, !way.hasTag("highway", OsmConvertDefaults.getWayDefaults().keySet()), onewayReversed);
                 } else { // draw simple blue lines for other links, if
                     // way is not converted by highway tag, draw
                     // direction arrow for directed edge
-                    super.drawWay(way, Properties.MATSIMCOLOR, line, dashes, dashedColor, Properties.wayOffset * -1, showOrientation,
+                    super.drawWay(way, Properties.MATSIMCOLOR, line, dashes, dashedColor, Properties.WAY_OFFSET.get().floatValue() * -1, showOrientation,
                             showHeadArrowOnly, !way.hasTag("highway", OsmConvertDefaults.getWayDefaults().keySet()), onewayReversed);
                 }
                 return;
             } else {
-                if (Properties.showIds) { // draw ids on selected ways
+                if (Properties.SHOW_IDS.get()) { // draw ids on selected ways
                     // also
                     TextLabel label = new MATSimTextLabel(PROPERTIES, PROPERTIES.FONT, selectedColor, 0.f, selectedColor);
                     drawText(way, label, new OnLineStrategy(textOffset(way)));
                 }
             }
         }
-        super.drawWay(way, color, line, dashes, dashedColor, Properties.wayOffset * -1, showOrientation, showHeadArrowOnly, showOneway,
+        super.drawWay(way, color, line, dashes, dashedColor, Properties.WAY_OFFSET.get().floatValue() * -1, showOrientation, showHeadArrowOnly, showOneway,
                 onewayReversed);
     }
 
@@ -129,23 +128,12 @@ public class MapRenderer extends StyledMapRenderer {
      *
      * @author Nico
      */
-    static class Properties implements PreferenceChangedListener, LabelCompositionStrategy {
+    static class Properties implements LabelCompositionStrategy {
 
         final static Font FONT = new Font("Droid Sans", Font.PLAIN, 14);
         final static Color MATSIMCOLOR = new Color(80, 145, 190);
-        static boolean showIds = Main.pref.getBoolean("matsim_showIds", false);
-        static float wayOffset = ((float) Main.pref.getDouble("matsim_wayOffset", 0));
-
-        @Override
-        // listen for changes in preferences that concern renderer adjustments
-        public void preferenceChanged(PreferenceChangeEvent e) {
-            if (e.getKey().equalsIgnoreCase("matsim_showIds")) {
-                showIds = Main.pref.getBoolean("matsim_showIds");
-            }
-            if (e.getKey().equalsIgnoreCase("matsim_wayOffset")) {
-                wayOffset = ((float) (Main.pref.getDouble("matsim_wayOffset", 0)));
-            }
-        }
+        final static BooleanProperty SHOW_IDS = new BooleanProperty("matsim_showIds", false);
+        final static DoubleProperty WAY_OFFSET = new DoubleProperty("matsim_wayOffset", 0);
 
         /**
          * Composes the MATSim Id text for the OsmPrimitive <code>prim</code>.
