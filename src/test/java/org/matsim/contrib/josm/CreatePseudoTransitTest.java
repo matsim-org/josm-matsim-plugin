@@ -49,7 +49,7 @@ public class CreatePseudoTransitTest {
 		System.out.println(main);
 		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
-		Main.pref.put("matsim_supportTransit", true);
+		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);

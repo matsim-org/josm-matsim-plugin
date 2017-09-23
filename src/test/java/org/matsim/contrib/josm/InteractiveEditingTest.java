@@ -23,7 +23,7 @@ public class InteractiveEditingTest {
 
 	@Rule
 	public JOSMTestRules test = new JOSMTestRules().preferences();
-	
+
 
 	@Test
 	public void createLink() {
@@ -31,10 +31,10 @@ public class InteractiveEditingTest {
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		new AddCommand(matsimLayer, node1).executeCommand();
+		new AddCommand(matsimLayer.data, node1).executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		new AddCommand(matsimLayer, node2).executeCommand();
+		new AddCommand(matsimLayer.data, node2).executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
@@ -42,7 +42,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.CAPACITY, "1000.0");
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
-		new AddCommand(matsimLayer, way).executeCommand();
+		new AddCommand(matsimLayer.data, way).executeCommand();
 		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 	}
 
@@ -52,11 +52,11 @@ public class InteractiveEditingTest {
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		AddCommand addNode1 = new AddCommand(matsimLayer, node1);
+		AddCommand addNode1 = new AddCommand(matsimLayer.data, node1);
 		addNode1.executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		AddCommand addNode2 = new AddCommand(matsimLayer, node2);
+		AddCommand addNode2 = new AddCommand(matsimLayer.data, node2);
 		addNode2.executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
@@ -65,7 +65,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.CAPACITY, "1000.0");
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
-		AddCommand addWay = new AddCommand(matsimLayer, way);
+		AddCommand addWay = new AddCommand(matsimLayer.data, way);
 		addWay.executeCommand();
 		Assert.assertEquals(1, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 		Assert.assertEquals(2, matsimLayer.getNetworkModel().nodes().size());
@@ -84,10 +84,10 @@ public class InteractiveEditingTest {
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		new AddCommand(matsimLayer, node1).executeCommand();
+		new AddCommand(matsimLayer.data, node1).executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		new AddCommand(matsimLayer, node2).executeCommand();
+		new AddCommand(matsimLayer.data, node2).executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
@@ -95,7 +95,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.CAPACITY, "1000.0");
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
-		new AddCommand(matsimLayer, way).executeCommand();
+		new AddCommand(matsimLayer.data, way).executeCommand();
 		DeleteCommand delete = new DeleteCommand(way);
 		delete.executeCommand();
 		delete.undoCommand();
@@ -108,10 +108,10 @@ public class InteractiveEditingTest {
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		new AddCommand(matsimLayer, node1).executeCommand();
+		new AddCommand(matsimLayer.data, node1).executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		new AddCommand(matsimLayer, node2).executeCommand();
+		new AddCommand(matsimLayer.data, node2).executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
@@ -119,7 +119,7 @@ public class InteractiveEditingTest {
 		way.put(LinkConversionRules.CAPACITY, "1000.0");
 		way.put(LinkConversionRules.PERMLANES, "1.0");
 		way.put(LinkConversionRules.MODES, "car");
-		new AddCommand(matsimLayer, way).executeCommand();
+		new AddCommand(matsimLayer.data, way).executeCommand();
 		DeleteCommand deleteWay = new DeleteCommand(way);
 		deleteWay.executeCommand();
 		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
@@ -143,14 +143,14 @@ public class InteractiveEditingTest {
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		Node node1 = new Node();
 		node1.setCoor(new LatLon(0.0, 0.0));
-		new AddCommand(matsimLayer, node1).executeCommand();
+		new AddCommand(matsimLayer.data, node1).executeCommand();
 		Node node2 = new Node();
 		node2.setCoor(new LatLon(0.1, 0.1));
-		new AddCommand(matsimLayer, node2).executeCommand();
+		new AddCommand(matsimLayer.data, node2).executeCommand();
 		Way way = new Way();
 		way.addNode(node1);
 		way.addNode(node2);
-		new AddCommand(matsimLayer, way).executeCommand();
+		new AddCommand(matsimLayer.data, way).executeCommand();
 		Assert.assertEquals(0, matsimLayer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
 		new ChangePropertyCommand(way, LinkConversionRules.FREESPEED, "10.0").executeCommand();
 		new ChangePropertyCommand(way, LinkConversionRules.CAPACITY, "1000.0").executeCommand();

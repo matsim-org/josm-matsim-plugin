@@ -2,6 +2,7 @@ package org.matsim.contrib.josm.gui;
 
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.spi.preferences.Config;
 import org.openstreetmap.josm.tools.GBC;
 
 import javax.swing.*;
@@ -28,7 +29,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 
 		ActionListener cbListener = e -> {
 			JCheckBox cb = (JCheckBox) e.getSource();
-			Main.pref.put("matsim_download_" + cb.getText(), cb.isSelected());
+			Config.getPref().putBoolean("matsim_download_" + cb.getText(), cb.isSelected());
 		};
 
 		JPanel highwaysPnl = new JPanel(new FlowLayout());

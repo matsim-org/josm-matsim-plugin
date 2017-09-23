@@ -153,9 +153,9 @@ public class MasterRoutesTest extends Test {
 					}
 				}
 				newMaster.getMembers().addAll(master.getMembers());
-				commands.add(new ChangeCommand(MainApplication.getLayerManager().getEditLayer(), oldMaster, newMaster));
+				commands.add(new ChangeCommand(MainApplication.getLayerManager().getEditLayer().data, oldMaster, newMaster));
 			} else {
-				commands.add(new AddCommand(MainApplication.getLayerManager().getEditLayer(), master));
+				commands.add(new AddCommand(MainApplication.getLayerManager().getEditLayer().data, master));
 			}
 			return new SequenceCommand(name, commands);
 		}

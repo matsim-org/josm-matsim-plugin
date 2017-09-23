@@ -50,7 +50,7 @@ public class IOTest {
 		int nLinks = scenario.getNetwork().getLinks().size();
 		List<Command> commands = new ArrayList<>();
 		for (Way way : layer.data.getWays()) {
-			Command delete = DeleteCommand.delete(layer, Arrays.asList(way), false, true);
+			Command delete = DeleteCommand.delete(Arrays.asList(way), false, true);
 			delete.executeCommand();
 			commands.add(delete);
 			nLinks--;
@@ -67,7 +67,7 @@ public class IOTest {
 	private void deleteAndUndeleteLinks(Scenario scenario, MATSimLayer layer) {
 		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().nodes().size());
 		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
-		Command delete = DeleteCommand.delete(layer, layer.data.getWays(), false, true);
+		Command delete = DeleteCommand.delete(layer.data.getWays(), false, true);
 		delete.executeCommand();
 		Assert.assertEquals(0, layer.getNetworkModel().nodes().size());
 		Assert.assertEquals(0, layer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
@@ -79,7 +79,7 @@ public class IOTest {
 	private void deleteAndUndeleteEverything(Scenario scenario, MATSimLayer layer) {
 		Assert.assertEquals(scenario.getNetwork().getNodes().size(), layer.getNetworkModel().nodes().size());
 		Assert.assertEquals(scenario.getNetwork().getLinks().size(), layer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
-		Command delete = DeleteCommand.delete(layer, layer.data.allPrimitives(), true, true);
+		Command delete = DeleteCommand.delete(layer.data.allPrimitives(), true, true);
 		delete.executeCommand();
 		Assert.assertEquals(0, layer.getNetworkModel().nodes().size());
 		Assert.assertEquals(0, layer.getNetworkModel().getWay2Links().values().stream().mapToInt(List::size).sum());
@@ -156,7 +156,7 @@ public class IOTest {
 		List<Command> commands = new ArrayList<>();
 		for(Relation relation: layer.data.getRelations()) {
 			if(relation.hasTag("type", "public_transport") && relation.hasTag("public_transport", "stop_area")) {
-				Command delete = DeleteCommand.delete(layer, Arrays.asList(relation), false, true);
+				Command delete = DeleteCommand.delete(Arrays.asList(relation), false, true);
 				delete.executeCommand();
 				commands.add(delete);
 			}

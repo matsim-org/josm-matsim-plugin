@@ -4,8 +4,6 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
@@ -15,6 +13,8 @@ import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.OnLineStrategy;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 
 import java.awt.*;
 import java.util.HashMap;

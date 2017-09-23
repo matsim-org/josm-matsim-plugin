@@ -11,8 +11,7 @@ import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
-import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
-import org.openstreetmap.josm.data.osm.visitor.Visitor;
+import org.openstreetmap.josm.data.osm.visitor.OsmPrimitiveVisitor;
 import org.openstreetmap.josm.spi.preferences.IPreferences;
 
 import java.util.*;
@@ -225,7 +224,7 @@ public class NetworkModel {
 		fireNotifyDataChanged();
 	}
 
-	class AggregatePrimitives implements Visitor {
+	class AggregatePrimitives implements OsmPrimitiveVisitor {
 
 		Set<OsmPrimitive> primitives = new HashSet<>();
 
@@ -279,11 +278,6 @@ public class NetworkModel {
 			primitives.add(relation);
 		}
 
-		@Override
-		public void visit(Changeset changeset) {
-
-		}
-
 		void finished() {
 			Convert visitor = new Convert();
 			for (Node node : OsmPrimitive.getFilteredList(primitives, Node.class)) {
@@ -308,7 +302,7 @@ public class NetworkModel {
 		routes.remove(route.getRelation());
 	}
 
-	class Convert extends AbstractVisitor {
+	class Convert implements OsmPrimitiveVisitor {
 
 		final Collection<OsmPrimitive> visited = new HashSet<>();
 

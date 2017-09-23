@@ -14,7 +14,6 @@ import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
@@ -52,7 +51,7 @@ public class OSMDataTest {
 
 	@Before
 	public void init() throws IOException, IllegalDataException {
-		Main.pref.put("matsim_supportTransit", true);
+		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_supportTransit", true);
 		URL urlIncompleteWay = getClass().getResource("/test-input/OSMData/incompleteWay.osm.xml");
 		URL urlRoute = getClass().getResource("/test-input/OSMData/busRoute.osm.xml");
 		URL urlIntersections = getClass().getResource("/test-input/OSMData/loops_intersecting_ways.osm.xml");
@@ -85,7 +84,7 @@ public class OSMDataTest {
 
 	@Test
 	public void testWayNodesChanged() {
-		Main.pref.put("matsim_keepPaths", true);
+		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_keepPaths", true);
 		Way way = incompleteWayLayer.data.getWays().iterator().next();
 		List<Node> nodes = new ArrayList<>();
 		for (Node node: incompleteWayLayer.data.getNodes()) {
@@ -145,7 +144,7 @@ public class OSMDataTest {
 			Assert.assertEquals(5, route.getRoute().size());
 		}
 
-		Main.pref.put("matsim_keepPaths", true);
+		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_keepPaths", true);
 		Assert.assertEquals(18,busRouteListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		Assert.assertEquals(10,busRouteListener.nodes().size());
 		Assert.assertEquals(4,busRouteListener.stopAreas().size());
@@ -165,7 +164,7 @@ public class OSMDataTest {
 		}
 		Assert.assertEquals(1, nStopsWithLink);
 
-		Main.pref.put("matsim_keepPaths", false);
+		org.openstreetmap.josm.spi.preferences.Config.getPref().putBoolean("matsim_keepPaths", false);
 		Assert.assertEquals(10,busRouteListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		Assert.assertEquals(6,busRouteListener.nodes().size());
 		Assert.assertEquals(4,busRouteListener.stopAreas().size());
@@ -210,7 +209,7 @@ public class OSMDataTest {
 		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
-		 Command delete = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(14, OsmPrimitiveType.NODE)), false, true);
+		 Command delete = DeleteCommand.delete(Collections.singleton(intersectionsLayer.data.getPrimitiveById(14, OsmPrimitiveType.NODE)), false, true);
 		 delete.executeCommand();
 		 Assert.assertEquals(9,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(11,intersectionsListener.nodes().size());
@@ -219,7 +218,7 @@ public class OSMDataTest {
 		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
-		 Command delete2 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(2, OsmPrimitiveType.NODE)), false, true);
+		 Command delete2 = DeleteCommand.delete(Collections.singleton(intersectionsLayer.data.getPrimitiveById(2, OsmPrimitiveType.NODE)), false, true);
 		 delete2.executeCommand();
 		 Assert.assertEquals(10,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(12,intersectionsListener.nodes().size());
@@ -228,7 +227,7 @@ public class OSMDataTest {
 		 Assert.assertEquals(11,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(12,intersectionsListener.nodes().size());
 
-		 Command delete3 = DeleteCommand.delete(intersectionsLayer, Collections.singleton(intersectionsLayer.data.getPrimitiveById(3, OsmPrimitiveType.WAY)), false, true);
+		 Command delete3 = DeleteCommand.delete(Collections.singleton(intersectionsLayer.data.getPrimitiveById(3, OsmPrimitiveType.WAY)), false, true);
 		 delete3.executeCommand();
 		 Assert.assertEquals(8,intersectionsListener.getWay2Links().values().stream().mapToInt(List::size).sum());
 		 Assert.assertEquals(9,intersectionsListener.nodes().size());
