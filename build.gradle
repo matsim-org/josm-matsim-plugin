@@ -56,12 +56,12 @@ sourceCompatibility = 1.8
 version = gitVersion().replace('.dirty', '-dirty')
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 12767
+    josmCompileVersion = 12885
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
         iconPath = "images/dialogs/matsim-scenario.png"
-        minJosmVersion = 12675
+        minJosmVersion = 12881
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
         pluginDependencies << 'jts' << 'apache-commons' << 'apache-http'
         website = new URL("http://www.matsim.org")

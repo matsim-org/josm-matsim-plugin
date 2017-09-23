@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.Preferences;
+import org.openstreetmap.josm.spi.preferences.IPreferences;
 
 /**
  * Holds the default converting values
@@ -29,7 +29,7 @@ public class OsmConvertDefaults {
 		load();
 	}
 
-	public static void listen(Preferences pref) {
+	public static void listen(IPreferences pref) {
 		pref.addPreferenceChangeListener(preferenceChangeEvent -> load());
 	}
 

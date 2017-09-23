@@ -6,7 +6,7 @@ import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.data.SelectionChangedListener;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
@@ -152,7 +152,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		tableModel_links.selectionChanged(null);
 	}
 
-	
+
 	@Override
 	public void preferenceChanged(PreferenceChangeEvent e) {
 		super.preferenceChanged(e);
@@ -353,8 +353,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		}
 		notifyEverythingChanged();
 
-		
+
 	}
 
-	
+
 }

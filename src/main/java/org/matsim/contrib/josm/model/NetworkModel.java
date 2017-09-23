@@ -13,6 +13,7 @@ import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.event.*;
 import org.openstreetmap.josm.data.osm.visitor.AbstractVisitor;
 import org.openstreetmap.josm.data.osm.visitor.Visitor;
+import org.openstreetmap.josm.spi.preferences.IPreferences;
 
 import java.util.*;
 
@@ -169,7 +170,7 @@ public class NetworkModel {
 	}
 
 	public static NetworkModel createNetworkModel(DataSet data, Map<Way, List<MLink>> way2Links) {
-		return new NetworkModel(data, Main.pref, way2Links);
+		return new NetworkModel(data, org.openstreetmap.josm.spi.preferences.Config.getPref(), way2Links);
 	}
 
 	public interface ScenarioDataChangedListener {
@@ -190,7 +191,7 @@ public class NetworkModel {
 		listeners.add(listener);
 	}
 
-	private NetworkModel(DataSet data, org.openstreetmap.josm.data.Preferences prefs, Map<Way, List<MLink>> way2Links) {
+	private NetworkModel(DataSet data, IPreferences prefs, Map<Way, List<MLink>> way2Links) {
 		this.data = data;
 		this.data.addDataSetListener(new NetworkModelDataSetListener());
 		prefs.addPreferenceChangeListener(e -> {
