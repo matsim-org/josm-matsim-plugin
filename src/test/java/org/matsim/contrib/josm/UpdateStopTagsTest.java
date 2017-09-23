@@ -4,15 +4,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.osm.UpdateStopTags;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
 
@@ -21,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 public class UpdateStopTagsTest {
 
 	@Rule
- 	public JOSMTestRules test = new JOSMTestRules().preferences();;
+	public JOSMTestRules test = new JOSMTestRules().preferences();
 
 	private OsmDataLayer layer;
 
@@ -41,7 +42,7 @@ public class UpdateStopTagsTest {
 
 	@Before
 	public void init() {
-		Main.pref.put("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		DataSet data = new DataSet();
 		initializeDataSet(data);
 		layer = new OsmDataLayer(data, "test", null);
@@ -49,7 +50,7 @@ public class UpdateStopTagsTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(data);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
 	}
 
 	private void initializeDataSet(DataSet data) {

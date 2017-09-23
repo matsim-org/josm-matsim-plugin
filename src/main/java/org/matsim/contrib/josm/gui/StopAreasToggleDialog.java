@@ -1,5 +1,6 @@
 package org.matsim.contrib.josm.gui;
 
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,6 +17,7 @@ import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.StopArea;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
 import org.openstreetmap.josm.gui.layer.MainLayerManager;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
@@ -61,17 +63,17 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 
 	@Override
 	public void showNotify() {
-		Main.getLayerManager().addActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().addActiveLayerChangeListener(this);
 	}
 
 	@Override
 	public void hideNotify() {
-		Main.getLayerManager().removeActiveLayerChangeListener(this);
+		MainApplication.getLayerManager().removeActiveLayerChangeListener(this);
 	}
 
 	@Override
 	public void activeOrEditLayerChanged(MainLayerManager.ActiveLayerChangeEvent activeLayerChangeEvent) {
-		editLayer = Main.getLayerManager().getEditLayer();
+		editLayer = MainApplication.getLayerManager().getEditLayer();
 		Platform.runLater(() -> {
 			if (editLayer != null) {
 				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
@@ -98,7 +100,7 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 	}
 
 	@Override
-	public void preferenceChanged(org.openstreetmap.josm.data.Preferences.PreferenceChangeEvent preferenceChangeEvent) {
+	public void preferenceChanged(PreferenceChangeEvent preferenceChangeEvent) {
 		super.preferenceChanged(preferenceChangeEvent);
 		if (preferenceChangeEvent.getKey().equalsIgnoreCase("matsim_supportTransit")) {
 			enabledness();
@@ -106,7 +108,7 @@ public class StopAreasToggleDialog extends ToggleDialog implements MainLayerMana
 	}
 
 	private void enabledness() {
-		boolean enabled = Main.pref.getBoolean("matsim_supportTransit");
+		boolean enabled = Preferences.isSupportTransit();
 		getButton().setEnabled(enabled);
 		if (isShowing() && !enabled) {
 			hideDialog();

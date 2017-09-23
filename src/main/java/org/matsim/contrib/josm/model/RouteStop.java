@@ -1,8 +1,5 @@
 package org.matsim.contrib.josm.model;
 
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-
 public class RouteStop {
 	private boolean awaitDepartureTime;
 	private double departureOffset;

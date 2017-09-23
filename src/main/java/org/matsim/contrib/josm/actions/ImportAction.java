@@ -5,6 +5,7 @@ import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
@@ -64,8 +65,8 @@ public class ImportAction extends JosmAction {
                             // layer = null happens if Exception happens during import,
                             // as Exceptions are handled only after this method is called.
                             if (layer != null) {
-                                Main.getLayerManager().addLayer(layer);
-                                Main.getLayerManager().setActiveLayer(layer);
+                                MainApplication.getLayerManager().addLayer(layer);
+                                MainApplication.getLayerManager().setActiveLayer(layer);
                             }
                         }
 
@@ -78,7 +79,7 @@ public class ImportAction extends JosmAction {
                             }
                         }
                     };
-                    Main.worker.execute(task);
+                    MainApplication.worker.execute(task);
                 }
             }
         }

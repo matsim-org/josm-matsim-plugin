@@ -3,6 +3,7 @@ package org.matsim.contrib.josm;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -11,8 +12,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
@@ -30,7 +31,7 @@ public class CreateTransitFromCompleteDataTest {
 
 	@Test
 	public void createTransit() throws IllegalDataException, IOException {
-		Main.pref.put("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		InputStream stream = getClass().getResourceAsStream("/test-input/OSMData/busRoute-with-complete-tags.osm.xml");
 		DataSet set = OsmReader.parseDataSet(stream, null);
 
@@ -40,13 +41,14 @@ public class CreateTransitFromCompleteDataTest {
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
-		Main.getLayerManager().setActiveLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().setActiveLayer(layer);
 
-		Main.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
+		MainApplication.getLayerManager().addLayer(LayerConverter.convertWithFullTransit(layer));
 
-		Scenario targetScenario = Export.toScenario(((MATSimLayer) Main.getLayerManager().getActiveLayer()).getNetworkModel());
-		new NetworkWriter(targetScenario.getNetwork()).write(new File("network-2.xml").getPath());
-		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("transitSchedule-2.xml").getPath());
+		Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
+		new File("build/test-output").mkdirs();
+		new NetworkWriter(targetScenario.getNetwork()).write(new File("build/test-output/network-2.xml").getPath());
+		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("build/test-output/transitSchedule-2.xml").getPath());
 	}
 }

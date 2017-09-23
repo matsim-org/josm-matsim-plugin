@@ -2,6 +2,7 @@ package org.matsim.contrib.josm;
 
 import org.junit.Rule;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
@@ -15,11 +16,11 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.validation.Test;
 import org.openstreetmap.josm.data.validation.TestError;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.io.IllegalDataException;
 import org.openstreetmap.josm.io.OsmReader;
@@ -49,13 +50,13 @@ public class CreatePseudoTransitTest {
 		System.out.println(main);
 		OsmDataLayer layer = new OsmDataLayer(set, "tmp", null);
 
-		Main.pref.put("matsim_supportTransit", true);
+		Preferences.setSupportTransit(true);
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		NetworkModel listener = NetworkModel.createNetworkModel(set);
 		listener.visitAll();
-		Main.getLayerManager().addLayer(layer);
-		Main.getLayerManager().setActiveLayer(layer);
+		MainApplication.getLayerManager().addLayer(layer);
+		MainApplication.getLayerManager().setActiveLayer(layer);
 		System.out.println("Layer added");
 
 		System.out.println("Starting Validations");
@@ -82,9 +83,10 @@ public class CreatePseudoTransitTest {
 			}
 		}
 
-		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(Main.getLayerManager().getEditLayer());
+		MATSimLayer matSimLayer = LayerConverter.convertToPseudoNetwork(MainApplication.getLayerManager().getEditLayer());
 		Scenario targetScenario = Export.toScenario(matSimLayer.getNetworkModel());
-		new NetworkWriter(targetScenario.getNetwork()).write(new File("pseudo-network.xml").getPath());
-		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("pseudo-transitSchedule.xml").getPath());
+		new File("build/test-output").mkdirs();
+		new NetworkWriter(targetScenario.getNetwork()).write(new File("build/test-output/pseudo-network.xml").getPath());
+		new TransitScheduleWriter(targetScenario.getTransitSchedule()).writeFile(new File("build/test-output/pseudo-transitSchedule.xml").getPath());
 	}
 }
