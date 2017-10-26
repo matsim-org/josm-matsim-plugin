@@ -56,7 +56,7 @@ sourceCompatibility = 1.8
 version = gitVersion().replace('.dirty', '-dirty')
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 12885
+    josmCompileVersion = 13025
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
