@@ -79,31 +79,6 @@ jar {
 
 tasks.test.outputs.dir("$buildDir/test-output")
 
-// Install the plug-in into the local JOSM plug-in directory.
-// You can start JOSM from your IDE and debug the plug-in, but the JOSM
-// plug-in system still expects the plug-in jar in its correct place.
-import org.apache.tools.ant.taskdefs.condition.Os
-task installLocalJosm {
-    doLast {
-        def josmPluginDir;
-        def homePath = System.properties['user.home']
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            def appDataDir = System.getenv("APPDATA")
-            josmPluginDir = appDataDir + "/JOSM/plugins"
-        } else if (Os.isFamily(Os.FAMILY_MAC)) {
-            josmPluginDir = homePath + "/Library/JOSM/plugins"
-        } else {
-            josmPluginDir = homePath + "/.josm/plugins"
-        }
-        logger.lifecycle "Installing the plugin into {}…", josmPluginDir
-        copy {
-          from "$buildDir/dist"
-          into josmPluginDir
-        }
-    }
-}
-installLocalJosm.dependsOn "renameDistJar"
-
 test {
   testLogging {
     exceptionFormat "full"
