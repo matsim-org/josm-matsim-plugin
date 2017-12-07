@@ -1,12 +1,10 @@
 plugins {
-    id 'com.palantir.git-version' version '0.8.0'
-    id 'org.openstreetmap.josm.gradle.plugin' version '0.1.7'
+    id 'com.palantir.git-version' version '0.9.1'
+    id 'org.openstreetmap.josm' version '0.2.1'
+    id 'java'
+    id 'eclipse'
+    id 'idea'
 }
-
-// We use the Java builder and the download plug-in we just fetched.
-apply plugin: "java"
-apply plugin: "eclipse"
-apply plugin: 'idea'
 
 // For the dependencies of our project (not of this build script itself), we also need the
 // local Maven cache. We use it to get the MATSim snapshot.
@@ -56,7 +54,7 @@ sourceCompatibility = 1.8
 version = gitVersion().replace('.dirty', '-dirty')
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 13025
+    josmCompileVersion = 13170
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
@@ -80,31 +78,6 @@ jar {
 }
 
 tasks.test.outputs.dir("$buildDir/test-output")
-
-// Install the plug-in into the local JOSM plug-in directory.
-// You can start JOSM from your IDE and debug the plug-in, but the JOSM
-// plug-in system still expects the plug-in jar in its correct place.
-import org.apache.tools.ant.taskdefs.condition.Os
-task installLocalJosm {
-    doLast {
-        def josmPluginDir;
-        def homePath = System.properties['user.home']
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            def appDataDir = System.getenv("APPDATA")
-            josmPluginDir = appDataDir + "/JOSM/plugins"
-        } else if (Os.isFamily(Os.FAMILY_MAC)) {
-            josmPluginDir = homePath + "/Library/JOSM/plugins"
-        } else {
-            josmPluginDir = homePath + "/.josm/plugins"
-        }
-        logger.lifecycle "Installing the plugin into {}…", josmPluginDir
-        copy {
-          from "$buildDir/dist"
-          into josmPluginDir
-        }
-    }
-}
-installLocalJosm.dependsOn "renameDistJar"
 
 test {
   testLogging {

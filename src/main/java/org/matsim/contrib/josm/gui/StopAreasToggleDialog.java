@@ -15,7 +15,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import org.matsim.contrib.josm.model.NetworkModel;
 import org.matsim.contrib.josm.model.StopArea;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
