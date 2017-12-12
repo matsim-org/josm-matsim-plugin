@@ -1,6 +1,5 @@
 plugins {
-    id 'com.palantir.git-version' version '0.9.1'
-    id 'org.openstreetmap.josm' version '0.2.1'
+    id 'org.openstreetmap.josm' version '0.2.2'
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -50,8 +49,9 @@ sourceSets {
 }
 
 sourceCompatibility = 1.8
-
-version = gitVersion().replace('.dirty', '-dirty')
+def gitVersion = ['git', 'describe', '--always', '--tags', '--dirty'].execute()
+gitVersion.waitFor()
+version = gitVersion.in.text.trim()
 archivesBaseName = "matsim"
 josm {
     josmCompileVersion = 13170

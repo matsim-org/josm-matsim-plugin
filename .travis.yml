@@ -7,3 +7,16 @@ matrix:
   fast_finish: true
   allow_failures:
   - jdk: oraclejdk9
+
+deploy:
+  provider: releases
+  file_glob: true
+  api_key: "${GH_TOKEN}"
+  file:
+    - "build/dist/matsim.jar"
+    - "build/tmp/jar/MANIFEST.MF"
+  skip_cleanup: true
+  on:
+    condition: -n $GH_TOKEN
+    tags: true
+    jdk: oraclejdk8
