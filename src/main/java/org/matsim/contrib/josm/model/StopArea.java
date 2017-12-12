@@ -9,7 +9,9 @@ import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
+import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
@@ -40,7 +42,7 @@ public class StopArea {
 	}
 
 	public Coord getCoord() {
-		EastNorth eN = platformLocation();
+		EastNorth eN = getPlatformLocation();
 		if (eN != null) {
 			return toCoord(eN);
 		} else {
@@ -67,15 +69,17 @@ public class StopArea {
 		return new Coord(eN.getX(), eN.getY());
 	}
 
-	private EastNorth platformLocation() {
+	private EastNorth getPlatformLocation() {
 		List<OsmPrimitive> nodes = new ArrayList<>();
 		for (RelationMember member : relation.getMembers()) {
-			if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")
-					|| member.hasRole("stop")) {
-				if (member.isWay() && !member.getWay().hasIncompleteNodes()) {
-					nodes.add(member.getWay());
-				} else if (member.isNode() && member.getNode().isLatLonKnown()) {
-					nodes.add(member.getNode());
+			if(!member.getMember().isIncomplete()) {
+				if (member.hasRole("platform") || member.getMember().hasTag("public_transport", "platform")
+						|| member.hasRole("stop")) {
+					if (member.isWay() && !member.getWay().hasIncompleteNodes()) {
+						nodes.add(member.getWay());
+					} else if (member.isNode() && member.getNode().isLatLonKnown()) {
+						nodes.add(member.getNode());
+					}
 				}
 			}
 		}
@@ -86,7 +90,7 @@ public class StopArea {
 		if (centroid.isEmpty()) {
 			return null;
 		} else {
-			return new EastNorth(centroid.getX(), centroid.getY());
+			return Main.getProjection().latlon2eastNorth(new LatLon(centroid.getY(), centroid.getX()));
 		}
 	}
 

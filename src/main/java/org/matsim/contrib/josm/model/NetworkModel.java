@@ -235,16 +235,7 @@ public class NetworkModel {
 			// length may change)
 			// and at relations (because it may be a transit stop)
 			// which contain it.
-
-			// Annoyingly, JOSM removes the dataSet property from primitives
-			// before calling this listener when
-			// a primitive is "hard" deleted (not flagged as deleted).
-			// So we have to check for this before asking for its referrers.
-			if (node.getDataSet() != null) {
-				for (OsmPrimitive primitive : node.getReferrers()) {
-					primitive.accept(this);
-				}
-			}
+			visitReferrers(node);
 		}
 
 		@Override
@@ -256,14 +247,17 @@ public class NetworkModel {
 			// I probably have to look at the nodes (because they may not be
 			// needed anymore),
 			// but then I would probably traverse the entire net.
+			visitReferrers(way);
+		}
 
+		private void visitReferrers(OsmPrimitive primitive) {
 			// Annoyingly, JOSM removes the dataSet property from primitives
 			// before calling this listener when
 			// a primitive is "hard" deleted (not flagged as deleted).
 			// So we have to check for this before asking for its referrers.
-			if (way.getDataSet() != null) {
-				for (OsmPrimitive primitive : way.getReferrers()) {
-					primitive.accept(this);
+			if (primitive.getDataSet() != null) {
+				for (OsmPrimitive referrer : primitive.getReferrers()) {
+					referrer.accept(this);
 				}
 			}
 		}
@@ -319,7 +313,7 @@ public class NetworkModel {
 
 			final Double taggedLength = LinkConversionRules.getTaggedLength(way);
 
-			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null && (isExplicitelyMatsimTagged(way) || !Preferences.isTransitLite())) {
+			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null) {
 				List<Node> nodeOrder = new ArrayList<>();
 				for (Node current : way.getNodes()) {
 					if (nodes().containsKey(current)) {
@@ -407,7 +401,7 @@ public class NetworkModel {
 		}
 
 		private boolean isRelevant(Node node) {
-			if (isUsableAndNotRemoved(node) && (isExplicitelyMatsimTagged(node) || !Preferences.isTransitLite())) {
+			if (isUsableAndNotRemoved(node)) {
 				Way junctionWay = null;
 				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
 					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {

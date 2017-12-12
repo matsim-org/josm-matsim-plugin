@@ -133,8 +133,8 @@ public class Export {
 
 	private static Map<StopArea, List<TransitStopFacility>> createFacilities(NetworkModel networkModel, Scenario scenario) {
 		final Map<StopArea, List<TransitStopFacility>> facilityCopies = new HashMap<>(networkModel.stopAreas().values().stream().collect(Collectors.toMap(Function.identity(), sa -> new ArrayList<>())));
-		networkModel.stopAreas().values().stream().map(facility -> facility).forEach(stopArea -> {
-			List<MNode> stopPositionModelNodes = stopArea.getStopPositionOsmNodes().stream().map(osmNode -> networkModel.nodes().get(osmNode))
+		networkModel.stopAreas().values().stream().forEach(stopArea -> {
+			List<MNode> stopPositionModelNodes = stopArea.getStopPositionOsmNodes().stream().map(osmNode -> getmNode(networkModel, osmNode))
 					.filter(modelNode -> modelNode != null) //FIXME: don't even return these
 					.collect(Collectors.toList());
 
@@ -150,16 +150,20 @@ public class Export {
 			} else {
 				for (MNode modelNode : stopPositionModelNodes) {
 					Node node = scenario.getNetwork().getNodes().get(Id.createNodeId(modelNode.getOrigId()));
-					for (Link link : node.getInLinks().values()) {
-						Id<TransitStopFacility> id = Id.create(stopArea.getMatsimId().toString() + "." + Integer.toString(facilityCopies.get(stopArea).size() + 1), TransitStopFacility.class);
+					if(node.getInLinks().isEmpty()) {
+						Id<TransitStopFacility> id = Id.create(stopArea.getMatsimId().toString(), TransitStopFacility.class);
 						TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFactory().createTransitStopFacility(id, stopArea.getCoord(), stopArea.isBlockingLane());
-						transitStopFacility.setLinkId(link.getId());
 						transitStopFacility.setName(stopArea.getName());
 						facilityCopies.get(stopArea).add(transitStopFacility);
+					} else {
+						for (Link link : node.getInLinks().values()) {
+							Id<TransitStopFacility> id = Id.create(stopArea.getMatsimId().toString() + "." + Integer.toString(facilityCopies.get(stopArea).size() + 1), TransitStopFacility.class);
+							TransitStopFacility transitStopFacility = scenario.getTransitSchedule().getFactory().createTransitStopFacility(id, stopArea.getCoord(), stopArea.isBlockingLane());
+							transitStopFacility.setLinkId(link.getId());
+							transitStopFacility.setName(stopArea.getName());
+							facilityCopies.get(stopArea).add(transitStopFacility);
+						}
 					}
-				}
-				if (facilityCopies.get(stopArea).isEmpty()) {
-					throw new RuntimeException();
 				}
 			}
 			if (facilityCopies.get(stopArea).isEmpty()) {
@@ -167,6 +171,11 @@ public class Export {
 			}
 		});
 		return facilityCopies;
+	}
+
+	private static MNode getmNode(NetworkModel networkModel, org.openstreetmap.josm.data.osm.Node osmNode) {
+		MNode mNode = networkModel.nodes().get(osmNode);
+		return mNode;
 	}
 
 	private static List<Link> getLinks(List<MLink> route, Network network) {
