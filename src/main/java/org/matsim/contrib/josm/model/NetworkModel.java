@@ -1,5 +1,7 @@
 package org.matsim.contrib.josm.model;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javafx.beans.property.ReadOnlyMapProperty;
 import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.FXCollections;
@@ -15,6 +17,7 @@ import org.openstreetmap.josm.data.osm.visitor.OsmPrimitiveVisitor;
 import org.openstreetmap.josm.spi.preferences.IPreferences;
 
 import java.util.*;
+import org.openstreetmap.josm.tools.Pair;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
@@ -314,40 +317,37 @@ public class NetworkModel {
 			final Double taggedLength = LinkConversionRules.getTaggedLength(way);
 
 			if (capacity != null && freespeed != null && nofLanesPerDirection != null && modes != null) {
-				List<Node> nodeOrder = new ArrayList<>();
-				for (Node current : way.getNodes()) {
-					if (nodes().containsKey(current)) {
-						nodeOrder.add(current);
-					}
-				}
+
+				final List<Pair<Integer, Node>> nodeOrder = IntStream.range(0, way.getNodesCount())
+					.mapToObj(i -> new Pair<Integer, Node>(i, way.getNode(i))) // pairs the index of the node with the node itself
+					.filter(n ->nodes().containsKey(n.b)) // filter to only keep the interesting nodes
+					.collect(Collectors.toList()); // put these into a list
+
 				List<MLink> links = new ArrayList<>();
 				long increment = 0;
 				for (int k = 1; k < nodeOrder.size(); k++) {
-					List<WaySegment> segs = new ArrayList<>();
-					Node nodeFrom = nodeOrder.get(k - 1);
-					Node nodeTo = nodeOrder.get(k);
-					int fromIdx = way.getNodes().indexOf(nodeFrom);
-					int toIdx = way.getNodes().indexOf(nodeTo);
-					if (fromIdx > toIdx) { // loop, take latter occurrence
-						toIdx = way.getNodes().lastIndexOf(nodeTo);
-					}
-					Double segmentLength = 0.;
-					for (int m = fromIdx; m < toIdx; m++) {
-						segs.add(new WaySegment(way, m));
-						segmentLength += way.getNode(m).getCoor().greatCircleDistance(way.getNode(m + 1).getCoor());
-					}
-					if (taggedLength != null) {
-						segmentLength = taggedLength * segmentLength / way.getLength();
-					}
+					// from.a is the node index, from.b is the node itself
+					final Pair<Integer, Node> from = nodeOrder.get(k - 1);
+					// to.a is the node index, to.b is the node itself
+					final Pair<Integer, Node> to = nodeOrder.get(k);
+
+					final Way wayPart = new Way(); // the part of the way between nodeFrom (inclusive) and nodeTo (inclusive)
+					wayPart.setNodes(way.getNodes().subList(from.a, to.a + 1));
+					final List<WaySegment> segs = wayPart.getNodePairs(false).stream()
+						.map(pair -> WaySegment.forNodePair(way, pair.a, pair.b))
+						.collect(Collectors.toList());
+					final double wayPartLength = taggedLength == null
+						? wayPart.getLength()
+						: (way.getLength() <= 0 ? 0 : taggedLength * wayPart.getLength() / way.getLength());
 
 					// only create link, if both nodes were found, node could be null, since
 					// nodes outside a layer were dropped
-					if (nodes().get(nodeFrom) != null && nodes().get(nodeTo) != null) {
+					if (nodes().get(from.b) != null && nodes().get(to.b) != null) {
 						if (forward) {
 							String id = LinkConversionRules.getId(way, increment, false);
 							String origId = LinkConversionRules.getOrigId(way, id, false);
-							MLink l = new MLink(nodes.get(nodeFrom), nodes.get(nodeTo));
-							l.setLength(segmentLength);
+							MLink l = new MLink(nodes.get(from.b), nodes.get(to.b));
+							l.setLength(wayPartLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
@@ -360,8 +360,8 @@ public class NetworkModel {
 						if (backward) {
 							String id = LinkConversionRules.getId(way, increment, true);
 							String origId = LinkConversionRules.getOrigId(way, id, true);
-							MLink l = new MLink(nodes.get(nodeTo), nodes.get(nodeFrom));
-							l.setLength(segmentLength);
+							MLink l = new MLink(nodes.get(to.b), nodes.get(from.b));
+							l.setLength(wayPartLength);
 							l.setFreespeed(freespeed);
 							l.setCapacity(capacity);
 							l.setNumberOfLanes(nofLanesPerDirection);
