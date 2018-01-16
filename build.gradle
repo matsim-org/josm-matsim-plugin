@@ -54,7 +54,7 @@ gitVersion.waitFor()
 version = gitVersion.in.text.trim()
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 13170
+    josmCompileVersion = 13332
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
