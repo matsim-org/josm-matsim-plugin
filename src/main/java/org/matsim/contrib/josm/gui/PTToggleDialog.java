@@ -207,6 +207,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			});
 		} else {
 			Platform.runLater(() -> {
+				ObservableList<Route> routeList = FXCollections.observableArrayList();
+				selectedRoutes = new FilteredList<>(routeList);
 				table_pt.setItems(FXCollections.emptyObservableList());
 				title.bind(Bindings.createStringBinding(() -> "Lines/Routes"));
 			});
