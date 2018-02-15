@@ -1,8 +1,11 @@
 package org.matsim.contrib.josm;
 
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
+import org.openstreetmap.josm.data.Bounds;
+import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
@@ -14,11 +17,16 @@ import org.openstreetmap.josm.gui.NavigatableComponent;
 import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy;
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.OnLineStrategy;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.matsim.contrib.josm.MapRenderer.Properties.FONT;
 
 /**
  * The MATSim MapRenderer. Draws ways that correspond to existing MATSim link(s)
@@ -30,6 +38,7 @@ import java.util.Map;
 public class MapRenderer extends StyledMapRenderer {
 
     public final static Properties PROPERTIES = new Properties();
+    private final BufferedImage image;
 
     /**
      * Creates a new MapRenderer. Initialized by
@@ -40,6 +49,12 @@ public class MapRenderer extends StyledMapRenderer {
      */
     public MapRenderer(Graphics2D arg0, NavigatableComponent arg1, boolean arg2) {
         super(arg0, arg1, arg2);
+        try{
+            InputStream is = getClass().getResourceAsStream("matsim-scenario.png");
+            image = ImageProvider.createScaledImage(ImageProvider.read(is, true, true), 150, 42, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -50,6 +65,15 @@ public class MapRenderer extends StyledMapRenderer {
     public static void setWay2Links(Map<Way, List<MLink>> way2LinksTmp) {
         way2Links = way2LinksTmp;
         MainApplication.getMap().repaint();
+    }
+
+
+    @Override
+    public void render(DataSet data, boolean renderVirtualNodes, Bounds bounds) {
+        super.render(data, renderVirtualNodes, bounds);
+        if(MainApplication.getLayerManager().getEditLayer() instanceof MATSimLayer) {
+            this.g.drawImage(image, (int) (this.mapState.getViewWidth() - 160), 10, null);
+        }
     }
 
     /**
@@ -72,7 +96,7 @@ public class MapRenderer extends StyledMapRenderer {
         if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
             if (!way.isSelected()) {
                 if (Properties.SHOW_IDS.get()) { // draw id on path
-                    TextLabel label = new MATSimTextLabel(PROPERTIES, Properties.FONT, Properties.MATSIMCOLOR, 0.f, new Color(0, 145, 190));
+                    TextLabel label = new MATSimTextLabel(PROPERTIES, FONT, Properties.MATSIMCOLOR, 0.f, new Color(0, 145, 190));
                     drawText(way, label, new OnLineStrategy(textOffset(way)));
                 }
                 if (way.hasTag("modes", TransportMode.pt)) { // draw
@@ -95,7 +119,7 @@ public class MapRenderer extends StyledMapRenderer {
             } else {
                 if (Properties.SHOW_IDS.get()) { // draw ids on selected ways
                     // also
-                    TextLabel label = new MATSimTextLabel(PROPERTIES, PROPERTIES.FONT, selectedColor, 0.f, selectedColor);
+                    TextLabel label = new MATSimTextLabel(PROPERTIES, FONT, selectedColor, 0.f, selectedColor);
                     drawText(way, label, new OnLineStrategy(textOffset(way)));
                 }
             }
