@@ -1,5 +1,5 @@
 plugins {
-    id 'org.openstreetmap.josm' version '0.2.2'
+    id 'org.openstreetmap.josm' version '0.3.4'
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -36,16 +36,6 @@ dependencies {
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation ('org.openstreetmap.josm:josm-unittest:') {changing = true}
-}
-
-
-// I (michaz) seem to need this when debugging from IntelliJ.
-// With the default setting (build/resources/main),
-// resources are not found on the classpath.
-sourceSets {
-    main {
-        output.resourcesDir = "build/classes/java/main"
-    }
 }
 
 sourceCompatibility = 1.8
