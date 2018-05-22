@@ -1,5 +1,5 @@
 plugins {
-    id 'org.openstreetmap.josm' version '0.3.4'
+    id 'org.openstreetmap.josm' version '0.4.4'
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -44,15 +44,16 @@ gitVersion.waitFor()
 version = gitVersion.in.text.trim()
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 13332
+    josmCompileVersion = 13814
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
         iconPath = "images/dialogs/matsim-scenario.png"
-        minJosmVersion = 12881
+        minJosmVersion = 13810
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
         pluginDependencies << 'jts' << 'apache-commons' << 'apache-http'
         website = new URL("http://www.matsim.org")
+        oldVersionDownloadLink 12881, 'v0.8.8', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.8.8/matsim.jar')
         oldVersionDownloadLink 12450, 'v0.7.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.9/matsim.jar')
         oldVersionDownloadLink 10340, 'v0.7.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar')
         oldVersionDownloadLink  9278, 'v0.5.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar')

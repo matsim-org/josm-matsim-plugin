@@ -6,6 +6,8 @@ import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.data.Bounds;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.IPrimitive;
+import org.openstreetmap.josm.data.osm.OsmData;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
@@ -69,7 +71,7 @@ public class MapRenderer extends StyledMapRenderer {
 
 
     @Override
-    public void render(DataSet data, boolean renderVirtualNodes, Bounds bounds) {
+    public void render(OsmData<?, ?, ?, ?> data, boolean renderVirtualNodes, Bounds bounds) {
         super.render(data, renderVirtualNodes, bounds);
         if(MainApplication.getLayerManager().getEditLayer() instanceof MATSimLayer) {
             this.g.drawImage(image, (int) (this.mapState.getViewWidth() - 160), 10, null);
@@ -173,7 +175,7 @@ public class MapRenderer extends StyledMapRenderer {
          * represented.
          */
         @Override
-        public String compose(OsmPrimitive prim) {
+        public String compose(IPrimitive prim) {
             StringBuilder sB = new StringBuilder();
             if (way2Links.containsKey(prim)) {
                 for (MLink link : way2Links.get(prim)) {
