@@ -1,0 +1,175 @@
+# Translations for the JOSM plugin 'matsim' (de)
+# Copyright (C) 2018 
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim v0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 10:15+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: German (https://www.transifex.com/josm/teams/2544/de/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Click to download the currently selected area"
+msgstr "Klicken Sie, um die derzeitig ausgewählten Bereiche herunterzuladen"
+
+msgid "Configure the MATSim plugin."
+msgstr "Das MATSim-Plugin einrichten"
+
+msgid "Contacting OSM Server..."
+msgstr "Verbindung zum OSM-Server…"
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "OSM-Ebene zu MATSim Netzwerk-Ebene konvertieren"
+
+msgid "Convert to MATSim Layer"
+msgstr "Zu MATSim-Ebene konvertieren"
+
+msgid "Convert to MATSim Network"
+msgstr "Zu MATSim-Netzwerk konvertieren"
+
+msgid "Converter"
+msgstr "Konverter"
+
+msgid "Create new Network"
+msgstr "Neues Netzwerk erzeugen"
+
+msgid "CreateStopAreas"
+msgstr "ErzeugeHaltestellenBereiche"
+
+msgid "Defaults"
+msgstr "Standardwerte"
+
+msgid "Download"
+msgstr "Daten herunterladen"
+
+msgid "Download VBB."
+msgstr "VBB herunterladen."
+
+msgid "Download VBB..."
+msgstr "VBB herunterladen…"
+
+msgid "Download data from Overpass API, filtered by relevance for MATSim."
+msgstr ""
+"Daten von Overpass API herunterladen, nach Relevanz für MATSim gefiltert."
+
+msgid "Download from Overpass API..."
+msgstr "Von der Overpass API herunterladen…"
+
+msgid "Export MATSim transit schedule..."
+msgstr "Den MATSim Transit-Ablaufplan exportieren…"
+
+msgid "Export the transit schedule."
+msgstr "Den Transit-Ablaufplan exportieren."
+
+msgid "Export transit schedule"
+msgstr "Transit-Ablaufplan exportieren"
+
+msgid "Fix transit schedule validation errors"
+msgstr "Fehler in den Prüfergebnissen für Transit-Ablaufpläne beheben"
+
+msgid "General"
+msgstr "Allgemein"
+
+msgid "Import"
+msgstr "Importieren"
+
+msgid "Import MATSim scenario"
+msgstr "MATSim-Szenario importieren"
+
+msgid "IncompleteRoutesTest"
+msgstr "UnvollständigeRoutenTest"
+
+msgid "IncompleterRoutesTest"
+msgstr "UnvollständigeRoutenTest"
+
+msgid "Information"
+msgstr "Information"
+
+#, java-format
+msgid "Lines: {0} / Routes: {1}"
+msgstr "Linien: {0} / Routen: {1}"
+
+msgid "Links/Nodes"
+msgstr "Kanten/Knoten"
+
+#, java-format
+msgid "Links: {0} / Nodes: {1}"
+msgstr "Kanten: {0} / Knoten: {1}"
+
+msgid "MASim preferences"
+msgstr "MATSim-Einstellungen"
+
+msgid "MATSim"
+msgstr "MATSim"
+
+msgid "MATSim Import"
+msgstr "MATSim-Import"
+
+msgid "MATSimValidation"
+msgstr "MATSimValidierung"
+
+msgid "MasterRoutesTest"
+msgstr "MasterRoutenTest"
+
+#, java-format
+msgid "Menu: {0}"
+msgstr "Menü: {0}"
+
+msgid "Network Attributes"
+msgstr "Netzwerk-Attribute"
+
+msgid "New MATSim Network"
+msgstr "Neues MATSim-Netzwerk"
+
+msgid "New MATSim network"
+msgstr "Neues MATSim-Netzwerk"
+
+msgid "No MATSim layer active"
+msgstr "Keine MATSim-Ebene ist aktiv"
+
+msgid "Nothing to export. Get some data first."
+msgstr "Nichts zu exportieren. Es sind keine Daten vorhanden."
+
+msgid "OSM Repair"
+msgstr "OSM Reparatur"
+
+msgid "Save MATSim network file"
+msgstr "MATSim Netzwerk-Datei speichern"
+
+msgid "Select to download "
+msgstr "Zum Herunterladen auswählen"
+
+msgid "Simulate"
+msgstr "Simulieren"
+
+msgid "UpdateStopTags"
+msgstr "AktualisiereStopTags"
+
+msgid "Validates MATSim-related network data"
+msgstr "Validiert Netzwerkdaten, die mit MATSim zusammenhängen"
+
+msgid "Validates MATSim-related transit schedule data"
+msgstr ""
+"Überprüft Daten für Transit-Ablaufpläne, die mit MATSim zusammenhängen"
+
+msgid "Visualization"
+msgstr "Visualisierung"
+
+msgid "edit network attributes"
+msgstr "Netzwerk-Attribute bearbeiten"
+
+#. Plugin description for josm-matsim-plugin
+msgid ""
+"Allows to edit and extract network information for the traffic simulation "
+"MATSim"
+msgstr ""
+"Ermöglicht das Bearebeiten und Extrahieren von Netzwerkinformationen für die"
+" MATSim-Verkehrssimulation"
