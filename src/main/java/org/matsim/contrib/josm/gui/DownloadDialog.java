@@ -49,7 +49,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 		highwaysPnl.add(new JLabel("Highways:"));
 		for (String highwayType : OsmConvertDefaults.highwayTypes) {
 			JCheckBox cb = new JCheckBox(highwayType);
-			cb.setToolTipText(tr("Select to download " + cb.getText() + " highways in the selected download area."));
+			cb.setToolTipText(tr("Select to download {0} highways in the selected download area.", cb.getText()));
 			cb.setSelected(Config.getPref().getBoolean("matsim_download_" + cb.getText(), true));
 			cb.addActionListener(cbListener);
 			highwaysPnl.add(cb, GBC.std());
@@ -60,7 +60,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 		routesPnl.add(new JLabel("Routes:"));
 		for (String routeType : OsmConvertDefaults.routeTypes) {
 			JCheckBox cb = new JCheckBox(routeType);
-			cb.setToolTipText(tr("Select to download " + cb.getText() + " routes in the selected download area."));
+			cb.setToolTipText(tr("Select to download {0} routes in the selected download area.", cb.getText()));
 			cb.setSelected(Config.getPref().getBoolean("matsim_download_" + cb.getText(), true));
 			cb.addActionListener(cbListener);
 			routesPnl.add(cb, GBC.std());

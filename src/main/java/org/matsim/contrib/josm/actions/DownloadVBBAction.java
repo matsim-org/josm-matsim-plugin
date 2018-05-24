@@ -23,7 +23,7 @@ public class DownloadVBBAction extends JosmAction {
 	 * Constructs a new {@code DownloadAction}.
 	 */
 	public DownloadVBBAction() {
-		super(tr("Download VBB..."), null, tr("Download VBB."), null, true);
+		super(tr("Download VBB…"), null, null, null, true);
 	}
 
 	@Override

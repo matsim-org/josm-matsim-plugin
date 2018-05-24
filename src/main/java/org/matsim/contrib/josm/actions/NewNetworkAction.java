@@ -24,7 +24,7 @@ public class NewNetworkAction extends JosmAction {
 
 	public NewNetworkAction() {
 		super(tr("New MATSim network"), "new.png", tr("Create new Network"), Shortcut.registerShortcut("menu:matsimNetwork",
-				tr("Menu: {0}", tr("New MATSim Network")), KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
+				tr("Menu: {0}", tr("New MATSim network")), KeyEvent.VK_G, Shortcut.ALT_CTRL), true);
 	}
 
 	@Override

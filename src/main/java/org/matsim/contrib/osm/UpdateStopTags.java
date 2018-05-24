@@ -43,7 +43,7 @@ public class UpdateStopTags extends Test {
 	 * /** Creates a new {@code MATSimTest}.
 	 */
 	public UpdateStopTags() {
-		super(tr("UpdateStopTags"), tr("UpdateStopTags"));
+		super(tr("Update tags for public transport stops"), UpdateStopTags.class.getSimpleName());
 	}
 
 	@Override
@@ -147,7 +147,7 @@ public class UpdateStopTags extends Test {
 		if (!isFixable(testError)) {
 			return null;
 		}
-		if (testError.getCode() == 3033) {
+		if (testError.getCode() == UPDATETAG) {
 			List<Command> commands = new ArrayList<>();
 			for (OsmPrimitive prim: testError.getPrimitives()) {
 				commands.add(new ChangePropertyCommand(prim, proposals.get(prim).newTag.getKey(), proposals.get(prim).newTag.getValue()));

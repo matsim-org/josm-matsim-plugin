@@ -45,7 +45,7 @@ public class CreateStopAreas extends Test {
 	 * /** Creates a new {@code MATSimTest}.
 	 */
 	public CreateStopAreas() {
-		super(tr("CreateStopAreas"), tr("CreateStopAreas"));
+		super(tr("Create areas for public transport stops"), CreateStopAreas.class.getSimpleName());
 	}
 
 	@Override
@@ -171,7 +171,7 @@ public class CreateStopAreas extends Test {
 			return null;
 		}
 		List<Command> commands = new ArrayList<>();
-		if (testError.getCode() == 3009) {
+		if (testError.getCode() == MISSING_STOP_AREA) {
 
 
 			Relation stopArea = new Relation();
