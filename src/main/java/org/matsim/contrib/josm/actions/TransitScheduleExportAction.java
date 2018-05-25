@@ -28,14 +28,14 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 public class TransitScheduleExportAction extends DiskAccessAction implements PreferenceChangedListener {
 
 	public TransitScheduleExportAction() {
-		super(tr("Export MATSim transit schedule..."), null, tr("Export the transit schedule."), null);
+		super(tr("Export MATSim transit schedule…"), null, null, null);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (isEnabled()) {
-			File file = createAndOpenSaveFileChooser(tr("Export transit schedule"), new ExtensionFileFilter("xml", "xml",
-					"MATSim Transit Schedule Files (*.xml)"));
+			File file = createAndOpenSaveFileChooser(tr("Export MATSim transit schedule…"), new ExtensionFileFilter("xml", "xml",
+					tr("MATSim Transit Schedule Files") +" (*.xml)"));
 			if (file != null) {
 
 				TransitScheduleTest test = new TransitScheduleTest();
@@ -52,8 +52,8 @@ public class TransitScheduleExportAction extends DiskAccessAction implements Pre
 
 				for (TestError error : test.getErrors()) {
 					if (error.getSeverity().equals(Severity.ERROR)) {
-						JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
-								"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
+						JOptionPane.showMessageDialog(Main.parent, tr("Export failed due to validation errors. See validation layer for details."),
+								tr("Failure"), JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 						okToExport = false; // abort export when errors occur
 						break;
 					}
@@ -63,7 +63,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements Pre
 					// warnings occur
 					for (TestError error : test.getErrors()) {
 						if (error.getSeverity().equals(Severity.WARNING)) {
-							int proceed = JOptionPane.showConfirmDialog(Main.parent, "Validaton resulted in warnings.\n Proceed?", "Warning",
+							int proceed = JOptionPane.showConfirmDialog(Main.parent, tr("Validaton resulted in warnings.\n Proceed?"), tr("Warning"),
 									JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 							if (proceed == JOptionPane.NO_OPTION) {
 								okToExport = false;

@@ -104,7 +104,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 			table_pt.setRowFactory(v -> {
 				TableRow<Route> row = new TableRow<>();
 				final ContextMenu rowMenu = new ContextMenu();
-				MenuItem downloadItem = new MenuItem("Download members and stop areas");
+				MenuItem downloadItem = new MenuItem(tr("Download members and stop areas"));
 				downloadItem.setOnAction(event -> {
 					Collection<Relation> relations = new ArrayList<>();
 					relations.add(row.getItem().getRelation());

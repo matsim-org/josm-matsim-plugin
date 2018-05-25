@@ -172,7 +172,7 @@ public class NetworkTest extends Test {
 				}
 
 				// create error with message
-				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
+				String msg = tr("Duplicated Id {0} not allowed.", entry.getKey());
 				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_LINK_ID).message(msg)
 						.primitives(entry.getValue()).highlightWaySegments(segments).build();
 				errors.add(error);
@@ -183,7 +183,7 @@ public class NetworkTest extends Test {
 		for (Entry<String, ArrayList<Node>> entry : nodeIds.entrySet()) {
 			if (entry.getValue().size() > 1) {
 				// create warning with message
-				String msg = "Duplicated Id " + (entry.getKey() + " not allowed.");
+				String msg = tr("Duplicated Id {0} not allowed.", entry.getKey());
 				TestError error = TestError.builder(this, Severity.ERROR, DUPLICATE_NODE_ID).message(msg)
 						.primitives(entry.getValue()).highlight(entry.getValue()).build();
 				errors.add(error);

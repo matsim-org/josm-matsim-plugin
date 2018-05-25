@@ -58,6 +58,9 @@ josm {
         oldVersionDownloadLink 10340, 'v0.7.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.7.5/matsim.jar')
         oldVersionDownloadLink  9278, 'v0.5.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar')
     }
+    i18n {
+      pathTransformer = getGithubPathTransformer("matsim-org/josm-matsim-plugin")
+    }
 }
 
 jar {

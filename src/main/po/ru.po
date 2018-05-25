@@ -1,0 +1,103 @@
+# Translations for the JOSM plugin 'matsim' (ru)
+# Copyright (C) 2018 
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim v0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-23 10:15+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: Russian (https://www.transifex.com/josm/teams/2544/ru/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+msgid "Click to download the currently selected area"
+msgstr "Щёлкните, чтобы скачать текущую выделенную область"
+
+msgid "Configure the MATSim plugin."
+msgstr "Настроить модуль MATSim."
+
+msgid "Contacting OSM Server..."
+msgstr "Соединение с сервером OSM..."
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "Преобразовать слой OSM в слой сети MATSim"
+
+msgid "Convert to MATSim Layer"
+msgstr "Преобразовать в слой MATSim"
+
+msgid "Convert to MATSim Network"
+msgstr "Преобразовать в сеть MATSim"
+
+msgid "Converter"
+msgstr "Конвертер"
+
+msgid "Create new Network"
+msgstr "Создать новую сеть"
+
+msgid "Download from Overpass API..."
+msgstr "Скачать с Overpass API..."
+
+msgid "Import"
+msgstr "Импортировать"
+
+msgid "Import MATSim scenario"
+msgstr "Импортировать сценарий MATSim"
+
+msgid "Information"
+msgstr "Информация"
+
+#, java-format
+msgid "Lines: {0} / Routes: {1}"
+msgstr "Линий: {0} / маршрутов: {1}"
+
+msgid "MASim preferences"
+msgstr "Настройки MASim"
+
+msgid "MATSim"
+msgstr "MATSim"
+
+#, java-format
+msgid "Menu: {0}"
+msgstr "Меню: {0}"
+
+msgid "Network Attributes"
+msgstr "Атрибуты сети"
+
+msgid "New MATSim Network"
+msgstr "Новая сеть MATSim"
+
+msgid "New MATSim network"
+msgstr "Новая сеть MATSim"
+
+msgid "No MATSim layer active"
+msgstr "Нет активного слоя MATSim"
+
+msgid "Nothing to export. Get some data first."
+msgstr "Нечего экспортировать. Сначала получите какие-нибудь данные."
+
+msgid "Save MATSim network file"
+msgstr "Сохранить файл сети MATSim"
+
+msgid "Simulate"
+msgstr "Симуляция"
+
+msgid "Visualization"
+msgstr "Визуализация"
+
+msgid "edit network attributes"
+msgstr "изменить атрибуты сети"
+
+#. Plugin description for josm-matsim-plugin
+msgid ""
+"Allows to edit and extract network information for the traffic simulation "
+"MATSim"
+msgstr ""
+"Позволяет редактировать и извлекать информацию о транспортной сети для "
+"транспортного симулятора MATSim"

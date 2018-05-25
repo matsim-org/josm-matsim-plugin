@@ -24,26 +24,26 @@ import static org.openstreetmap.josm.tools.I18n.tr;
 public final class Preferences extends DefaultTabPreferenceSetting {
 
 	//General
-	private final JLabel exportNetworkVersionLabel = new JLabel("Exported network xml version");
+	private final JLabel exportNetworkVersionLabel = new JLabel(tr("Exported network xml version"));
 	private final String[] networkVersionOptions = {"v2", "v1"};
 	private final JComboBox<String> exportNetworkVersionCB = new JComboBox<>(networkVersionOptions);
 
 	//Visualization
-	private final JCheckBox renderMatsim = new JCheckBox("Activate MATSim Renderer");
-	private final JCheckBox showIds = new JCheckBox("Show link-Ids");
+	private final JCheckBox renderMatsim = new JCheckBox(tr("Activate MATSim Renderer"));
+	private final JCheckBox showIds = new JCheckBox(tr("Show link-Ids"));
 	private final JSlider wayOffset = new JSlider(0, 100);
-	private final JLabel wayOffsetLabel = new JLabel("Link offset for overlapping links");
-	private final JCheckBox showInternalIds = new JCheckBox("Show internal Ids in table");
+	private final JLabel wayOffsetLabel = new JLabel(tr("Link offset for overlapping links"));
+	private final JCheckBox showInternalIds = new JCheckBox(tr("Show internal Ids in table"));
 
 	//Converter
-	private final JCheckBox transitFeature = new JCheckBox("Transit support [alpha]");
-	private final JCheckBox transitLite = new JCheckBox("Transit routes lite");
-	private final JCheckBox cleanNetwork = new JCheckBox("Clean Network");
-	private final JCheckBox keepPaths = new JCheckBox("Keep Paths");
-	private final JButton convertingDefaults = new JButton("Set converting defaults");
-	private final JCheckBox includeRoadType = new JCheckBox("Include road type in output");
-	private final JCheckBox filterActive = new JCheckBox("Activate hierarchy filter");
-	private final JLabel hierarchyLabel = new JLabel("Only convert hierarchies up to: ");
+	private final JCheckBox transitFeature = new JCheckBox(tr("Transit support [alpha]"));
+	private final JCheckBox transitLite = new JCheckBox(tr("Transit routes lite"));
+	private final JCheckBox cleanNetwork = new JCheckBox(tr("Clean Network"));
+	private final JCheckBox keepPaths = new JCheckBox(tr("Keep Paths"));
+	private final JButton convertingDefaults = new JButton(tr("Set conversion defaults"));
+	private final JCheckBox includeRoadType = new JCheckBox(tr("Include road type in output"));
+	private final JCheckBox filterActive = new JCheckBox(tr("Activate hierarchy filter"));
+	private final JLabel hierarchyLabel = new JLabel(tr("Only convert hierarchies up to: "));
 	private final JTextField hierarchyLayer = new JTextField();
 
 

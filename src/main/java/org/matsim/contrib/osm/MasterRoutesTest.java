@@ -49,13 +49,9 @@ public class MasterRoutesTest extends Test {
 	 * /** Creates a new {@code MATSimTest}.
 	 */
 	public MasterRoutesTest() {
-		super(tr("MasterRoutesTest"), tr("MasterRoutesTest"));
+		super(tr("Test for master routes"), MasterRoutesTest.class.getSimpleName());
 	}
 
-	/**
-	 * Starts the test. Initializes the mappings of {@link #nodeIds} and
-	 * {@link #linkIds}.
-	 */
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		this.routes = new HashMap<>();
@@ -104,7 +100,7 @@ public class MasterRoutesTest extends Test {
 	public void endTest() {
 
 		for(Entry<String, ArrayList<Relation>> entry: routes.entrySet()) {
-			String msg = ("Route(s) "+entry.getKey()+"  with no Route Master");
+			String msg = tr("Route {0} with no Route Master", entry.getKey());
 			TestError error = TestError.builder(this, Severity.WARNING,  ROUTE_NO_MASTER).message(msg).primitives(entry.getValue()).build();
 			errors.add(error);
 		}
@@ -122,7 +118,7 @@ public class MasterRoutesTest extends Test {
 			return null;
 		}
 		List<Command> commands = new ArrayList<Command>();
-		if (testError.getCode() == 3009) {
+		if (testError.getCode() == ROUTE_NO_MASTER) {
 
 
 			Relation master = new Relation();

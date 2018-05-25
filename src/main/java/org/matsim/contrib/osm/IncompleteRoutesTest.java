@@ -30,13 +30,9 @@ public class IncompleteRoutesTest extends Test{
 	 * /** Creates a new {@code MATSimTest}.
 	 */
 	public IncompleteRoutesTest() {
-		super(tr("IncompleteRoutesTest"), tr("IncompleterRoutesTest"));
+		super(tr("Test for incomplete routes"), IncompleteRoutesTest.class.getSimpleName());
 	}
 
-	/**
-	 * Starts the test. Initializes the mappings of {@link #nodeIds} and
-	 * {@link #linkIds}.
-	 */
 	@Override
 	public void startTest(ProgressMonitor monitor) {
 		this.incompleteRoutes = new ArrayList<>();
@@ -61,7 +57,7 @@ public class IncompleteRoutesTest extends Test{
 	public void endTest() {
 
 		for(Relation relation: incompleteRoutes) {
-			String msg = ("Incomplete route "+relation.get("ref")+" - Auto repair to download missing elements (cannot be undone)");
+			String msg = tr("Incomplete route {0} - Auto repair to download missing elements (cannot be undone)", relation.get("ref"));
 			TestError error = TestError.builder(this, Severity.WARNING,  ROUTE_INCOMPLETE).message(msg).primitives(relation).build();
 			errors.add(error);
 		}
@@ -78,7 +74,7 @@ public class IncompleteRoutesTest extends Test{
 		if (!isFixable(testError)) {
 			return null;
 		}
-		if (testError.getCode() == 3010) {
+		if (testError.getCode() == ROUTE_INCOMPLETE) {
 			for(OsmPrimitive primitive: testError.getPrimitives()) {
 				MainApplication.worker.submit(new DownloadRelationMemberTask((Relation) primitive, ((Relation) primitive).getIncompleteMembers(), MainApplication.getLayerManager().getEditLayer()));
 			}
