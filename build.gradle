@@ -12,6 +12,9 @@ repositories {
         url 'http://dl.bintray.com/matsim/matsim'
     }
     maven {
+        url 'http://download.osgeo.org/webdav/geotools'
+    }
+    maven {
         url 'https://oss.jfrog.org/artifactory/libs-snapshot'
     }
     maven {
@@ -21,7 +24,7 @@ repositories {
 
 // Use the `packIntoJar` configuration from gradle-josm-plugin for our external dependency (MATSim), whose classes get zipped into our jar.
 configurations {
-    packIntoJar.exclude(group: 'org.geotools')
+    //packIntoJar.exclude(group: 'org.geotools')
     packIntoJar.exclude(group: 'kml')
     packIntoJar.exclude(group: 'org.jfree')
     packIntoJar.exclude(group: 'commons-logging')

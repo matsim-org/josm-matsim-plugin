@@ -70,14 +70,17 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		jMenu2.add(new ImportAction());
 		jMenu2.add(new NewNetworkAction());
 		jMenu2.add(new ConvertAction());
-		jMenu2.add(new DownloadAction());
-		jMenu2.add(new DownloadVBBAction());
-		jMenu2.add(new JSeparator());
-		jMenu2.add(new RepairAction(tr("Validate TransitSchedule"), new TransitScheduleTest()));
-		TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
-		Config.getPref().addPreferenceChangeListener(transitScheduleExportAction);
-		jMenu2.add(transitScheduleExportAction);
-		jMenu2.add(new OTFVisAction());
+        jMenu2.add(new ShapeExporter());
+        jMenu2.add(new JSeparator());
+        jMenu2.add(new DownloadAction());
+        jMenu2.add(new DownloadVBBAction());
+        jMenu2.add(new JSeparator());
+        jMenu2.add(new RepairAction(tr("Validate TransitSchedule"), new TransitScheduleTest()));
+        TransitScheduleExportAction transitScheduleExportAction = new TransitScheduleExportAction();
+        Config.getPref().addPreferenceChangeListener(transitScheduleExportAction);
+        jMenu2.add(transitScheduleExportAction);
+        jMenu2.add(new JSeparator());
+        jMenu2.add(new OTFVisAction());
 
 		// read tagging preset
 		Reader reader = new InputStreamReader(getClass().getResourceAsStream("matsimPreset.xml"));
@@ -133,6 +136,7 @@ public class MATSimPlugin extends Plugin implements PreferenceChangedListener {
 		Config.getPref().putList(ValidatorPrefHelper.PREF_SKIP_TESTS_BEFORE_UPLOAD, matsimTests);
 	}
 
+	@Override
 	public void addDownloadSelection(List<DownloadSelection> list) {
 
 	}
