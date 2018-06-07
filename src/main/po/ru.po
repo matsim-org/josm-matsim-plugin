@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.0\n"
+"Project-Id-Version: josm-plugin_matsim v0.9.0-4-ge4ee56c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-23 10:15+0000\n"
+"POT-Creation-Date: 2018-05-25 11:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language-Team: Russian (https://www.transifex.com/josm/teams/2544/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -16,6 +16,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+msgid "Check for Incomplete Routes"
+msgstr "Проверить на неполные маршруты"
+
+msgid "Clean Network"
+msgstr "Очистить сеть"
 
 msgid "Click to download the currently selected area"
 msgstr "Щёлкните, чтобы скачать текущую выделенную область"
@@ -70,9 +76,6 @@ msgstr "Меню: {0}"
 msgid "Network Attributes"
 msgstr "Атрибуты сети"
 
-msgid "New MATSim Network"
-msgstr "Новая сеть MATSim"
-
 msgid "New MATSim network"
 msgstr "Новая сеть MATSim"
 
@@ -90,6 +93,9 @@ msgstr "Симуляция"
 
 msgid "Visualization"
 msgstr "Визуализация"
+
+msgid "Warning"
+msgstr "Предупреждение"
 
 msgid "edit network attributes"
 msgstr "изменить атрибуты сети"

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.0\n"
+"Project-Id-Version: josm-plugin_matsim v0.9.0-4-ge4ee56c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-23 10:15+0000\n"
+"POT-Creation-Date: 2018-05-25 11:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language-Team: Italian (https://www.transifex.com/josm/teams/2544/it/)\n"
 "MIME-Version: 1.0\n"
@@ -41,20 +41,11 @@ msgstr "Convertitore"
 msgid "Create new Network"
 msgstr "Crea una nuova rete"
 
-msgid "CreateStopAreas"
-msgstr "CreaAreeStop"
-
 msgid "Defaults"
 msgstr "Predefiniti"
 
 msgid "Download"
 msgstr "Scarica"
-
-msgid "Download VBB."
-msgstr "Scarica VBB."
-
-msgid "Download VBB..."
-msgstr "Scarica VBB..."
 
 msgid "Download data from Overpass API, filtered by relevance for MATSim."
 msgstr ""
@@ -62,15 +53,6 @@ msgstr ""
 
 msgid "Download from Overpass API..."
 msgstr "Scarica da Overpass API..."
-
-msgid "Export MATSim transit schedule..."
-msgstr "Esporta gli orari di transito di MATSim..."
-
-msgid "Export the transit schedule."
-msgstr "Esporta gli orari di transito."
-
-msgid "Export transit schedule"
-msgstr "Esporta gli orari di transito"
 
 msgid "Fix transit schedule validation errors"
 msgstr "Correggi gli errori di validazioni degli orari di transito"
@@ -83,12 +65,6 @@ msgstr "Importa"
 
 msgid "Import MATSim scenario"
 msgstr "Importa lo scenario di MATSim"
-
-msgid "IncompleteRoutesTest"
-msgstr "TestItinerariIncompleti"
-
-msgid "IncompleterRoutesTest"
-msgstr "TestItinerariIncompleti"
 
 msgid "Information"
 msgstr "Informazioni"
@@ -116,18 +92,12 @@ msgstr "Importa da MATSim"
 msgid "MATSimValidation"
 msgstr "ValidazioneMATSim"
 
-msgid "MasterRoutesTest"
-msgstr "TestItinerarioPrincipale"
-
 #, java-format
 msgid "Menu: {0}"
 msgstr "Menu: {0}"
 
 msgid "Network Attributes"
 msgstr "Attributi della rete"
-
-msgid "New MATSim Network"
-msgstr "Nuova rete di MATSim"
 
 msgid "New MATSim network"
 msgstr "Nuova rete di MATSim"
@@ -144,14 +114,8 @@ msgstr "Ripara OSM"
 msgid "Save MATSim network file"
 msgstr "Salva il file della rete di MATSim"
 
-msgid "Select to download "
-msgstr "Seleziona per scaricare"
-
 msgid "Simulate"
 msgstr "Simula"
-
-msgid "UpdateStopTags"
-msgstr "AggiornaEtichetteStop"
 
 msgid "Validates MATSim-related network data"
 msgstr "Convalida i dati della rete relativi a MATSim"
@@ -161,6 +125,9 @@ msgstr "Convalida i dati degli orari di transito relativi a MATSim"
 
 msgid "Visualization"
 msgstr "Visualizzazione"
+
+msgid "Warning"
+msgstr "Attenzione"
 
 msgid "edit network attributes"
 msgstr "modifica gli attributi della rete"

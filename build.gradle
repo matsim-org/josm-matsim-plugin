@@ -1,5 +1,5 @@
 plugins {
-    id 'org.openstreetmap.josm' version '0.4.4'
+    id 'org.openstreetmap.josm' version '0.4.8'
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -37,17 +37,17 @@ dependencies {
     packIntoJar ('org.matsim.contrib:otfvis:0.10.0-SNAPSHOT') {changing = true}
     packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    def junitVersion = "5.2.0"
+    testImplementation ("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testImplementation ("org.junit.vintage:junit-vintage-engine:$junitVersion")
     testImplementation ('org.openstreetmap.josm:josm-unittest:') {changing = true}
 }
 
 sourceCompatibility = 1.8
-def gitVersion = ['git', 'describe', '--always', '--tags', '--dirty'].execute()
-gitVersion.waitFor()
-version = gitVersion.in.text.trim()
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 13814
+    josmCompileVersion = 13878
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
@@ -64,14 +64,6 @@ josm {
     i18n {
       pathTransformer = getGithubPathTransformer("matsim-org/josm-matsim-plugin")
     }
-}
-
-jar {
-    // Exclude these entries of dependencies from the produced *.jar file
-    exclude 'META-INF/DEPENDENCIES'
-    exclude 'META-INF/LICENSE*'
-    exclude 'META-INF/NOTICE*'
-    exclude 'META-INF/maven'
 }
 
 tasks.test.outputs.dir("$buildDir/test-output")
