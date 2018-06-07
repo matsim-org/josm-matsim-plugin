@@ -338,7 +338,7 @@ public class NetworkModel {
 						.collect(Collectors.toList());
 					final double wayPartLength = taggedLength == null
 						? wayPart.getLength()
-						: (way.getLength() <= 0 ? 0 : taggedLength * wayPart.getLength() / way.getLength());
+						: (way.getLength() <= 0 ? taggedLength : taggedLength * wayPart.getLength() / way.getLength());
 
 					// only create link, if both nodes were found, node could be null, since
 					// nodes outside a layer were dropped
