@@ -2,7 +2,9 @@ language: java
 jdk:
   - oraclejdk8
   - oraclejdk9
-script: ./gradlew build minJosmVersionClasses
+script:
+  - ./gradlew build minJosmVersionClasses
+  - ./gradlew compileJava_latestJosm
 
 deploy:
   provider: releases

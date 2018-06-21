@@ -5,11 +5,7 @@ import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.data.Bounds;
-import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.IPrimitive;
-import org.openstreetmap.josm.data.osm.OsmData;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.osm.visitor.paint.MapRendererFactory;
 import org.openstreetmap.josm.data.osm.visitor.paint.StyledMapRenderer;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
@@ -89,10 +85,10 @@ public class MapRenderer extends StyledMapRenderer {
      * @param showOneway      show symbols that indicate the direction of the feature, e.g.
      *                        oneway street or waterway
      * @param onewayReversed  for oneway=-1 and similar
-     * @see #textOffset(Way)
+     * @see #textOffset(IWay)
      */
     @Override
-    public void drawWay(Way way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset, boolean showOrientation,
+    public void drawWay(IWay way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset, boolean showOrientation,
                         boolean showHeadArrowOnly, boolean showOneway, boolean onewayReversed) {
 
         if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
@@ -139,7 +135,7 @@ public class MapRenderer extends StyledMapRenderer {
      * @param way The way which offset is to be calculated
      * @return The text offset for the given <code>way</code>
      */
-    private int textOffset(Way way) {
+    private int textOffset(IWay way) {
         int offset = -15;
 
         if (way.firstNode().getUniqueId() < way.lastNode().getUniqueId()) {
