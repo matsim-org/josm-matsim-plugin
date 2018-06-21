@@ -3,8 +3,8 @@ jdk:
   - oraclejdk8
   - oraclejdk9
 script:
-  - ./gradlew build minJosmVersionClasses
-  - ./gradlew compileJava_latestJosm
+  - ./gradlew build compileJava_minJosm
+  - ./gradlew build compileJava_latestJosm
 
 deploy:
   provider: releases

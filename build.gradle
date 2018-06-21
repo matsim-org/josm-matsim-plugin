@@ -52,7 +52,7 @@ josm {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
         iconPath = "images/dialogs/matsim-scenario.png"
-        minJosmVersion = 13810
+        minJosmVersion = 13922
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
         pluginDependencies << 'jts' << 'apache-commons' << 'apache-http'
         website = new URL("http://www.matsim.org")
