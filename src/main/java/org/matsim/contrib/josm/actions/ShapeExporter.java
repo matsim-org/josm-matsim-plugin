@@ -43,10 +43,8 @@ public final class ShapeExporter extends DiskAccessAction {
                 Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
 
                 Network network = targetScenario.getNetwork();
-
                 CoordinateReferenceSystem crs = MGC.getCRS(Main.getProjection().toCode());
 
-                System.out.println("lol");
                 Collection<SimpleFeature> features = new ArrayList<>();
                 PolylineFeatureFactory linkFactory = new PolylineFeatureFactory.Builder().
                         setCrs(crs).
