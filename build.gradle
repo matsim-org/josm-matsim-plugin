@@ -42,12 +42,14 @@ dependencies {
     testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testImplementation ("org.junit.vintage:junit-vintage-engine:$junitVersion")
     testImplementation ('org.openstreetmap.josm:josm-unittest:') {changing = true}
+    testImplementation ("com.github.tomakehurst:wiremock:2.18.0")
+    testImplementation ("org.awaitility:awaitility:3.1.2")
 }
 
 sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 13922
+    josmCompileVersion = 14053
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
@@ -65,6 +67,12 @@ josm {
     i18n {
       pathTransformer = getPathTransformer("github.com/matsim-org/josm-matsim-plugin/blob")
     }
+}
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs += [
+    "-Xlint:deprecation"
+  ]
 }
 
 tasks.test.outputs.dir("$buildDir/test-output")

@@ -1,0 +1,224 @@
+# Translations for the JOSM plugin 'matsim' (el)
+# Copyright (C) 2018 
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim v0.9.3-1-g5f14357\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-06-26 15:50+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: Greek (https://www.transifex.com/josm/teams/2544/el/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: el\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Visualization
+msgid "Activate MATSim Renderer"
+msgstr "Ενεργοποίηση της Απόδοσης MATSim"
+
+msgid "Activate hierarchy filter"
+msgstr "Ενεργοποίηση του φίλτρου ιεραρχίας"
+
+msgid "Check for Incomplete Routes"
+msgstr "Έλεγχος για ημιτελείς Διαδρομές"
+
+msgid "Click to download the currently selected area"
+msgstr "Κάντε κλικ για λήψη της τρέχουσας επιλεγμένης περιοχής"
+
+msgid "Configure the MATSim plugin."
+msgstr "Ρύθμιση του πρόσθετου MATSim."
+
+msgid "Contacting OSM Server..."
+msgstr "Επικοινωνία με τον διακομιστή OSM"
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "Μετατροπή του επιπέδου Osm στο επίπεδο δικτύου MATSim"
+
+msgid "Convert to MATSim Layer"
+msgstr "Μετατροπή στο επίπεδο MATSim"
+
+msgid "Convert to MATSim Network"
+msgstr "Μετατροπή στο δίκτυο MATSim"
+
+msgid "Converter"
+msgstr "Μετατροπή"
+
+msgid "Create Master Routes"
+msgstr "Δημιουργία Κύριων Διαδρομών"
+
+msgid "Create areas for public transport stops"
+msgstr "Δημιουργία χώρων για στάσεις δημόσιων συγκοινωνιών"
+
+msgid "Create new Network"
+msgstr "Δημιουργία νέου Δικτύου"
+
+msgid "Defaults"
+msgstr "Προεπιλογές"
+
+msgid "Download"
+msgstr "Λήψη"
+
+msgid "Download VBB…"
+msgstr "Λήψη VBB…"
+
+msgid "Download data from Overpass API, filtered by relevance for MATSim."
+msgstr ""
+"Λήψη δεδομένων από το API Overpass, φιλτραρισμένο με σχετικότητα για το "
+"MATSim."
+
+msgid "Download from Overpass API..."
+msgstr "Λήψη από το Overpass API..."
+
+msgid "Download members and stop areas"
+msgstr "Λήψη μελών και χώροι στάσεων"
+
+#. create error with message
+#. create warning with message
+#, java-format
+msgid "Duplicated Id {0} not allowed."
+msgstr "Διπλό αναγνωριστικό {0} δεν επιτρέπεται."
+
+msgid "Export MATSim network to shape file..."
+msgstr "Εξαγωγή δικτύου MATSim σε αρχείο shapefile..."
+
+msgid "Export MATSim network to shape file…"
+msgstr "Εξαγωγή δικτύου MATSim σε αρχείο shapefile..."
+
+msgid "Export MATSim transit schedule…"
+msgstr "Εξαγωγή προγράμματος μεταφοράς MATSim..."
+
+msgid ""
+"Export failed due to validation errors. See validation layer for details."
+msgstr ""
+"Η εξαγωγή απέτυχε λόγω σφαλμάτων επικύρωσης. Δείτε το επίπεδο επικύρωσης για"
+" λεπτομέρειες."
+
+#. General
+msgid "Exported network xml version"
+msgstr "Εξαγόμενη έκδοση δικτύου xml"
+
+msgid "Failure"
+msgstr "Αποτυχία"
+
+msgid "Fix transit schedule validation errors"
+msgstr "Επίλυση σφαλμάτων επικύρωσης προγράμματος μεταφοράς"
+
+msgid "General"
+msgstr "Γενικά"
+
+msgid "Import"
+msgstr "Εισαγωγή"
+
+msgid "Import MATSim scenario"
+msgstr "Εισαγωγή σεναρίου MATSim"
+
+msgid "Include road type in output"
+msgstr "Συμπεριλάβετε τον τύπο δρόμου στην έξοδο"
+
+#, java-format
+msgid ""
+"Incomplete route {0} - Auto repair to download missing elements (cannot be "
+"undone)"
+msgstr ""
+"Ελλιπής διαδρομή {0} - Αυτόματη επιδιόρθωση για λήψη στοιχείων που λείπουν "
+"(δεν μπορούν να ανακληθούν)"
+
+msgid "Information"
+msgstr "Πληροφορίες"
+
+msgid "Keep Paths"
+msgstr "Διατήρηση Διαδρομών"
+
+#, java-format
+msgid "Lines: {0} / Routes: {1}"
+msgstr "Γραμμές: {0} / Διαδρομές: {1}"
+
+msgid "Link offset for overlapping links"
+msgstr "Μετατόπιση συνδέσμου για επικαλυπτόμενες συνδέσεις"
+
+msgid "Links/Nodes"
+msgstr "Σύνδεσμοι/Κόμβοι"
+
+#, java-format
+msgid "Links: {0} / Nodes: {1}"
+msgstr "Σύνδεσμοι: {0} / Κόμβοι: {1}"
+
+msgid "MASim preferences"
+msgstr "Προτιμήσεις MASim"
+
+msgid "MATSim"
+msgstr "MASim"
+
+msgid "MATSim Import"
+msgstr "Εισαγωγή MATSim"
+
+msgid "MATSim Transit Schedule Files"
+msgstr "Αρχεία Προγραμματισμού Μεταφοράς MATSim"
+
+msgid "MATSimValidation"
+msgstr "Επικύρωση MATSim"
+
+#, java-format
+msgid "Menu: {0}"
+msgstr "Μενού: {0}"
+
+msgid "Network Attributes"
+msgstr "Χαρακτηριστικά Δικτύου"
+
+msgid "New MATSim network"
+msgstr "Νέο δίκτυο MATSim"
+
+msgid "No MATSim layer active"
+msgstr "Κανένα ενεργό επίπεδο MATSim"
+
+msgid "Nothing to export. Get some data first."
+msgstr "Τίποτα προς εξαγωγή. Λάβετε κάποια δεδομένα πρώτα."
+
+msgid "OSM Repair"
+msgstr "Επισκευή OSM"
+
+msgid "Only convert hierarchies up to: "
+msgstr "Μετατρέψτε μόνο ιεραρχίες μέχρι:"
+
+#, java-format
+msgid "Route {0} with no Route Master"
+msgstr "Διαδρομή {0} χωρίς Κύρια Διαδρομή"
+
+msgid "Save MATSim network file"
+msgstr "Αποθήκευση του αρχείου δικτύου MATSim"
+
+#, java-format
+msgid "Select to download {0} highways in the selected download area."
+msgstr ""
+"Επιλέξτε για να κάνετε λήψη {0} δρόμους στην επιλεγμένη περιοχή λήψης."
+
+#, java-format
+msgid "Select to download {0} routes in the selected download area."
+msgstr ""
+"Επιλέξτε για να κάνετε λήψη {0} διαδρομών στην επιλεγμένη περιοχή λήψης."
+
+msgid "Shape Files"
+msgstr "Shape Files"
+
+msgid "Simulate"
+msgstr "Προσομοίωση"
+
+msgid "Test for incomplete routes"
+msgstr "Δοκιμή για ημιτελείς διαδρομές"
+
+msgid "Test for master routes"
+msgstr "Δοκιμή για κύριες διαδρομές"
+
+msgid "Visualization"
+msgstr "Οπτικοποίηση"
+
+msgid "Warning"
+msgstr "Προειδοποίηση"
+
+msgid "edit network attributes"
+msgstr "επεξεργασία χαρακτηριστικών δικτύου"
