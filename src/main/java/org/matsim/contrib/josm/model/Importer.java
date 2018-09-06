@@ -115,10 +115,8 @@ public class Importer {
 			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));
 			way.put(LinkConversionRules.PERMLANES, String.valueOf(link.getNumberOfLanes()));
 
-			//if (NetworkUtils.getType(link) != null) {
-			if(link.getAttributes().getAttribute(EmissionUtils.HBEFA_ROAD_TYPE)!= null){
-//					way.put(LinkConversionRules.TYPE, String.valueOf(NetworkUtils.getType(link)));
-				way.put(LinkConversionRules.TYPE, String.valueOf(link.getAttributes().getAttribute(EmissionUtils.HBEFA_ROAD_TYPE)));
+			  if (EmissionUtils.getHbefaRoadType(link)!=null){
+                way.put(LinkConversionRules.TYPE, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
 			}
 
 			StringBuilder modes = new StringBuilder();
