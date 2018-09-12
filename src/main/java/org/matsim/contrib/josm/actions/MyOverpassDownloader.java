@@ -1,5 +1,9 @@
 package org.matsim.contrib.josm.actions;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.io.InputStream;
+
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
 import org.openstreetmap.josm.io.OsmReader;
@@ -7,10 +11,6 @@ import org.openstreetmap.josm.io.OsmServerReader;
 import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.HttpClient;
 import org.openstreetmap.josm.tools.Utils;
-
-import java.io.InputStream;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 public final class MyOverpassDownloader extends OsmServerReader {
 	public static final int TIMEOUT_S = 600;

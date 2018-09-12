@@ -1,13 +1,13 @@
 package org.matsim.contrib.josm.model;
 
 
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.contrib.josm.gui.Preferences;
-import org.openstreetmap.josm.data.osm.Way;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.contrib.josm.gui.Preferences;
+import org.openstreetmap.josm.data.osm.Way;
 
 public class LinkConversionRules {
 

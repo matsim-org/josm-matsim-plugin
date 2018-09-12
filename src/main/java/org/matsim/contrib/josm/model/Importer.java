@@ -1,5 +1,10 @@
 package org.matsim.contrib.josm.model;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -12,16 +17,21 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.api.*;
-import org.openstreetmap.josm.Main;
+import org.matsim.pt.transitSchedule.api.Departure;
+import org.matsim.pt.transitSchedule.api.TransitLine;
+import org.matsim.pt.transitSchedule.api.TransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitRouteStop;
+import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
-import org.openstreetmap.josm.data.osm.*;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 
 public class Importer {
 
@@ -88,7 +98,7 @@ public class Importer {
 	private void convertNetwork() {
 		for (Node node : sourceScenario.getNetwork().getNodes().values()) {
 			EastNorth eastNorth = new EastNorth(node.getCoord().getX(), node.getCoord().getY());
-			LatLon latLon = Main.getProjection().eastNorth2latlon(eastNorth);
+			LatLon latLon = ProjectionRegistry.getProjection().eastNorth2latlon(eastNorth);
 			org.openstreetmap.josm.data.osm.Node nodeOsm = new org.openstreetmap.josm.data.osm.Node(latLon);
 
 			// set id of MATSim node as tag, as actual id of new MATSim node is
@@ -147,7 +157,7 @@ public class Importer {
 	private void convertStops() {
 		for (TransitStopFacility stop : sourceScenario.getTransitSchedule().getFacilities().values()) {
 			EastNorth eastNorth = new EastNorth(stop.getCoord().getX(), stop.getCoord().getY());
-			LatLon latLon = Main.getProjection().eastNorth2latlon(eastNorth);
+			LatLon latLon = ProjectionRegistry.getProjection().eastNorth2latlon(eastNorth);
 			org.openstreetmap.josm.data.osm.Node platform = new org.openstreetmap.josm.data.osm.Node(latLon);
 			platform.put("public_transport", "platform");
 			if (stop.getName() != null) {

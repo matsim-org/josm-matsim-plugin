@@ -1,22 +1,24 @@
 package org.matsim.contrib.josm.actions;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
+
 import org.matsim.contrib.josm.gui.ImportDialog;
 import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.tools.Shortcut;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * The ImportAction that handles network imports.
@@ -37,7 +39,7 @@ public class ImportAction extends JosmAction {
         ImportDialog dialog = new ImportDialog();
         JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 
-        JDialog dlg = pane.createDialog(Main.parent, tr("Import"));
+        JDialog dlg = pane.createDialog(MainApplication.getMainFrame(), tr("Import"));
         dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         dlg.setMinimumSize(new Dimension(400, 600));
         dlg.setVisible(true);
@@ -75,7 +77,7 @@ public class ImportAction extends JosmAction {
                             try {
                                 layer = importer.createMatsimLayer();
                             } catch (Exception e) {
-                                JOptionPane.showMessageDialog(Main.parent, "Error while parsing MATSim network file. Maybe it isn't one?", "Error", 1);
+                                JOptionPane.showMessageDialog(MainApplication.getMainFrame(), "Error while parsing MATSim network file. Maybe it isn't one?", "Error", 1);
                             }
                         }
                     };

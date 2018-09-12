@@ -1,6 +1,16 @@
 package org.matsim.contrib.josm.gui;
 
+import javax.swing.SwingUtilities;
+
+import org.matsim.contrib.josm.model.NetworkModel;
+import org.matsim.contrib.josm.model.StopArea;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.gui.MainApplication;
+import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.layer.MainLayerManager;
+import org.openstreetmap.josm.gui.layer.OsmDataLayer;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
@@ -13,15 +23,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
-import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.model.StopArea;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
-import org.openstreetmap.josm.gui.layer.MainLayerManager;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-
-import javax.swing.*;
 
 public class StopAreasToggleDialog extends ToggleDialog implements MainLayerManager.ActiveLayerChangeListener {
 

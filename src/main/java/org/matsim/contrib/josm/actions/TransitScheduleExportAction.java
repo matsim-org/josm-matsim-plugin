@@ -1,12 +1,19 @@
 // License: GPL. For details, see LICENSE file.
 package org.matsim.contrib.josm.actions;
 
+import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+
+import javax.swing.JOptionPane;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.Export;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.DiskAccessAction;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.validation.OsmValidator;
@@ -17,13 +24,6 @@ import org.openstreetmap.josm.gui.progress.swing.PleaseWaitProgressMonitor;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.spi.preferences.PreferenceChangedListener;
 import org.openstreetmap.josm.tools.ImageProvider;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-
-import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 public class TransitScheduleExportAction extends DiskAccessAction implements PreferenceChangedListener {
 
@@ -52,7 +52,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements Pre
 
 				for (TestError error : test.getErrors()) {
 					if (error.getSeverity().equals(Severity.ERROR)) {
-						JOptionPane.showMessageDialog(Main.parent, tr("Export failed due to validation errors. See validation layer for details."),
+						JOptionPane.showMessageDialog(MainApplication.getMainFrame(), tr("Export failed due to validation errors. See validation layer for details."),
 								tr("Failure"), JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 						okToExport = false; // abort export when errors occur
 						break;
@@ -63,7 +63,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements Pre
 					// warnings occur
 					for (TestError error : test.getErrors()) {
 						if (error.getSeverity().equals(Severity.WARNING)) {
-							int proceed = JOptionPane.showConfirmDialog(Main.parent, tr("Validaton resulted in warnings.\n Proceed?"), tr("Warning"),
+							int proceed = JOptionPane.showConfirmDialog(MainApplication.getMainFrame(), tr("Validaton resulted in warnings.\n Proceed?"), tr("Warning"),
 									JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 							if (proceed == JOptionPane.NO_OPTION) {
 								okToExport = false;
@@ -90,7 +90,7 @@ public class TransitScheduleExportAction extends DiskAccessAction implements Pre
 
 			}
 		} else {
-			JOptionPane.showMessageDialog(Main.parent, tr("Nothing to export. Get some data first."), tr("Information"),
+			JOptionPane.showMessageDialog(MainApplication.getMainFrame(), tr("Nothing to export. Get some data first."), tr("Information"),
 					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
