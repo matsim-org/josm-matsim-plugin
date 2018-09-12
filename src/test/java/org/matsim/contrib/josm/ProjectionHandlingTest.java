@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MNode;
-import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
 import org.openstreetmap.josm.testutils.JOSMTestRules;
@@ -28,7 +28,7 @@ public class ProjectionHandlingTest {
 
 	@Before
 	public void init() {
-		Main.setProjection(ProjectionPreference.mercator.getProjection());
+	    ProjectionRegistry.setProjection(ProjectionPreference.mercator.getProjection());
 		matsimLayer = PtTutorialScenario.layer();
 	       
 		for(MNode node: matsimLayer.getNetworkModel().nodes().values()) {
@@ -41,9 +41,9 @@ public class ProjectionHandlingTest {
 		
 		MainApplication.getLayerManager().addLayer(matsimLayer);
 		
-		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), Main.getProjection().toCode());
-		Main.setProjection(ProjectionPreference.wgs84.getProjection());
-		Assert.assertEquals(ProjectionPreference.wgs84.getProjection().toCode(), Main.getProjection().toCode());
+		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), ProjectionRegistry.getProjection().toCode());
+		ProjectionRegistry.setProjection(ProjectionPreference.wgs84.getProjection());
+		Assert.assertEquals(ProjectionPreference.wgs84.getProjection().toCode(), ProjectionRegistry.getProjection().toCode());
 
 		for (MNode node : matsimLayer.getNetworkModel().nodes().values()) {
 			Assert.assertNotEquals(nodeCoords.get(node.getOrigId()).getX(), node.getCoord().getX(), DELTA);
@@ -51,8 +51,8 @@ public class ProjectionHandlingTest {
 
 		}
 
-		Main.setProjection(ProjectionPreference.mercator.getProjection());
-		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), Main.getProjection().toCode());
+		ProjectionRegistry.setProjection(ProjectionPreference.mercator.getProjection());
+		Assert.assertEquals(ProjectionPreference.mercator.getProjection().toCode(), ProjectionRegistry.getProjection().toCode());
 
 		for (MNode node : matsimLayer.getNetworkModel().nodes().values()) {
 			Assert.assertEquals(nodeCoords.get(node.getOrigId()).getX(), node.getCoord().getX(), DELTA);

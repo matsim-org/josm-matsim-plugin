@@ -1,25 +1,27 @@
 package org.matsim.contrib.josm.model;
 
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.plugins.jts.JTSConverter;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 
 public class StopArea {
 	private final Relation relation;
@@ -90,7 +92,7 @@ public class StopArea {
 		if (centroid.isEmpty()) {
 			return null;
 		} else {
-			return Main.getProjection().latlon2eastNorth(new LatLon(centroid.getY(), centroid.getX()));
+			return ProjectionRegistry.getProjection().latlon2eastNorth(new LatLon(centroid.getY(), centroid.getX()));
 		}
 	}
 

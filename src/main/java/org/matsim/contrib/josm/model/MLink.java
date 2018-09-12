@@ -1,11 +1,11 @@
 package org.matsim.contrib.josm.model;
 
+import java.util.List;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.openstreetmap.josm.data.osm.WaySegment;
-
-import java.util.List;
-import java.util.Set;
 
 public class MLink {
 	private boolean reverseWayDirection = false;

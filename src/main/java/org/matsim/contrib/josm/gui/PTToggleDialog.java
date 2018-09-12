@@ -1,5 +1,38 @@
 package org.matsim.contrib.josm.gui;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+
+import javax.swing.SwingUtilities;
+
+import org.matsim.contrib.josm.actions.MyOverpassDownloader;
+import org.matsim.contrib.josm.model.Line;
+import org.matsim.contrib.josm.model.NetworkModel;
+import org.matsim.contrib.josm.model.Route;
+import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
+import org.openstreetmap.josm.actions.downloadtasks.DownloadParams;
+import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
+import org.openstreetmap.josm.data.Bounds;
+import org.openstreetmap.josm.data.osm.DataSelectionListener;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmDataManager;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
+import org.openstreetmap.josm.gui.MainApplication;
+import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
+import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
+import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
+import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
+import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.gui.util.HighlightHelper;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
+
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -12,39 +45,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
-import org.matsim.contrib.josm.actions.MyOverpassDownloader;
-import org.matsim.contrib.josm.model.Line;
-import org.matsim.contrib.josm.model.NetworkModel;
-import org.matsim.contrib.josm.model.Route;
-import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
-import org.openstreetmap.josm.actions.downloadtasks.PostDownloadHandler;
-import org.openstreetmap.josm.data.Bounds;
-import org.openstreetmap.josm.data.SelectionChangedListener;
-import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.event.DatasetEventManager;
-import org.openstreetmap.josm.data.osm.event.SelectionEventManager;
-import org.openstreetmap.josm.gui.MainApplication;
-import org.openstreetmap.josm.gui.dialogs.ToggleDialog;
-import org.openstreetmap.josm.gui.dialogs.relation.DownloadRelationTask;
-import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
-import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
-import org.openstreetmap.josm.gui.layer.OsmDataLayer;
-import org.openstreetmap.josm.gui.util.HighlightHelper;
-import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * The ToggleDialog that shows link information of selected ways and route
@@ -60,9 +66,9 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	private final StringProperty title;
 
 	private FilteredList<Route> selectedRoutes;
-	private final SelectionChangedListener selectionListener = osmPrimitives -> {
+	private final DataSelectionListener selectionListener = e -> {
 		if (MainApplication.getLayerManager().getEditDataSet() != null) {
-			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
+			HashSet<OsmPrimitive> selection = new HashSet<>(OsmDataManager.getInstance().getInProgressSelection());
 			Platform.runLater(() -> selectedRoutes.setPredicate(route ->
 					selection.contains(route.getRelation()) ||
 							!Collections.disjoint(selection, route.getRelation().getMemberPrimitives())));
@@ -74,7 +80,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	@Override
 	public void showNotify() {
 		MainApplication.getLayerManager().addAndFireActiveLayerChangeListener(this);
-		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
+		SelectionEventManager.getInstance().addSelectionListenerForEdt(selectionListener);
 	}
 
 	@Override
@@ -127,7 +133,8 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 					query.append(");");
 					query.append("out meta;");
 					MainApplication.worker.submit(new PostDownloadHandler(task, task.download(
-							new MyOverpassDownloader(query.toString()), false, new Bounds(0, 0, true), null)));
+							new MyOverpassDownloader(query.toString()), new DownloadParams().withNewLayer(false),
+							new Bounds(0, 0, true), null)));
 				});
 				rowMenu.getItems().addAll(downloadItem);
 
@@ -173,7 +180,7 @@ public class PTToggleDialog extends ToggleDialog implements ActiveLayerChangeLis
 	public void activeOrEditLayerChanged(ActiveLayerChangeEvent e) {
 		OsmDataLayer editLayer = MainApplication.getLayerManager().getEditLayer();
 		if (editLayer != null) {
-			HashSet<OsmPrimitive> selection = new HashSet<>(Main.main.getInProgressSelection());
+			HashSet<OsmPrimitive> selection = new HashSet<>(OsmDataManager.getInstance().getInProgressSelection());
 			Platform.runLater(() -> {
 				NetworkModel networkModel = NetworkModel.createNetworkModel(editLayer.data);
 				ObservableList<Line> lineList = FXCollections.observableArrayList();

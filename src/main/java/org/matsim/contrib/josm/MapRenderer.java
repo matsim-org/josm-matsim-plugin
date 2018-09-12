@@ -88,7 +88,7 @@ public class MapRenderer extends StyledMapRenderer {
      * @see #textOffset(IWay)
      */
     @Override
-    public void drawWay(IWay way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset, boolean showOrientation,
+    public void drawWay(IWay<?> way, Color color, BasicStroke line, BasicStroke dashes, Color dashedColor, float offset, boolean showOrientation,
                         boolean showHeadArrowOnly, boolean showOneway, boolean onewayReversed) {
 
         if (way2Links != null && way2Links.containsKey(way) && !way2Links.get(way).isEmpty()) {
@@ -135,7 +135,7 @@ public class MapRenderer extends StyledMapRenderer {
      * @param way The way which offset is to be calculated
      * @return The text offset for the given <code>way</code>
      */
-    private int textOffset(IWay way) {
+    private int textOffset(IWay<?> way) {
         int offset = -15;
 
         if (way.firstNode().getUniqueId() < way.lastNode().getUniqueId()) {

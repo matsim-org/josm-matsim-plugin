@@ -1,11 +1,12 @@
 package org.matsim.contrib.josm.model;
 
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.collections.FXCollections;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.openstreetmap.josm.data.osm.Relation;
+
+import javafx.beans.property.ReadOnlyListProperty;
+import javafx.beans.property.ReadOnlyListWrapper;
+import javafx.collections.FXCollections;
 
 public class Line {
 	private final Relation relation;

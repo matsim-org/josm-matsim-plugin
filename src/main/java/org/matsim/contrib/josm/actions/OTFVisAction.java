@@ -1,5 +1,10 @@
 package org.matsim.contrib.josm.actions;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.gui.OTFDialog;
@@ -20,11 +25,6 @@ import org.matsim.pt.utils.CreateVehiclesForSchedule;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.tools.Shortcut;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 public class OTFVisAction extends JosmAction {
 

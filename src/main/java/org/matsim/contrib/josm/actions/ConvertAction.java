@@ -1,9 +1,20 @@
 package org.matsim.contrib.josm.actions;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.swing.JOptionPane;
+
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.contrib.josm.model.LayerConverter;
 import org.matsim.contrib.josm.model.MATSimLayer;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.validation.OsmValidator;
 import org.openstreetmap.josm.data.validation.Severity;
@@ -15,17 +26,6 @@ import org.openstreetmap.josm.io.OsmTransferException;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Shortcut;
 import org.xml.sax.SAXException;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Results in a new {@link MATSimLayer} which holds the converted data.
@@ -92,7 +92,7 @@ public class ConvertAction extends JosmAction {
 		progMonitor1.close();
 
 		if (test1.getErrors().stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
-			JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
+			JOptionPane.showMessageDialog(MainApplication.getMainFrame(), "Export failed due to validation errors. See validation layer for details.",
 					"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 			return test1.getErrors();
 		}
@@ -107,7 +107,7 @@ public class ConvertAction extends JosmAction {
 
 		List<TestError> allErrors = Stream.concat(test1.getErrors().stream(), test2.getErrors().stream()).collect(Collectors.toList());
 		if (test2.getErrors().stream().anyMatch(error -> error.getSeverity().equals(Severity.ERROR))) {
-			JOptionPane.showMessageDialog(Main.parent, "Export failed due to validation errors. See validation layer for details.",
+			JOptionPane.showMessageDialog(MainApplication.getMainFrame(), "Export failed due to validation errors. See validation layer for details.",
 					"Failure", JOptionPane.ERROR_MESSAGE, new ImageProvider("warning-small").setWidth(16).get());
 			return allErrors;
 		} else {
