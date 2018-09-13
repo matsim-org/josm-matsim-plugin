@@ -1,16 +1,16 @@
 package org.matsim.contrib.josm;
 
-import java.io.File;
-import java.net.URL;
-
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.josm.model.Importer;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.network.io.NetworkReaderMatsimV1;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
+
+import java.io.File;
+import java.net.URL;
 
 public class PtTutorialScenario {
 
@@ -21,7 +21,7 @@ public class PtTutorialScenario {
 		Config config = ConfigUtils.createConfig();
 		config.transit().setUseTransit(true);
 		Scenario scenario = ScenarioUtils.createScenario(config);
-		new NetworkReaderMatsimV1(scenario.getNetwork()).parse(networkUrl);
+		new MatsimNetworkReader(scenario.getNetwork()).parse(networkUrl);
 		new TransitScheduleReader(scenario).readFile(transitScheduleUrl.getFile());
 		return scenario;
 	}

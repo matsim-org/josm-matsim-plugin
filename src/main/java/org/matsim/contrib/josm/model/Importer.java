@@ -125,7 +125,7 @@ public class Importer {
 			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));
 			way.put(LinkConversionRules.PERMLANES, String.valueOf(link.getNumberOfLanes()));
 
-			  if (EmissionUtils.getHbefaRoadType(link)!=null){
+			if (EmissionUtils.getHbefaRoadType(link)!=null){
                 way.put(LinkConversionRules.TYPE, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
 			}
 
