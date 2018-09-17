@@ -184,7 +184,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	// handles the underlying data of the links table
 	private class MATSimTableModel_links extends AbstractTableModel implements SelectionChangedListener, ListSelectionListener {
 
-		private final String[] columnNames = { "id", "internal-id", "length", "freespeed", "capacity", "permlanes", "modes", "type" };
+		private final String[] columnNames = { "id", "internal-id", "length", "freespeed", "capacity", "permlanes", "modes", "type", "hbefa" };
 
 		private Map<Integer, MLink> links;
 
@@ -210,6 +210,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 			} else if (columnIndex == 6) {
 				return String.class;
 			} else if (columnIndex == 7) {
+				return String.class;
+			} else if (columnIndex == 8) {
 				return String.class;
 			}
 			throw new RuntimeException();
@@ -250,6 +252,8 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 			} else if (columnIndex == 7) {
 				return link.getType();
 			} else if (columnIndex == 8) {
+				return link.getHbefaType();
+			} else if(columnIndex == 9) {
 				return link;
 			}
 			throw new RuntimeException();
@@ -288,7 +292,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 			if (currentDataSet != null) {
 				if (table_links.getSelectedRow() != -1) {
 					int row = table_links.convertRowIndexToModel(table_links.getSelectedRow());
-					MLink link = (MLink) this.getValueAt(row, 8);
+					MLink link = (MLink) this.getValueAt(row, 9);
 					if (link.getSegments() != null) {
 						List<WaySegment> segments = link.getSegments();
 						currentDataSet.setHighlightedWaySegments(segments);

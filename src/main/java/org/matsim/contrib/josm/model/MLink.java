@@ -19,6 +19,7 @@ public class MLink {
 	private MNode fromNode;
 	private MNode toNode;
 	private String type;
+	private String hbefaType;
 
 	public MLink(MNode fromNode, MNode toNode) {
 
@@ -82,13 +83,20 @@ public class MLink {
 		return segments;
 	}
 
-
 	public void setType(String type) {
 		this.type = type;
 	}
 
 	public String getType() {
 		return type;
+	}
+
+	public void setHbefaType(String hbefaType) {
+		this.hbefaType = hbefaType;
+	}
+
+	public String getHbefaType() {
+		return hbefaType;
 	}
 
 	public Id<Link> getId() {

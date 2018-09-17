@@ -48,7 +48,8 @@ public class Export {
 				newLink.setNumberOfLanes(link.getNumberOfLanes());
 				newLink.setAllowedModes(link.getAllowedModes());
 				if (Preferences.includeRoadType()) {
-					EmissionUtils.setHbefaRoadType(newLink,link.getType());
+					NetworkUtils.setType(newLink, link.getType());
+					EmissionUtils.setHbefaRoadType(newLink, link.getHbefaType());
 				}
 				scenario.getNetwork().addLink(newLink);
 			}
