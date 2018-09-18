@@ -240,7 +240,7 @@ public class LinkConversionRules {
             } else if (highway.equals("secondary") || highway.equals("secondary_link")) {
                 hbefaType = String.format("%s/%d", "Urban/Distributor", Math.round(freespeed * 3.6));
             } else if (highway.equals("tertiary") || highway.equals("tertiary_link")) {
-                hbefaType = String.format("%s/%d", "Urban/Trunk", Math.round(freespeed * 3.6));
+                hbefaType = String.format("%s/%d", "Urban/Local", Math.round(freespeed * 3.6));
             } else {
                 hbefaType = String.format("%s/%d", "Urban/Access-residential", Math.round(freespeed * 3.6));
             }
