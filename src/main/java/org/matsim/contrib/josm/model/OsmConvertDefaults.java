@@ -17,7 +17,7 @@ public class OsmConvertDefaults {
 	private static final Map<String, OsmWayDefaults> wayDefaults = new HashMap<>();
 
 	public static final List<String> highwayTypes = Arrays.asList("motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
-			"secondary", "tertiary", "minor", "unclassified", "residential", "service", "living_street");
+			"secondary", "secondary_link", "tertiary", "tertiary_link", "minor", "unclassified", "residential", "service", "living_street");
 
 	private static final Map<String, StringProperty> properties = new HashMap<>();
 
@@ -48,7 +48,9 @@ public class OsmConvertDefaults {
 		properties.put("primary", new StringProperty("matsim_convertDefaults_primary", "3;1;" + Double.toString(80. / 3.6) + ";1.0;1500;false"));
 		properties.put("primary_link", new StringProperty("matsim_convertDefaults_primary_link", "3;1;" + Double.toString(60. / 3.6) + ";1.0;1500;false"));
 		properties.put("secondary", new StringProperty("matsim_convertDefaults_secondary", "4;1;" + Double.toString(60. / 3.6) + ";1.0;1000;false"));
+		properties.put("secondary_link", new StringProperty("matsim_convertDefaults_secondary_link", "4;1;" + Double.toString(60. / 3.6) + ";1.0;1000;false"));
 		properties.put("tertiary", new StringProperty("matsim_convertDefaults_tertiary", "5;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
+		properties.put("tertiary_link", new StringProperty("matsim_convertDefaults_tertiary", "5;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
 		properties.put("minor", new StringProperty("matsim_convertDefaults_minor", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
 		properties.put("unclassified", new StringProperty("matsim_convertDefaults_unclassified", "6;1;" + Double.toString(45. / 3.6) + ";1.0;600;false"));
 		properties.put("residential", new StringProperty("matsim_convertDefaults_residential", "6;1;" + Double.toString(30. / 3.6) + ";1.0;600;false"));

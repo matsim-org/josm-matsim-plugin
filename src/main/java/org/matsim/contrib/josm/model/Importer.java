@@ -8,6 +8,7 @@ import java.util.List;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.emissions.utils.EmissionUtils;
 import org.matsim.contrib.josm.gui.Preferences;
@@ -125,11 +126,14 @@ public class Importer {
 			way.put(LinkConversionRules.LENGTH, String.valueOf(link.getLength()));
 			way.put(LinkConversionRules.PERMLANES, String.valueOf(link.getNumberOfLanes()));
 
-			if (EmissionUtils.getHbefaRoadType(link)!=null){
-                way.put(LinkConversionRules.TYPE, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
-			}
+            if (NetworkUtils.getType(link)!= null){
+                way.put(LinkConversionRules.TYPE, String.valueOf(NetworkUtils.getType(link)));
+            }
+            if (EmissionUtils.getHbefaRoadType(link)!= null){
+                way.put(LinkConversionRules.HBEFA, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
+            }
 
-			StringBuilder modes = new StringBuilder();
+            StringBuilder modes = new StringBuilder();
 			for (String mode : link.getAllowedModes()) {
 				modes.append(mode);
 				if (link.getAllowedModes().size() > 1) {

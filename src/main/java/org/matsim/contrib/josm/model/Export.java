@@ -19,6 +19,7 @@ import org.matsim.contrib.emissions.utils.EmissionUtils;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.Departure;
@@ -55,7 +56,8 @@ public class Export {
 				newLink.setNumberOfLanes(link.getNumberOfLanes());
 				newLink.setAllowedModes(link.getAllowedModes());
 				if (Preferences.includeRoadType()) {
-					EmissionUtils.setHbefaRoadType(newLink,link.getType());
+					NetworkUtils.setType(newLink, link.getType());
+					EmissionUtils.setHbefaRoadType(newLink, link.getHbefaType());
 				}
 				scenario.getNetwork().addLink(newLink);
 			}
