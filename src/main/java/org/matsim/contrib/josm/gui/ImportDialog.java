@@ -1,19 +1,30 @@
 package org.matsim.contrib.josm.gui;
 
-import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
-import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
-import org.openstreetmap.josm.tools.GBC;
-import org.openstreetmap.josm.tools.ImageProvider;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collection;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.openstreetmap.josm.gui.MainApplication;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionChoice;
+import org.openstreetmap.josm.gui.preferences.projection.ProjectionPreference;
+import org.openstreetmap.josm.tools.GBC;
+import org.openstreetmap.josm.tools.ImageProvider;
 
 /**
  * the import dialog
@@ -99,7 +110,7 @@ public class ImportDialog extends JPanel {
 				chooser.setDialogTitle("MATSim-Import");
 				FileFilter filter = new FileNameExtensionFilter("Network-XML", "xml");
 				chooser.setFileFilter(filter);
-				int result = chooser.showOpenDialog(Main.parent);
+				int result = chooser.showOpenDialog(MainApplication.getMainFrame());
 				if (result == JFileChooser.APPROVE_OPTION) {
 					networkFile = new File(chooser.getSelectedFile().getAbsolutePath());
 					networkPath.setText(networkFile.getName());
@@ -121,7 +132,7 @@ public class ImportDialog extends JPanel {
 				chooser.setDialogTitle("MATSim-Import");
 				FileFilter filter = new FileNameExtensionFilter("TransitSchedule-XML", "xml");
 				chooser.setFileFilter(filter);
-				int result = chooser.showOpenDialog(Main.parent);
+				int result = chooser.showOpenDialog(MainApplication.getMainFrame());
 				if (result == JFileChooser.APPROVE_OPTION) {
 					scheduleFile = new File(chooser.getSelectedFile().getAbsolutePath());
 					schedulePath.setText(scheduleFile.getName());

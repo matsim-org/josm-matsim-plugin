@@ -1,20 +1,36 @@
 package org.matsim.contrib.josm.gui;
 
-import org.openstreetmap.josm.Main;
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.data.preferences.IntegerProperty;
 import org.openstreetmap.josm.data.preferences.StringProperty;
+import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.preferences.DefaultTabPreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSetting;
 import org.openstreetmap.josm.gui.preferences.PreferenceSettingFactory;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane;
 import org.openstreetmap.josm.gui.preferences.PreferenceTabbedPane.PreferencePanel;
 import org.openstreetmap.josm.spi.preferences.Config;
-
-import javax.swing.*;
-import java.awt.*;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Preferences for the MATSim Plugin
@@ -188,7 +204,7 @@ public final class Preferences extends DefaultTabPreferenceSetting {
 		convertingDefaults.addActionListener(e -> {
 			OsmConvertDefaultsDialog dialog = new OsmConvertDefaultsDialog();
 			JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			JDialog dlg = pane.createDialog(Main.parent, tr("Defaults"));
+			JDialog dlg = pane.createDialog(MainApplication.getMainFrame(), tr("Defaults"));
 			dlg.setAlwaysOnTop(true);
 			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			dlg.setVisible(true);

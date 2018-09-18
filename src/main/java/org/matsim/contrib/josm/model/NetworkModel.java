@@ -1,23 +1,44 @@
 package org.matsim.contrib.josm.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javafx.beans.property.ReadOnlyMapProperty;
-import javafx.beans.property.ReadOnlyMapWrapper;
-import javafx.collections.FXCollections;
+
 import org.matsim.api.core.v01.Coord;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.data.coor.EastNorth;
-import org.openstreetmap.josm.data.osm.*;
-import org.openstreetmap.josm.data.osm.event.*;
+import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Relation;
+import org.openstreetmap.josm.data.osm.RelationMember;
+import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent;
+import org.openstreetmap.josm.data.osm.event.DataChangedEvent;
+import org.openstreetmap.josm.data.osm.event.DataSetListener;
+import org.openstreetmap.josm.data.osm.event.NodeMovedEvent;
+import org.openstreetmap.josm.data.osm.event.PrimitivesAddedEvent;
+import org.openstreetmap.josm.data.osm.event.PrimitivesRemovedEvent;
+import org.openstreetmap.josm.data.osm.event.RelationMembersChangedEvent;
+import org.openstreetmap.josm.data.osm.event.TagsChangedEvent;
+import org.openstreetmap.josm.data.osm.event.WayNodesChangedEvent;
 import org.openstreetmap.josm.data.osm.visitor.OsmPrimitiveVisitor;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.spi.preferences.IPreferences;
-
-import java.util.*;
 import org.openstreetmap.josm.tools.Pair;
+
+import javafx.beans.property.ReadOnlyMapProperty;
+import javafx.beans.property.ReadOnlyMapWrapper;
+import javafx.collections.FXCollections;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
@@ -206,7 +227,7 @@ public class NetworkModel {
 			}
 			fireNotifyDataChanged();
 		});
-		Main.addProjectionChangeListener((oldValue, newValue) -> {
+		ProjectionRegistry.addProjectionChangeListener((oldValue, newValue) -> {
 			visitAll();
 			fireNotifyDataChanged();
 		});
@@ -395,7 +416,7 @@ public class NetworkModel {
 			if (visited.add(node)) {
 				nodes.remove(node);
 				if (isRelevant(node)) {
-					EastNorth eN = Main.getProjection().latlon2eastNorth(node.getCoor());
+					EastNorth eN = ProjectionRegistry.getProjection().latlon2eastNorth(node.getCoor());
 					MNode matsimNode = new MNode(node, new Coord(eN.getX(), eN.getY()));
 					matsimNode.setOrigId(NodeConversionRules.getOrigId(node));
 					nodes.put(node, matsimNode);

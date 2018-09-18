@@ -1,6 +1,15 @@
 package org.matsim.contrib.josm.actions;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.JOptionPane;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -14,19 +23,12 @@ import org.matsim.core.utils.gis.PolylineFeatureFactory;
 import org.matsim.core.utils.gis.ShapeFileWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.DiskAccessAction;
 import org.openstreetmap.josm.actions.ExtensionFileFilter;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.MainApplication;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
-import static org.openstreetmap.josm.tools.I18n.tr;
+import com.vividsolutions.jts.geom.Coordinate;
 
 public final class ShapeExporter extends DiskAccessAction {
 
@@ -43,7 +45,7 @@ public final class ShapeExporter extends DiskAccessAction {
                 Scenario targetScenario = Export.toScenario(((MATSimLayer) MainApplication.getLayerManager().getActiveLayer()).getNetworkModel());
 
                 Network network = targetScenario.getNetwork();
-                CoordinateReferenceSystem crs = MGC.getCRS(Main.getProjection().toCode());
+                CoordinateReferenceSystem crs = MGC.getCRS(ProjectionRegistry.getProjection().toCode());
 
                 Collection<SimpleFeature> features = new ArrayList<>();
                 PolylineFeatureFactory linkFactory = new PolylineFeatureFactory.Builder().
@@ -82,7 +84,7 @@ public final class ShapeExporter extends DiskAccessAction {
                 ShapeFileWriter.writeGeometries(features, file.getAbsolutePath()+"_nodes.shp");
             }
         } else {
-            JOptionPane.showMessageDialog(Main.parent, tr("Nothing to export. Get some data first."), tr("Information"),
+            JOptionPane.showMessageDialog(MainApplication.getMainFrame(), tr("Nothing to export. Get some data first."), tr("Information"),
                     JOptionPane.INFORMATION_MESSAGE);
         }
     }

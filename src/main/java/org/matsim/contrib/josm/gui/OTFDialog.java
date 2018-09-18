@@ -19,6 +19,15 @@
  * *********************************************************************** */
 package org.matsim.contrib.josm.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JPanel;
+import javax.swing.OverlayLayout;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.otfvis.OTFVis;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -39,11 +48,8 @@ import org.matsim.vis.otfvis.handler.FacilityDrawer;
 import org.matsim.vis.otfvis.handler.OTFAgentsListHandler;
 import org.matsim.vis.otfvis.handler.OTFLinkAgentsHandler;
 import org.matsim.vis.otfvis.opengl.drawer.OTFOGLDrawer;
-import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.ExtendedDialog;
-
-import javax.swing.*;
-import java.awt.*;
+import org.openstreetmap.josm.gui.MainApplication;
 
 
 public final class OTFDialog extends ExtendedDialog {
@@ -51,7 +57,7 @@ public final class OTFDialog extends ExtendedDialog {
 	private static final long serialVersionUID = 1L;
 
 	public OTFDialog(Scenario scenario, EventsManager eventsManager, QSim qSim) {
-		super(Main.parent, "MATSim OTFVis", new String[]{});
+		super(MainApplication.getMainFrame(), "MATSim OTFVis", new String[]{});
 		OnTheFlyServer server = OTFVis.startServerAndRegisterWithQSim(scenario.getConfig(), scenario, eventsManager, qSim);
 		SettingsSaver saver = new SettingsSaver("otfsettings");
 		OTFVisConfigGroup visconf = saver.tryToReadSettingsFile();

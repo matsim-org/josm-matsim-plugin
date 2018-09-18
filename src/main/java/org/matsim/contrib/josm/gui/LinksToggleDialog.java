@@ -1,14 +1,37 @@
 package org.matsim.contrib.josm.gui;
 
+import static org.openstreetmap.josm.tools.I18n.tr;
+
+import java.awt.Component;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
 import org.matsim.contrib.josm.MapRenderer;
 import org.matsim.contrib.josm.actions.NetworkTest;
 import org.matsim.contrib.josm.model.MATSimLayer;
 import org.matsim.contrib.josm.model.MLink;
 import org.matsim.contrib.josm.model.NetworkModel;
-import org.openstreetmap.josm.Main;
-import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
-import org.openstreetmap.josm.data.SelectionChangedListener;
+import org.openstreetmap.josm.data.osm.DataSelectionListener;
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.OsmDataManager;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.data.osm.WaySegment;
@@ -24,21 +47,8 @@ import org.openstreetmap.josm.gui.layer.Layer;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeEvent;
 import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListener;
 import org.openstreetmap.josm.gui.layer.OsmDataLayer;
+import org.openstreetmap.josm.spi.preferences.PreferenceChangeEvent;
 import org.openstreetmap.josm.tools.ImageProvider;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * The ToggleDialog that shows link information of selected ways and route
@@ -56,12 +66,12 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	private NetworkModel networkModel;
 
 	private final DataSetListenerAdapter dataSetListenerAdapter = new DataSetListenerAdapter(e -> notifyDataChanged());
-	private final SelectionChangedListener selectionListener = osmPrimitives -> notifyDataChanged();
+	private final DataSelectionListener selectionListener = e -> notifyDataChanged();
 
 	@Override
 	public void showNotify() {
 		DatasetEventManager.getInstance().addDatasetListener(dataSetListenerAdapter, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
-		SelectionEventManager.getInstance().addSelectionListener(selectionListener, DatasetEventManager.FireMode.IN_EDT_CONSOLIDATED);
+		SelectionEventManager.getInstance().addSelectionListenerForEdt(selectionListener);
 		MainApplication.getLayerManager().addActiveLayerChangeListener(this);
 		notifyEverythingChanged();
 	}
@@ -93,7 +103,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		networkAttributes.addActionListener(e -> {
 			NetworkAttributes dialog = new NetworkAttributes();
 			JOptionPane pane = new JOptionPane(dialog, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			JDialog dlg = pane.createDialog(Main.parent, tr("Network Attributes"));
+			JDialog dlg = pane.createDialog(MainApplication.getMainFrame(), tr("Network Attributes"));
 			dlg.setAlwaysOnTop(true);
 			dlg.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			dlg.setVisible(true);
@@ -182,7 +192,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 	}
 
 	// handles the underlying data of the links table
-	private class MATSimTableModel_links extends AbstractTableModel implements SelectionChangedListener, ListSelectionListener {
+	private class MATSimTableModel_links extends AbstractTableModel implements DataSelectionListener, ListSelectionListener {
 
 		private final String[] columnNames = { "id", "internal-id", "length", "freespeed", "capacity", "permlanes", "modes", "type", "hbefa" };
 
@@ -190,7 +200,7 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 
 		MATSimTableModel_links() {
 			this.links = new HashMap<>();
-			DataSet.addSelectionListener(this);
+			SelectionEventManager.getInstance().addSelectionListener(this);
 		}
 
 		@Override
@@ -260,16 +270,15 @@ public class LinksToggleDialog extends ToggleDialog implements ActiveLayerChange
 		}
 
 		@Override
-		// change shown link information of selected elements when selection
-		// changes
-		public void selectionChanged(Collection<? extends OsmPrimitive> newSelection) {
+		// change shown link information of selected elements when selection changes
+		public void selectionChanged(SelectionChangeEvent e) {
 			links.clear();
 			if (networkModel != null) {
 				DataSet currentDataSet = MainApplication.getLayerManager().getEditDataSet();
 				if (currentDataSet != null) {
 					currentDataSet.clearHighlightedWaySegments();
 					int i = 0;
-					for (OsmPrimitive primitive : Main.main.getInProgressSelection()) {
+					for (OsmPrimitive primitive : OsmDataManager.getInstance().getInProgressSelection()) {
 						if (primitive instanceof Way) {
 							if (networkModel.getWay2Links().containsKey(primitive)) {
 								for (MLink link : networkModel.getWay2Links().get(primitive)) {
