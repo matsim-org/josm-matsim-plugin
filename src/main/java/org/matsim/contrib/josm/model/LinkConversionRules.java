@@ -217,11 +217,12 @@ public class LinkConversionRules {
         return wayType != null ? OsmConvertDefaults.getWayDefaults().get(wayType) : null;
     }
 
-    //based on the scheme from The TUM Accessibility Atlas: Visualizing Spatial and
-    // Socioeconomic Disparities in Accessibility to Support Regional Land-Use and
-    // Transport Planning
-    // (https://link.springer.com/content/pdf/10.1007%2Fs11067-017-9378-6.pdf)
-
+    /**
+    based on the scheme from The TUM Accessibility Atlas: Visualizing Spatial and
+    Socioeconomic Disparities in Accessibility to Support Regional Land-Use and
+    Transport Planning
+    (https://link.springer.com/content/pdf/10.1007%2Fs11067-017-9378-6.pdf)
+    */
     static String getHbefaType(Way way, OsmConvertDefaults.OsmWayDefaults defaults) {
 
         String hbefaType = null;
@@ -232,17 +233,19 @@ public class LinkConversionRules {
         if (hbefaType == null) {
             Double freespeed = getFreespeed(way, defaults);
             String highway = way.getKeys().get("highway");
+            if (way.getKeys().containsKey("highway") && freespeed != null) {
 
-            if (highway.equals("motorway") || highway.equals("motorway_link")) {
-                hbefaType = String.format("%s/%d", "Urban/Motor", Math.round(freespeed * 3.6));
-            } else if (highway.equals("primary") || highway.equals("primary_link") || highway.equals("trunk") || highway.equals("trunk_link")) {
-                hbefaType = String.format("%s/%d", "Urban/Trunk", Math.round(freespeed * 3.6));
-            } else if (highway.equals("secondary") || highway.equals("secondary_link")) {
-                hbefaType = String.format("%s/%d", "Urban/Distributor", Math.round(freespeed * 3.6));
-            } else if (highway.equals("tertiary") || highway.equals("tertiary_link")) {
-                hbefaType = String.format("%s/%d", "Urban/Local", Math.round(freespeed * 3.6));
-            } else {
-                hbefaType = String.format("%s/%d", "Urban/Access-residential", Math.round(freespeed * 3.6));
+                if (highway.equals("motorway") || highway.equals("motorway_link")) {
+                    hbefaType = String.format("%s/%d", "Urban/Motor", Math.round(freespeed * 3.6));
+                } else if (highway.equals("primary") || highway.equals("primary_link") || highway.equals("trunk") || highway.equals("trunk_link")) {
+                    hbefaType = String.format("%s/%d", "Urban/Trunk", Math.round(freespeed * 3.6));
+                } else if (highway.equals("secondary") || highway.equals("secondary_link")) {
+                    hbefaType = String.format("%s/%d", "Urban/Distributor", Math.round(freespeed * 3.6));
+                } else if (highway.equals("tertiary") || highway.equals("tertiary_link")) {
+                    hbefaType = String.format("%s/%d", "Urban/Local", Math.round(freespeed * 3.6));
+                } else {
+                    hbefaType = String.format("%s/%d", "Urban/Access-residential", Math.round(freespeed * 3.6));
+                }
             }
         }
         return hbefaType;
