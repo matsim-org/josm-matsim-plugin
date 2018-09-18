@@ -19,6 +19,7 @@ import org.matsim.contrib.emissions.utils.EmissionUtils;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.Departure;
