@@ -22,7 +22,7 @@ import java.util.List;
 public class InteractiveEditingTest {
 
 	@Rule
-	public JOSMTestRules test = new JOSMTestRules().preferences();
+	public JOSMTestRules test = new JOSMTestRules().projection().preferences();
 
 
 	@Test
