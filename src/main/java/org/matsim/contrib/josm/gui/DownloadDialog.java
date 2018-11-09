@@ -1,19 +1,5 @@
 package org.matsim.contrib.josm.gui;
 
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.InputStream;
-
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import org.matsim.contrib.josm.model.OsmConvertDefaults;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadOsmTask;
 import org.openstreetmap.josm.actions.downloadtasks.DownloadParams;
@@ -23,18 +9,17 @@ import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.preferences.BooleanProperty;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.progress.ProgressMonitor;
-import org.openstreetmap.josm.io.NetworkManager;
-import org.openstreetmap.josm.io.OnlineResource;
-import org.openstreetmap.josm.io.OsmReader;
-import org.openstreetmap.josm.io.OsmServerReader;
-import org.openstreetmap.josm.io.OsmTransferException;
+import org.openstreetmap.josm.io.*;
 import org.openstreetmap.josm.spi.preferences.Config;
-import org.openstreetmap.josm.tools.CheckParameterUtil;
-import org.openstreetmap.josm.tools.GBC;
-import org.openstreetmap.josm.tools.HttpClient;
-import org.openstreetmap.josm.tools.I18n;
-import org.openstreetmap.josm.tools.ImageProvider;
-import org.openstreetmap.josm.tools.Utils;
+import org.openstreetmap.josm.tools.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.InputStream;
+
+import static org.openstreetmap.josm.tools.I18n.tr;
 
 /**
  * Dialog displayed to download OSM data from OSM server.
@@ -135,7 +120,7 @@ public class DownloadDialog extends org.openstreetmap.josm.gui.download.Download
 			Bounds area = getSelectedDownloadArea().get();
 			DownloadOsmTask task = new DownloadOsmTask();
 			MainApplication.worker.submit(new PostDownloadHandler(task, task.download(
-			        new FilteredDownloader(area), new DownloadParams().withNewLayer(isNewLayerRequired()), area, null)));
+			        new FilteredDownloader(area), new DownloadParams().withNewLayer(false), area, null)));
 			dispose();
 		}
 
