@@ -1,16 +1,9 @@
 package org.matsim.contrib.josm.model;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.emissions.utils.EmissionUtils;
 import org.matsim.contrib.josm.gui.Preferences;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -18,21 +11,16 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.api.Departure;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.transitSchedule.api.*;
 import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.LatLon;
-import org.openstreetmap.josm.data.osm.DataSet;
-import org.openstreetmap.josm.data.osm.OsmPrimitive;
-import org.openstreetmap.josm.data.osm.Relation;
-import org.openstreetmap.josm.data.osm.RelationMember;
-import org.openstreetmap.josm.data.osm.Way;
-import org.openstreetmap.josm.data.osm.WaySegment;
+import org.openstreetmap.josm.data.osm.*;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 public class Importer {
 
@@ -129,9 +117,9 @@ public class Importer {
             if (NetworkUtils.getType(link)!= null){
                 way.put(LinkConversionRules.TYPE, String.valueOf(NetworkUtils.getType(link)));
             }
-            if (EmissionUtils.getHbefaRoadType(link)!= null){
-                way.put(LinkConversionRules.HBEFA, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
-            }
+//            if (EmissionUtils.getHbefaRoadType(link)!= null){
+//                way.put(LinkConversionRules.HBEFA, String.valueOf(EmissionUtils.getHbefaRoadType(link)));
+//            }
 
             StringBuilder modes = new StringBuilder();
 			for (String mode : link.getAllowedModes()) {
