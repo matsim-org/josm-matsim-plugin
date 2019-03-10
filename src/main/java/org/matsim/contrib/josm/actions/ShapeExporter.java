@@ -1,15 +1,6 @@
 package org.matsim.contrib.josm.actions;
 
-import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
-import static org.openstreetmap.josm.tools.I18n.tr;
-
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.swing.JOptionPane;
-
+import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -28,7 +19,15 @@ import org.openstreetmap.josm.actions.ExtensionFileFilter;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.MainApplication;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static org.openstreetmap.josm.actions.SaveActionBase.createAndOpenSaveFileChooser;
+import static org.openstreetmap.josm.tools.I18n.tr;
+
 
 public final class ShapeExporter extends DiskAccessAction {
 
