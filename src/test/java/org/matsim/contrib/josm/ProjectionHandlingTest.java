@@ -46,8 +46,8 @@ public class ProjectionHandlingTest {
 		Assert.assertEquals(ProjectionPreference.wgs84.getProjection().toCode(), ProjectionRegistry.getProjection().toCode());
 
 		for (MNode node : matsimLayer.getNetworkModel().nodes().values()) {
-			Assert.assertNotEquals(nodeCoords.get(node.getOrigId()).getX(), node.getCoord().getX(), DELTA);
-			Assert.assertNotEquals(nodeCoords.get(node.getOrigId()).getY(), node.getCoord().getY(), DELTA);
+			Assert.assertNotSame(nodeCoords.get(node.getOrigId()).getX(), node.getCoord().getX());
+			Assert.assertNotSame(nodeCoords.get(node.getOrigId()).getY(), node.getCoord().getY());
 
 		}
 

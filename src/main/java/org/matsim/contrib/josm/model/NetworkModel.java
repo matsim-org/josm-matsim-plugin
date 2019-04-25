@@ -39,6 +39,7 @@ import org.openstreetmap.josm.tools.Pair;
 import javafx.beans.property.ReadOnlyMapProperty;
 import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.collections.FXCollections;
+import org.openstreetmap.josm.tools.Utils;
 
 /**
  * Listens to changes in the dataset and their effects on the Network
@@ -298,13 +299,13 @@ public class NetworkModel {
 
 		void finished() {
 			Convert visitor = new Convert();
-			for (Node node : OsmPrimitive.getFilteredList(primitives, Node.class)) {
+			for (Node node : Utils.filteredCollection(primitives, Node.class)) {
 				visitor.visit(node);
 			}
-			for (Way way : OsmPrimitive.getFilteredList(primitives, Way.class)) {
+			for (Way way : Utils.filteredCollection(primitives, Way.class)) {
 				visitor.visit(way);
 			}
-			for (Relation relation : OsmPrimitive.getFilteredList(primitives, Relation.class)) {
+			for (Relation relation : Utils.filteredCollection(primitives, Relation.class)) {
 				visitor.visit(relation);
 			}
 		}
@@ -427,7 +428,7 @@ public class NetworkModel {
 		private boolean isRelevant(Node node) {
 			if (isUsableAndNotRemoved(node)) {
 				Way junctionWay = null;
-				for (Way way : OsmPrimitive.getFilteredList(node.getReferrers(), Way.class)) {
+				for (Way way : Utils.filteredCollection(node.getReferrers(), Way.class)) {
 					if (isUsableAndNotRemoved(way) && LinkConversionRules.isMatsimWay(way)) {
 						if (Preferences.isKeepPaths() || way.isFirstLastNode(node) || junctionWay != null || node.hasTag("public_transport", "stop_position")) {
 							return true;

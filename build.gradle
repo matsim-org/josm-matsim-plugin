@@ -49,7 +49,7 @@ dependencies {
 sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 14418
+    josmCompileVersion = 15007
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
@@ -58,6 +58,7 @@ josm {
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
         pluginDependencies << 'geotools' << 'javafx'
         website = new URL("http://www.matsim.org")
+        oldVersionDownloadLink 14418, 'v1.0.0', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.0/matsim.jar')
         oldVersionDownloadLink 14382, 'v0.9.8', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.9.8/matsim.jar')
         oldVersionDownloadLink 14289, 'v0.9.6', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.9.6/matsim.jar')
         oldVersionDownloadLink 13922, 'v0.9.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.9.5/matsim.jar')
