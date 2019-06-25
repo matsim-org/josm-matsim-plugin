@@ -32,9 +32,9 @@ configurations {
 }
 
 dependencies {
-    packIntoJar ('org.matsim:matsim:0.11.0-SNAPSHOT') {changing = true}
-    packIntoJar ('org.matsim.contrib:otfvis:0.11.0-SNAPSHOT') {changing = true}
-    packIntoJar ('org.matsim.contrib:emissions:0.11.0-SNAPSHOT') {changing = true}
+    packIntoJar ('org.matsim:matsim:11.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
     packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
 
     def junitVersion = "5.2.0"
@@ -49,14 +49,14 @@ dependencies {
 sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 15007
+    josmCompileVersion = 15155
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
         iconPath = "images/dialogs/matsim-scenario.png"
-        minJosmVersion = 14418
+        minJosmVersion = 15007
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
-        pluginDependencies << 'geotools' << 'javafx'
+        pluginDependencies << 'jts' << 'javafx'
         website = new URL("http://www.matsim.org")
         oldVersionDownloadLink 14418, 'v1.0.0', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.0/matsim.jar')
         oldVersionDownloadLink 14382, 'v0.9.8', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.9.8/matsim.jar')
