@@ -33,7 +33,7 @@ configurations {
 
 dependencies {
     packIntoJar ('org.matsim:matsim:11.0') {changing = true}
-    packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:otfvis:0.11.0-SNAPSHOT') {changing = true}
     packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
     packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
 
