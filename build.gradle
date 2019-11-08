@@ -35,9 +35,6 @@ dependencies {
     packIntoJar ('org.matsim:matsim:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
-    packIntoJar ('org.geotools:gt-shapefile:20.2')
-    packIntoJar ('org.geotools:gt-opengis:20.2')
-    packIntoJar ('org.geotools:gt-referencing:20.2')
     packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
 
     def junitVersion = "5.2.0"
@@ -59,7 +56,7 @@ josm {
         iconPath = "images/dialogs/matsim-scenario.png"
         minJosmVersion = 15238
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
-        pluginDependencies << 'jts' << 'javafx'
+        pluginDependencies << 'jts' << 'javafx' << 'geotools'
         website = new URL("http://www.matsim.org")
         oldVersionDownloadLink 15007, 'v1.0.3', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.3/matsim.jar')
         oldVersionDownloadLink 14418, 'v1.0.0', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.0/matsim.jar')
