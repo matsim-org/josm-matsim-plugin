@@ -1,15 +1,15 @@
 # Translations for the JOSM plugin 'matsim' (ru)
-# Copyright (C) 2018 
+# Copyright (C) 2019
 # This file is distributed under the same license as the josm-plugin_matsim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.3-1-g5f14357\n"
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-26 15:50+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
 "Language-Team: Russian (https://www.transifex.com/josm/teams/2544/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,7 +17,6 @@ msgstr ""
 "Language: ru\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#. Visualization
 msgid "Activate MATSim Renderer"
 msgstr "Активировать отрисовщик MATSim"
 
@@ -51,8 +50,20 @@ msgstr "Преобразовать в сеть MATSim"
 msgid "Converter"
 msgstr "Конвертер"
 
+msgid "Create Master Routes"
+msgstr "Создать мастер-маршрут"
+
+msgid "Create areas for public transport stops"
+msgstr "Создать области для остановок общественного транспорта"
+
 msgid "Create new Network"
 msgstr "Создать новую сеть"
+
+msgid "Defaults"
+msgstr "По умалчанию"
+
+msgid "Download"
+msgstr "Скачать"
 
 msgid "Download data from Overpass API, filtered by relevance for MATSim."
 msgstr ""
@@ -64,11 +75,14 @@ msgstr "Скачать с Overpass API..."
 msgid "Download members and stop areas"
 msgstr "Скачать участников и остановочные зоны"
 
-#. create error with message
-#. create warning with message
-#, java-format
 msgid "Duplicated Id {0} not allowed."
 msgstr "Дублирование Id {0} запрещено."
+
+msgid "Export MATSim network to shape file..."
+msgstr "Экспортировать сеть MATSim в shape-файл..."
+
+msgid "Export MATSim network to shape file…"
+msgstr "Экспортировать сеть MATSim в shape-файл…"
 
 msgid ""
 "Export failed due to validation errors. See validation layer for details."
@@ -88,7 +102,6 @@ msgstr "Импортировать сценарий MATSim"
 msgid "Information"
 msgstr "Информация"
 
-#, java-format
 msgid "Lines: {0} / Routes: {1}"
 msgstr "Линий: {0} / маршрутов: {1}"
 
@@ -101,7 +114,6 @@ msgstr "MATSim"
 msgid "MATSim Import"
 msgstr "Импорт MATSim"
 
-#, java-format
 msgid "Menu: {0}"
 msgstr "Меню: {0}"
 
@@ -117,6 +129,9 @@ msgstr "Нет активного слоя MATSim"
 msgid "Nothing to export. Get some data first."
 msgstr "Нечего экспортировать. Сначала получите какие-нибудь данные."
 
+msgid "Route {0} with no Route Master"
+msgstr "Маршрут {0} без мастер-маршрута"
+
 msgid "Save MATSim network file"
 msgstr "Сохранить файл сети MATSim"
 
@@ -128,6 +143,9 @@ msgstr "Симуляция"
 
 msgid "Test for incomplete routes"
 msgstr "Проверка на неполные маршруты"
+
+msgid "Test for master routes"
+msgstr "Проверка мастер-маршрутов"
 
 msgid "Update tags for public transport stops"
 msgstr "Обновить теги для остановок общественного транспорта"
@@ -141,7 +159,6 @@ msgstr "Предупреждение"
 msgid "edit network attributes"
 msgstr "изменить атрибуты сети"
 
-#. Plugin description for josm-matsim-plugin
 msgid ""
 "Allows to edit and extract network information for the traffic simulation "
 "MATSim"

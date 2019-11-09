@@ -1,0 +1,136 @@
+# Translations for the JOSM plugin 'matsim' (hu)
+# Copyright (C) 2019
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
+"Language-Team: Hungarian (https://www.transifex.com/josm/teams/2544/hu/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: hu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Activate MATSim Renderer"
+msgstr "MATSim megjelenítő aktiválása"
+
+msgid "Activate hierarchy filter"
+msgstr "Hierarchiaszűrő aktiválása"
+
+msgid "Check for Incomplete Routes"
+msgstr "Hiányos útvonalak keresése"
+
+msgid "Clean Network"
+msgstr "Hálózat tisztítása"
+
+msgid "Click to download the currently selected area"
+msgstr "Kattints a kijelölt terület letöltéséhez"
+
+msgid "Configure the MATSim plugin."
+msgstr "A MATSim beépülő modul beállításai"
+
+msgid "Contacting OSM Server..."
+msgstr "Kapcsolódás az OSM szerverhez..."
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "OSM-réteg konvertálása MATSim hálózati réteggé"
+
+msgid "Convert to MATSim Layer"
+msgstr "MATSim réteggé konvertálás"
+
+msgid "Convert to MATSim Network"
+msgstr "MATSim hálózattá konvertálás"
+
+msgid "Converter"
+msgstr "Konvertáló"
+
+msgid "Create areas for public transport stops"
+msgstr "Területek létrehozása tömegközlekedési megállókhoz"
+
+msgid "Create new Network"
+msgstr "Új hálózat létrehozása"
+
+msgid "Defaults"
+msgstr "Alapértelmezettek"
+
+msgid "Download"
+msgstr "Letöltés"
+
+msgid "Download VBB…"
+msgstr "VBB letöltése..."
+
+msgid "Download data from Overpass API, filtered by relevance for MATSim."
+msgstr ""
+"Adatok letöltése Overpass API-val, fontosság szerint szűrve MATSim számára."
+
+msgid "Download from Overpass API..."
+msgstr "Letöltés Overpass API-n keresztül"
+
+msgid "Duplicated Id {0} not allowed."
+msgstr "Dupla azonosító {0} nincs megengedve."
+
+msgid "Exported network xml version"
+msgstr "Hálózati XML fájl exportálva"
+
+msgid "Failure"
+msgstr "Hiba"
+
+msgid "Import"
+msgstr "Importálás"
+
+msgid "Information"
+msgstr "Információ"
+
+msgid "Lines: {0} / Routes: {1}"
+msgstr "Vonal: {0} / útvonal: {1}"
+
+msgid "MASim preferences"
+msgstr "MASim beállítások"
+
+msgid "MATSim"
+msgstr "MATSim"
+
+msgid "MATSim Import"
+msgstr "MATSim Import"
+
+msgid "Menu: {0}"
+msgstr "Menü: {0}"
+
+msgid "Network Attributes"
+msgstr "Hálózati tulajdonságok"
+
+msgid "New MATSim network"
+msgstr "Új MATSim hálózat"
+
+msgid "No MATSim layer active"
+msgstr "Nincs aktív MATSim réteg"
+
+msgid "Nothing to export. Get some data first."
+msgstr "Nincs mit exportálni. Először szerezz néhány adatot."
+
+msgid "Save MATSim network file"
+msgstr "MATSim hálózati fájl mentése"
+
+msgid "Set conversion defaults"
+msgstr "Alapértelmezett konvertálási beállítások"
+
+msgid "Simulate"
+msgstr "Szimuláció"
+
+msgid "Test for incomplete routes"
+msgstr "Hiányos útvonalak tesztelése"
+
+msgid "Visualization"
+msgstr "Megjelenítés"
+
+msgid "Warning"
+msgstr "Figyelmeztetés"
+
+msgid "edit network attributes"
+msgstr "Hálózati tulajdonságok szerkesztése"

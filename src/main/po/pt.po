@@ -1,0 +1,148 @@
+# Translations for the JOSM plugin 'matsim' (pt)
+# Copyright (C) 2019
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
+"Language-Team: Portuguese (https://www.transifex.com/josm/teams/2544/pt/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Activate MATSim Renderer"
+msgstr "Ativar renderizador MATSim"
+
+msgid "Activate hierarchy filter"
+msgstr "Ativar filtro de hierarquia"
+
+msgid "Check for Incomplete Routes"
+msgstr "Verificar rotas incompletas"
+
+msgid "Clean Network"
+msgstr "Limpar Rede"
+
+msgid "Click to download the currently selected area"
+msgstr "Clique para descarregar a área selecionada"
+
+msgid "Configure the MATSim plugin."
+msgstr "Configurar o módulo MATSim."
+
+msgid "Contacting OSM Server..."
+msgstr "A contactar o servidor OpenStreetMap..."
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "Converter camada Osm numa camada de rede MATSim"
+
+msgid "Convert to MATSim Layer"
+msgstr "Converter numa camada MATSim"
+
+msgid "Convert to MATSim Network"
+msgstr "Converter numa rede MATSim"
+
+msgid "Converter"
+msgstr "Conversor"
+
+msgid "Create Master Routes"
+msgstr "Criar Rotas Mestre"
+
+msgid "Create areas for public transport stops"
+msgstr "Criar áreas para paragens de transportes públicos"
+
+msgid "Create new Network"
+msgstr "Criar nova Rede"
+
+msgid "Defaults"
+msgstr "Padrões"
+
+msgid "Download"
+msgstr "Descarregar"
+
+msgid "Download VBB…"
+msgstr "Descarregar VBB…"
+
+msgid "Download from Overpass API..."
+msgstr "Descarregar da API do Overpass…"
+
+msgid "Download members and stop areas"
+msgstr "Descarregar membros e áreas de paragens"
+
+msgid "Duplicated Id {0} not allowed."
+msgstr "ID duplicado {0} não permitido."
+
+msgid "Export MATSim network to shape file..."
+msgstr "Exportar rede MATSim para um ficheiro shape..."
+
+msgid "Export MATSim network to shape file…"
+msgstr "Exportar rede MATSim para um ficheiro shape…"
+
+msgid "Failure"
+msgstr "Falha"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Import MATSim scenario"
+msgstr "Importar cenário MATSim"
+
+msgid "Include road type in output"
+msgstr "Incluir tipo de estrada na saída"
+
+msgid "Information"
+msgstr "Informação"
+
+msgid "Lines: {0} / Routes: {1}"
+msgstr "Linhas: {0} / Rotas: {1}"
+
+msgid "MASim preferences"
+msgstr "Preferências MASim"
+
+msgid "MATSim"
+msgstr "MATSim"
+
+msgid "MATSim Import"
+msgstr "Importação MATSim"
+
+msgid "Menu: {0}"
+msgstr "Menu: {0}"
+
+msgid "Network Attributes"
+msgstr "Atributos da Rede"
+
+msgid "New MATSim network"
+msgstr "Nova rede MATSim"
+
+msgid "No MATSim layer active"
+msgstr "Nenhum camada MATSim ativa"
+
+msgid "Nothing to export. Get some data first."
+msgstr "Nada a exportar. Obtenha primeiro alguns dados."
+
+msgid "Simulate"
+msgstr "Simular"
+
+msgid ""
+"Validaton resulted in warnings.\n"
+" Proceed?"
+msgstr ""
+"A validação resultou em avisos.\n"
+" Continuar?"
+
+msgid "Visualization"
+msgstr "Visualização"
+
+msgid "Warning"
+msgstr "Aviso"
+
+msgid "edit network attributes"
+msgstr "editar atributos da rede"
