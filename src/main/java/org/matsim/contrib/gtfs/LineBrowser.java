@@ -11,9 +11,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+
 import org.matsim.core.utils.misc.Time;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class LineBrowser extends Application {
 
@@ -119,40 +122,41 @@ public class LineBrowser extends Application {
 		return patternTreeItemTreeItem;
 	}
 
-	private class RootPatternTreeItem extends TreeItem {
+	private class RootPatternTreeItem extends TreeItem<RootPattern> {
 
 		public RootPatternTreeItem(GTFSFeed feed) {
 			super(new RootPattern());
-			Map<String, TreeItem> agencyTreeItems = new HashMap<>();
+			final Map<String, TreeItem<RootPattern>> agencyTreeItems = new HashMap<>();
 			for (Agency agency : feed.agency.values()) {
-				TreeItem agencyTreeItem = new TreeItem(new MyAgency(agency));
+				final TreeItem<RootPattern> agencyTreeItem = new TreeItem<>(new MyAgency(agency));
 				agencyTreeItems.put(agency.agency_id, agencyTreeItem);
 				getChildren().add(agencyTreeItem);
 			}
-			Map<String, TreeItem> routeTreeItems = new HashMap<>();
+			final Map<String, Pair<TreeItem<RootPattern>, MyRoute>> routeTreeItems = new HashMap<>();
 			for (Route route : feed.routes.values()) {
-				TreeItem routeTreeItem = new TreeItem(new MyRoute(route));
-				routeTreeItems.put(route.route_id, routeTreeItem);
+				final MyRoute myRoute = new MyRoute(route);
+				final TreeItem<RootPattern> routeTreeItem = new TreeItem<>(myRoute);
+				routeTreeItems.put(route.route_id, new Pair<>(routeTreeItem, myRoute));
 				agencyTreeItems.get(route.agency_id).getChildren().add(routeTreeItem);
 			}
 			for (Pattern pattern : feed.patterns.values()) {
-				for (String routeId : pattern.associatedRoutes) {
-					((MyRoute) routeTreeItems.get(routeId).getValue()).getPatterns().add(pattern);
+				for (String routeId : pattern.associatedTrips.stream().map(it -> feed.trips.get(it).route_id).collect(Collectors.toSet())) {
+					routeTreeItems.get(routeId).getValue().getPatterns().add(pattern);
 				}
 			}
-			for (TreeItem treeItem : routeTreeItems.values()) {
-				MyRoute route = (MyRoute) treeItem.getValue();
+			for (Pair<TreeItem<RootPattern>, MyRoute> treeItem : routeTreeItems.values()) {
+				final MyRoute route = treeItem.getValue();
 				List<Pattern> allPatterns = new ArrayList<>(route.getPatterns());
 				route.getPatterns().clear();
 				for (Pattern pattern : allPatterns) {
 					maybeInsert(route, pattern);
 				}
 				for (Pattern pattern : route.getPatterns()) {
-					TreeItem e = new TreeItem(new MyPattern(pattern));
+					TreeItem<RootPattern> e = new TreeItem<>(new MyPattern(pattern));
 					for (String stopId : pattern.orderedStops) {
-						e.getChildren().add(new TreeItem(new MyStop(feed.stops.get(stopId))));
+						e.getChildren().add(new TreeItem<>(new MyStop(feed.stops.get(stopId))));
 					}
-					treeItem.getChildren().add(e);
+					treeItem.getKey().getChildren().add(e);
 				}
 			}
 			setExpanded(true);
