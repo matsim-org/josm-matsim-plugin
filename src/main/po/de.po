@@ -1,15 +1,15 @@
 # Translations for the JOSM plugin 'matsim' (de)
-# Copyright (C) 2018 
+# Copyright (C) 2019
 # This file is distributed under the same license as the josm-plugin_matsim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.3-1-g5f14357\n"
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-26 15:50+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
 "Language-Team: German (https://www.transifex.com/josm/teams/2544/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,7 +17,6 @@ msgstr ""
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. Visualization
 msgid "Activate MATSim Renderer"
 msgstr "MATSim-Renderer aktivieren"
 
@@ -51,6 +50,9 @@ msgstr "Zu MATSim-Netzwerk konvertieren"
 msgid "Converter"
 msgstr "Konverter"
 
+msgid "Create areas for public transport stops"
+msgstr "Erzeuge Flächen für ÖPNV-Haltepunkte"
+
 msgid "Create new Network"
 msgstr "Neues Netzwerk erzeugen"
 
@@ -73,18 +75,29 @@ msgstr "Von der Overpass API herunterladen…"
 msgid "Download members and stop areas"
 msgstr "Lade Mitglieder und Haltestellenbereiche herunter"
 
-#. create error with message
-#. create warning with message
-#, java-format
 msgid "Duplicated Id {0} not allowed."
 msgstr "Doppelte ID {0} ist nicht erlaubt."
+
+msgid "Export MATSim network to shape file..."
+msgstr "Exportiere MATSim-Netzwerk als Shapefile…"
+
+msgid "Export MATSim network to shape file…"
+msgstr "Exportiere MATSim-Netzwerk als Shapefile…"
 
 msgid "Export MATSim transit schedule…"
 msgstr "Den MATSim Transit-Ablaufplan exportieren…"
 
-#. General
+msgid ""
+"Export failed due to validation errors. See validation layer for details."
+msgstr ""
+"Der Export ist fehlgeschlagen, weil es bei der Validierung zu Fehlern kam. "
+"Siehe Validierungs-Ebene für Details."
+
 msgid "Exported network xml version"
 msgstr "Version des exportierten XML-Netzwerks"
+
+msgid "Failure"
+msgstr "Fehler"
 
 msgid "Fix transit schedule validation errors"
 msgstr "Fehler in den Prüfergebnissen für Transit-Ablaufpläne beheben"
@@ -104,14 +117,12 @@ msgstr "Straßentyp soll in der Ausgabe enthalten sein"
 msgid "Information"
 msgstr "Information"
 
-#, java-format
 msgid "Lines: {0} / Routes: {1}"
 msgstr "Linien: {0} / Routen: {1}"
 
 msgid "Links/Nodes"
 msgstr "Kanten/Knoten"
 
-#, java-format
 msgid "Links: {0} / Nodes: {1}"
 msgstr "Kanten: {0} / Knoten: {1}"
 
@@ -127,7 +138,6 @@ msgstr "MATSim-Import"
 msgid "MATSimValidation"
 msgstr "MATSimValidierung"
 
-#, java-format
 msgid "Menu: {0}"
 msgstr "Menü: {0}"
 
@@ -152,13 +162,11 @@ msgstr "Hierarchien nur konvertieren bis höchstens:"
 msgid "Save MATSim network file"
 msgstr "MATSim Netzwerk-Datei speichern"
 
-#, java-format
 msgid "Select to download {0} highways in the selected download area."
 msgstr ""
 "Auswählen, um {0} Straßen im ausgewählten Herunterladebereich "
 "herunterzuladen."
 
-#, java-format
 msgid "Select to download {0} routes in the selected download area."
 msgstr ""
 "Auswählen, um {0} Routen im ausgewählten Herunterladebereich "
@@ -170,7 +178,6 @@ msgstr "Interne IDs in Tabelle anzeigen"
 msgid "Simulate"
 msgstr "Simulieren"
 
-#. Converter
 msgid "Transit support [alpha]"
 msgstr "Transit-Unterstützung [alpha]"
 
@@ -197,7 +204,6 @@ msgstr "Warnung"
 msgid "edit network attributes"
 msgstr "Netzwerk-Attribute bearbeiten"
 
-#. Plugin description for josm-matsim-plugin
 msgid ""
 "Allows to edit and extract network information for the traffic simulation "
 "MATSim"

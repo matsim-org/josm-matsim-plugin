@@ -1,5 +1,5 @@
 plugins {
-    id 'org.openstreetmap.josm' version '0.6.1'
+    id 'org.openstreetmap.josm' version '0.6.4'
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -9,57 +9,66 @@ plugins {
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
     maven {
-        url 'http://dl.bintray.com/matsim/matsim'
+        url("https://dl.bintray.com/matsim/matsim")
+        content {
+            includeGroup("org.matsim")
+            includeGroup("org.matsim.contrib")
+        }
     }
     maven {
-        url 'http://download.osgeo.org/webdav/geotools'
+        // This repository is only needed for GeoTools dependencies that are not excluded when compiling against minJosm/latestJosm/testedJosm in gradle-josm-plugin <= 0.6.4.
+        // As soon as a new version of that plugin is released, this `maven{}` block can be removed
+        url("https://download.osgeo.org/webdav/geotools")
+        content {
+            includeGroup("javax.media")
+            includeGroup("jgridshift")
+            includeGroup("org.geotools")
+        }
     }
     maven {
-        url 'https://oss.jfrog.org/artifactory/libs-snapshot'
+        url("https://maven.conveyal.com")
+        content {
+            includeGroup("com.conveyal")
+        }
     }
-    maven {
-        url 'https://jitpack.io'
-    }
+    jcenter()
 }
 
 // Use the `packIntoJar` configuration from gradle-josm-plugin for our external dependency (MATSim), whose classes get zipped into our jar.
-configurations {
-    packIntoJar.exclude(group: 'kml')
-    packIntoJar.exclude(group: 'org.jfree')
-    packIntoJar.exclude(group: 'commons-logging')
-    packIntoJar.exclude(group: 'commons-io')
-    packIntoJar.exclude(group: 'org.apache.httpcomponents')
+configurations.packIntoJar {
+    exclude(group: 'org.geotools')
+    exclude(group: 'org.jfree')
+    exclude(group: 'commons-logging')
+    exclude(group: 'commons-io')
+    exclude(group: 'org.apache.httpcomponents')
 }
 
 dependencies {
     packIntoJar ('org.matsim:matsim:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
-    packIntoJar ('org.geotools:gt-shapefile:20.2')
-    packIntoJar ('org.geotools:gt-opengis:20.2')
-    packIntoJar ('org.geotools:gt-referencing:20.2')
-    packIntoJar ('com.github.conveyal:gtfs-lib:v1.1.0')
+    packIntoJar ('com.conveyal:gtfs-lib:5.0.7')
 
-    def junitVersion = "5.2.0"
+    def junitVersion = "5.5.2"
     testImplementation ("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testImplementation ("org.junit.vintage:junit-vintage-engine:$junitVersion")
-    testImplementation ('org.openstreetmap.josm:josm-unittest:') {changing = true}
-    testImplementation ("com.github.tomakehurst:wiremock:2.18.0")
-    testImplementation ("org.awaitility:awaitility:3.1.2")
+    testImplementation ('org.openstreetmap.josm:josm-unittest:SNAPSHOT') {changing = true}
+    testImplementation ("com.github.tomakehurst:wiremock:2.25.1")
+    testImplementation ("org.awaitility:awaitility:4.0.1")
 }
 
 sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 15238
+    josmCompileVersion = 15492
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
         iconPath = "images/dialogs/matsim-scenario.png"
         minJosmVersion = 15238
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
-        pluginDependencies << 'jts' << 'javafx'
+        pluginDependencies << 'jts' << 'javafx' << 'geotools'
         website = new URL("http://www.matsim.org")
         oldVersionDownloadLink 15007, 'v1.0.3', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.3/matsim.jar')
         oldVersionDownloadLink 14418, 'v1.0.0', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.0/matsim.jar')

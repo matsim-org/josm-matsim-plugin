@@ -1,21 +1,33 @@
 # Translations for the JOSM plugin 'matsim' (it)
-# Copyright (C) 2018 
+# Copyright (C) 2019
 # This file is distributed under the same license as the josm-plugin_matsim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.3-1-g5f14357\n"
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-26 15:50+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
 "Language-Team: Italian (https://www.transifex.com/josm/teams/2544/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Activate MATSim Renderer"
+msgstr "Attiva MATSim Renderer"
+
+msgid "Activate hierarchy filter"
+msgstr "Attiva il filtro gerarchico"
+
+msgid "Check for Incomplete Routes"
+msgstr "Verifica le Rotte Incomplete"
+
+msgid "Clean Network"
+msgstr "Pulisci Rete"
 
 msgid "Click to download the currently selected area"
 msgstr "Clicca per scaricare l''area attualmente selezionata"
@@ -38,6 +50,12 @@ msgstr "Converti in una rete MATSim"
 msgid "Converter"
 msgstr "Convertitore"
 
+msgid "Create Master Routes"
+msgstr "Crea itinerari master"
+
+msgid "Create areas for public transport stops"
+msgstr "Crea aree per fermate del trasporto pubblico"
+
 msgid "Create new Network"
 msgstr "Crea una nuova rete"
 
@@ -47,12 +65,42 @@ msgstr "Predefiniti"
 msgid "Download"
 msgstr "Scarica"
 
+msgid "Download VBB…"
+msgstr "Scarica VBB..."
+
 msgid "Download data from Overpass API, filtered by relevance for MATSim."
 msgstr ""
 "Scarica dati da Overpass API, prendendo solo quelli rilevanti a MATSim."
 
 msgid "Download from Overpass API..."
 msgstr "Scarica da Overpass API..."
+
+msgid "Download members and stop areas"
+msgstr "Scarica membri ed aree di stop"
+
+msgid "Duplicated Id {0} not allowed."
+msgstr "Id Duplicato {0} non permesso."
+
+msgid "Export MATSim network to shape file..."
+msgstr "Esporta la rete MATSim su file shape..."
+
+msgid "Export MATSim network to shape file…"
+msgstr "Esporta la rete su file shape..."
+
+msgid "Export MATSim transit schedule…"
+msgstr "Esporta orari di transito MATSim..."
+
+msgid ""
+"Export failed due to validation errors. See validation layer for details."
+msgstr ""
+"Impossibile esportare perché sono stati riscontrati degli errori. Vedi il "
+"livello della validazione per ulteriori dettagli."
+
+msgid "Exported network xml version"
+msgstr "Rete esportata in versione XML"
+
+msgid "Failure"
+msgstr "Guasto"
 
 msgid "Fix transit schedule validation errors"
 msgstr "Correggi gli errori di validazioni degli orari di transito"
@@ -66,17 +114,31 @@ msgstr "Importa"
 msgid "Import MATSim scenario"
 msgstr "Importa lo scenario di MATSim"
 
+msgid "Include road type in output"
+msgstr "Includi il tipo di strada nel risultato"
+
+msgid ""
+"Incomplete route {0} - Auto repair to download missing elements (cannot be "
+"undone)"
+msgstr ""
+"Itinerario {0} incompleto - ripara automaticamente per scaricare gli "
+"elementi mancanti (non si può tornare indietro)"
+
 msgid "Information"
 msgstr "Informazioni"
 
-#, java-format
+msgid "Keep Paths"
+msgstr "Mantieni Percorsi"
+
 msgid "Lines: {0} / Routes: {1}"
 msgstr "Linee: {0} / Itinerari: {1}"
+
+msgid "Link offset for overlapping links"
+msgstr "Scostamento per i collegamenti che si incrociano"
 
 msgid "Links/Nodes"
 msgstr "Collegamenti/Nodi"
 
-#, java-format
 msgid "Links: {0} / Nodes: {1}"
 msgstr "Collegamenti: {0} / Nodi: {1}"
 
@@ -89,10 +151,12 @@ msgstr "MATSim"
 msgid "MATSim Import"
 msgstr "Importa da MATSim"
 
+msgid "MATSim Transit Schedule Files"
+msgstr "File degli orari di transito MATSim"
+
 msgid "MATSimValidation"
 msgstr "ValidazioneMATSim"
 
-#, java-format
 msgid "Menu: {0}"
 msgstr "Menu: {0}"
 
@@ -111,17 +175,68 @@ msgstr "Niente da esportare. Prima è necessario ottenere dei dati."
 msgid "OSM Repair"
 msgstr "Ripara OSM"
 
+msgid "Only convert hierarchies up to: "
+msgstr "Converti solamente le gerarchie fino a:"
+
+msgid "Route {0} with no Route Master"
+msgstr "Itinerario {0} senza itinerario master"
+
 msgid "Save MATSim network file"
 msgstr "Salva il file della rete di MATSim"
 
+msgid "Select to download {0} highways in the selected download area."
+msgstr ""
+"Seleziona per scaricare {0} strade nell’area di scaricamento selezionata."
+
+msgid "Select to download {0} routes in the selected download area."
+msgstr ""
+"Seleziona per scaricare {0} itinerari nell’area di scaricamento selezionata."
+
+msgid "Set conversion defaults"
+msgstr "Impostazioni predefinite della conversione"
+
+msgid "Shape Files"
+msgstr "File di Figura"
+
+msgid "Show internal Ids in table"
+msgstr "Mostra gli identificatori interni nella tabella"
+
+msgid "Show link-Ids"
+msgstr "Mostra i link-Ids"
+
 msgid "Simulate"
 msgstr "Simula"
+
+msgid "Test for incomplete routes"
+msgstr "Verifica le rotte incomplete"
+
+msgid "Test for master routes"
+msgstr "Verifica degli itinerari master"
+
+msgid "Transit routes lite"
+msgstr "Itinerari di transito semplificati"
+
+msgid "Transit support [alpha]"
+msgstr "Supporto al trasporto pubblico [alfa]"
+
+msgid "Update tags for public transport stops"
+msgstr "Aggiornare i tags per le fermate del trasporto pubblico"
+
+msgid "Validate TransitSchedule"
+msgstr "Valida TransitSchedule"
 
 msgid "Validates MATSim-related network data"
 msgstr "Convalida i dati della rete relativi a MATSim"
 
 msgid "Validates MATSim-related transit schedule data"
 msgstr "Convalida i dati degli orari di transito relativi a MATSim"
+
+msgid ""
+"Validaton resulted in warnings.\n"
+" Proceed?"
+msgstr ""
+"Il controllo ha riportato degli avvertimenti.\n"
+" Continuare?"
 
 msgid "Visualization"
 msgstr "Visualizzazione"
@@ -132,7 +247,6 @@ msgstr "Attenzione"
 msgid "edit network attributes"
 msgstr "modifica gli attributi della rete"
 
-#. Plugin description for josm-matsim-plugin
 msgid ""
 "Allows to edit and extract network information for the traffic simulation "
 "MATSim"

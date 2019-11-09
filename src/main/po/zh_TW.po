@@ -1,0 +1,246 @@
+# Translations for the JOSM plugin 'matsim' (zh_TW)
+# Copyright (C) 2019
+# This file is distributed under the same license as the josm-plugin_matsim package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
+"Language-Team: Chinese (Taiwan) (https://www.transifex.com/josm/teams/2544/zh_TW/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Activate MATSim Renderer"
+msgstr "啟用的 MATSim 渲染"
+
+msgid "Activate hierarchy filter"
+msgstr "啟用的階層篩器"
+
+msgid "Check for Incomplete Routes"
+msgstr "檢查不完整的路線"
+
+msgid "Clean Network"
+msgstr "清理網路"
+
+msgid "Click to download the currently selected area"
+msgstr "點選以下載目前選取的區域"
+
+msgid "Configure the MATSim plugin."
+msgstr "設定 MATSim 插件。"
+
+msgid "Contacting OSM Server..."
+msgstr "正在連接 OSM 伺服器..."
+
+msgid "Convert Osm layer to MATSim network layer"
+msgstr "轉換 Osm 圖層成為 MATSim 網路圖層"
+
+msgid "Convert to MATSim Layer"
+msgstr "轉換成 MATSim 圖層"
+
+msgid "Convert to MATSim Network"
+msgstr "轉換成 MATSim 網路"
+
+msgid "Converter"
+msgstr "轉換器"
+
+msgid "Create Master Routes"
+msgstr "新建主要路線"
+
+msgid "Create areas for public transport stops"
+msgstr "新建大眾運輸站點的區域"
+
+msgid "Create new Network"
+msgstr "新建新網路"
+
+msgid "Defaults"
+msgstr "預設值"
+
+msgid "Download"
+msgstr "下載"
+
+msgid "Download VBB…"
+msgstr "下載 VBB..."
+
+msgid "Download data from Overpass API, filtered by relevance for MATSim."
+msgstr "從 Overpass API 下載資料，並且為了 MATSim 用相關性篩選。"
+
+msgid "Download from Overpass API..."
+msgstr "從 Overpass API 下載..."
+
+msgid "Download members and stop areas"
+msgstr "下載成員和站點區域"
+
+msgid "Duplicated Id {0} not allowed."
+msgstr "不允許重覆的 Id {0}。"
+
+msgid "Export MATSim network to shape file..."
+msgstr "匯出 MATSim 網路到 shape 檔案..."
+
+msgid "Export MATSim network to shape file…"
+msgstr "匯出 MATSim 網路到 shape 檔案..."
+
+msgid "Export MATSim transit schedule…"
+msgstr "匯出 MATSim 交通時刻表..."
+
+msgid ""
+"Export failed due to validation errors. See validation layer for details."
+msgstr "因為驗證錯誤匯入失敗，請見驗證圖層得知詳情。"
+
+msgid "Exported network xml version"
+msgstr "匯出的網路 xml 版本"
+
+msgid "Failure"
+msgstr "失敗"
+
+msgid "Fix transit schedule validation errors"
+msgstr "修復交通時刻表驗證錯誤"
+
+msgid "General"
+msgstr "一般"
+
+msgid "Import"
+msgstr "匯入"
+
+msgid "Import MATSim scenario"
+msgstr "匯入 MATSim 場景"
+
+msgid "Include road type in output"
+msgstr "輸出包括道路類型"
+
+msgid ""
+"Incomplete route {0} - Auto repair to download missing elements (cannot be "
+"undone)"
+msgstr "不完整的路線 {0} - 自動修復下載遺失的元素 (無法復原)"
+
+msgid "Information"
+msgstr "資訊"
+
+msgid "Keep Paths"
+msgstr "保留路徑"
+
+msgid "Lines: {0} / Routes: {1}"
+msgstr "線段：{0} / 路線： {1}"
+
+msgid "Link offset for overlapping links"
+msgstr "連結偏移為了重覆連結"
+
+msgid "Links/Nodes"
+msgstr "連結/節點"
+
+msgid "Links: {0} / Nodes: {1}"
+msgstr "連結：{0} / 節點：{1}"
+
+msgid "MASim preferences"
+msgstr "MASim 偏好設定"
+
+msgid "MATSim"
+msgstr "MATSim"
+
+msgid "MATSim Import"
+msgstr "MATSim 匯入"
+
+msgid "MATSim Transit Schedule Files"
+msgstr "MATSim 交通時刻表檔案"
+
+msgid "MATSimValidation"
+msgstr "MATSimValidation"
+
+msgid "Menu: {0}"
+msgstr "選單：{0}"
+
+msgid "Network Attributes"
+msgstr "網路屬性"
+
+msgid "New MATSim network"
+msgstr "新 MATSim 網路"
+
+msgid "No MATSim layer active"
+msgstr "沒有 MATSim 圖層啟用"
+
+msgid "Nothing to export. Get some data first."
+msgstr "沒有東西可匯出。請先取得一些資料。"
+
+msgid "OSM Repair"
+msgstr "OSM 維修"
+
+msgid "Only convert hierarchies up to: "
+msgstr "僅將層次結構轉換為："
+
+msgid "Route {0} with no Route Master"
+msgstr "路線 {0} 沒有主要路線"
+
+msgid "Save MATSim network file"
+msgstr "儲存 MATSim 網路檔案"
+
+msgid "Select to download {0} highways in the selected download area."
+msgstr "在選取的下載區域中，選擇下載公路 {0} 。"
+
+msgid "Select to download {0} routes in the selected download area."
+msgstr "在選取的下載區域選擇下載路線 {0}。"
+
+msgid "Set conversion defaults"
+msgstr "設定轉換預設置"
+
+msgid "Shape Files"
+msgstr "Shape 檔案"
+
+msgid "Show internal Ids in table"
+msgstr "在表單中顯示內部 Ids"
+
+msgid "Show link-Ids"
+msgstr "顯示 link-Ids"
+
+msgid "Simulate"
+msgstr "模擬"
+
+msgid "Test for incomplete routes"
+msgstr "測試不完整的路線"
+
+msgid "Test for master routes"
+msgstr "測試主要路線"
+
+msgid "Transit routes lite"
+msgstr "交通路線 lite"
+
+msgid "Transit support [alpha]"
+msgstr "交通支援 [alpha]"
+
+msgid "Update tags for public transport stops"
+msgstr "為大眾運輸站點更新標籤"
+
+msgid "Validate TransitSchedule"
+msgstr "驗證 TransitSchedule"
+
+msgid "Validates MATSim-related network data"
+msgstr "驗證 MATSim 相關網路資料"
+
+msgid "Validates MATSim-related transit schedule data"
+msgstr "驗證 MATSim 相關交通時刻表資料"
+
+msgid ""
+"Validaton resulted in warnings.\n"
+" Proceed?"
+msgstr ""
+"警告中的驗證結果。\n"
+" 繼續嗎？"
+
+msgid "Visualization"
+msgstr "驗證程序"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "edit network attributes"
+msgstr "編輯網路屬性"
+
+msgid ""
+"Allows to edit and extract network information for the traffic simulation "
+"MATSim"
+msgstr "為了交通模擬 MATSim，允許編輯和截取網路資訊"

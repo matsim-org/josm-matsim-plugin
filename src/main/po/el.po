@@ -1,15 +1,15 @@
 # Translations for the JOSM plugin 'matsim' (el)
-# Copyright (C) 2018 
+# Copyright (C) 2019
 # This file is distributed under the same license as the josm-plugin_matsim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+#
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: josm-plugin_matsim v0.9.3-1-g5f14357\n"
+"Project-Id-Version: josm-plugin_matsim 0.8.7-55-g88e42cd\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-26 15:50+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2019-08-26 09:01+0000\n"
+"PO-Revision-Date: 2018-05-23 08:43+0000\n"
 "Language-Team: Greek (https://www.transifex.com/josm/teams/2544/el/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,7 +17,6 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. Visualization
 msgid "Activate MATSim Renderer"
 msgstr "Ενεργοποίηση της Απόδοσης MATSim"
 
@@ -26,6 +25,9 @@ msgstr "Ενεργοποίηση του φίλτρου ιεραρχίας"
 
 msgid "Check for Incomplete Routes"
 msgstr "Έλεγχος για ημιτελείς Διαδρομές"
+
+msgid "Clean Network"
+msgstr "Καθαρό δίκτυο"
 
 msgid "Click to download the currently selected area"
 msgstr "Κάντε κλικ για λήψη της τρέχουσας επιλεγμένης περιοχής"
@@ -77,9 +79,6 @@ msgstr "Λήψη από το Overpass API..."
 msgid "Download members and stop areas"
 msgstr "Λήψη μελών και χώροι στάσεων"
 
-#. create error with message
-#. create warning with message
-#, java-format
 msgid "Duplicated Id {0} not allowed."
 msgstr "Διπλό αναγνωριστικό {0} δεν επιτρέπεται."
 
@@ -98,7 +97,6 @@ msgstr ""
 "Η εξαγωγή απέτυχε λόγω σφαλμάτων επικύρωσης. Δείτε το επίπεδο επικύρωσης για"
 " λεπτομέρειες."
 
-#. General
 msgid "Exported network xml version"
 msgstr "Εξαγόμενη έκδοση δικτύου xml"
 
@@ -120,7 +118,6 @@ msgstr "Εισαγωγή σεναρίου MATSim"
 msgid "Include road type in output"
 msgstr "Συμπεριλάβετε τον τύπο δρόμου στην έξοδο"
 
-#, java-format
 msgid ""
 "Incomplete route {0} - Auto repair to download missing elements (cannot be "
 "undone)"
@@ -134,7 +131,6 @@ msgstr "Πληροφορίες"
 msgid "Keep Paths"
 msgstr "Διατήρηση Διαδρομών"
 
-#, java-format
 msgid "Lines: {0} / Routes: {1}"
 msgstr "Γραμμές: {0} / Διαδρομές: {1}"
 
@@ -144,7 +140,6 @@ msgstr "Μετατόπιση συνδέσμου για επικαλυπτόμε�
 msgid "Links/Nodes"
 msgstr "Σύνδεσμοι/Κόμβοι"
 
-#, java-format
 msgid "Links: {0} / Nodes: {1}"
 msgstr "Σύνδεσμοι: {0} / Κόμβοι: {1}"
 
@@ -163,7 +158,6 @@ msgstr "Αρχεία Προγραμματισμού Μεταφοράς MATSim"
 msgid "MATSimValidation"
 msgstr "Επικύρωση MATSim"
 
-#, java-format
 msgid "Menu: {0}"
 msgstr "Μενού: {0}"
 
@@ -185,19 +179,16 @@ msgstr "Επισκευή OSM"
 msgid "Only convert hierarchies up to: "
 msgstr "Μετατρέψτε μόνο ιεραρχίες μέχρι:"
 
-#, java-format
 msgid "Route {0} with no Route Master"
 msgstr "Διαδρομή {0} χωρίς Κύρια Διαδρομή"
 
 msgid "Save MATSim network file"
 msgstr "Αποθήκευση του αρχείου δικτύου MATSim"
 
-#, java-format
 msgid "Select to download {0} highways in the selected download area."
 msgstr ""
 "Επιλέξτε για να κάνετε λήψη {0} δρόμους στην επιλεγμένη περιοχή λήψης."
 
-#, java-format
 msgid "Select to download {0} routes in the selected download area."
 msgstr ""
 "Επιλέξτε για να κάνετε λήψη {0} διαδρομών στην επιλεγμένη περιοχή λήψης."
@@ -213,6 +204,9 @@ msgstr "Δοκιμή για ημιτελείς διαδρομές"
 
 msgid "Test for master routes"
 msgstr "Δοκιμή για κύριες διαδρομές"
+
+msgid "Update tags for public transport stops"
+msgstr "Ενημέρωση ετικετών για στάσεις μαζικής μεταφοράς"
 
 msgid "Visualization"
 msgstr "Οπτικοποίηση"

@@ -3,7 +3,14 @@ package org.matsim.contrib.josm.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Geometry;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
+
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -14,14 +21,6 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Relation;
 import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.projection.ProjectionRegistry;
-
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
 import org.openstreetmap.josm.plugins.jts.JTSConverter;
 
 public class StopArea {
@@ -87,7 +86,7 @@ public class StopArea {
 			}
 		}
 
-		com.vividsolutions.jts.geom.Geometry[] geometries = nodes.stream().map(prim -> new JTSConverter().convert(prim)).toArray(Geometry[]::new);
+		Geometry[] geometries = nodes.stream().map(prim -> new JTSConverter().convert(prim)).toArray(Geometry[]::new);
 		GeometryCollection geometryCollection = new GeometryCollection(geometries, new GeometryFactory());
 		Point centroid = geometryCollection.getCentroid();
 		if (centroid.isEmpty()) {
