@@ -1,5 +1,5 @@
 plugins {
-    id 'org.openstreetmap.josm' version '0.6.4'
+    id("org.openstreetmap.josm").version("0.6.5")
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -13,16 +13,6 @@ repositories {
         content {
             includeGroup("org.matsim")
             includeGroup("org.matsim.contrib")
-        }
-    }
-    maven {
-        // This repository is only needed for GeoTools dependencies that are not excluded when compiling against minJosm/latestJosm/testedJosm in gradle-josm-plugin <= 0.6.4.
-        // As soon as a new version of that plugin is released, this `maven{}` block can be removed
-        url("https://download.osgeo.org/webdav/geotools")
-        content {
-            includeGroup("javax.media")
-            includeGroup("jgridshift")
-            includeGroup("org.geotools")
         }
     }
     maven {
@@ -44,6 +34,10 @@ configurations.packIntoJar {
 }
 
 dependencies {
+    def openjfxClasspath = System.getenv("OPENJFX_CLASSPATH")
+    if (openjfxClasspath != null) {
+        implementation(files(openjfxClasspath))
+    }
     packIntoJar ('org.matsim:matsim:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
     packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
