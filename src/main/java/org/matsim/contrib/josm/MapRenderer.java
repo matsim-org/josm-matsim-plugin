@@ -16,6 +16,7 @@ import org.openstreetmap.josm.gui.mappaint.styleelement.LabelCompositionStrategy
 import org.openstreetmap.josm.gui.mappaint.styleelement.TextLabel;
 import org.openstreetmap.josm.gui.mappaint.styleelement.placement.OnLineStrategy;
 import org.openstreetmap.josm.tools.ImageProvider;
+import org.openstreetmap.josm.tools.RotationAngle;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -185,7 +186,7 @@ public class MapRenderer extends StyledMapRenderer {
     static class MATSimTextLabel extends TextLabel {
 
         protected MATSimTextLabel(LabelCompositionStrategy labelCompositionStrategy, Font font, Color color, Float aFloat, Color color1) {
-            super(labelCompositionStrategy, font, color, aFloat, color1);
+            super(labelCompositionStrategy, font, RotationAngle.NO_ROTATION, color, aFloat, color1);
         }
     }
 
