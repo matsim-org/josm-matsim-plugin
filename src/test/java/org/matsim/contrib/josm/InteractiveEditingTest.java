@@ -180,5 +180,4 @@ public class InteractiveEditingTest {
 		}
 		throw new RuntimeException("Where is node 2?");
 	}
-
 }
