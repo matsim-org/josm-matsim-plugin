@@ -40,10 +40,10 @@ public class ImportDialog extends JPanel {
 	 */
 	final JLabel networkHeading = new JLabel("Network:");
 	final JLabel networkPath = new JLabel("...");
-	final JButton networkPathButton = new JButton(new ImageProvider("open.png").getResource().getImageIcon(new Dimension(10, 10)));
+	final JButton networkPathButton = new JButton(ImageProvider.get("open.svg", ImageProvider.ImageSizes.SMALLICON));
 	final JLabel schedulePathHeading = new JLabel("Transit Schedule:");
 	final JLabel schedulePath = new JLabel("...");
-	final JButton schedulePathButton = new JButton(new ImageProvider("open.png").getResource().getImageIcon(new Dimension(10, 10)));
+	final JButton schedulePathButton = new JButton(ImageProvider.get("open.svg", ImageProvider.ImageSizes.SMALLICON));
 	final JLabel importSystemLabel = new JLabel("Origin System:");
 
 	final JComboBox<ProjectionChoice> importSystemCB = new JComboBox<>(ProjectionPreference.getProjectionChoices().toArray(new ProjectionChoice[] {}));

@@ -16,7 +16,13 @@ repositories {
         }
     }
     maven {
-        url("https://maven.conveyal.com")
+        url("https://artifacts.unidata.ucar.edu/repository/unidata-all")
+        content {
+            includeGroup("edu.ucar")
+        }
+    }
+    maven {
+        url("http://nexus.onebusaway.org/nexus/content/repositories/public/")
         content {
             includeGroup("com.conveyal")
         }
@@ -38,9 +44,9 @@ dependencies {
     if (openjfxClasspath != null) {
         implementation(files(openjfxClasspath))
     }
-    packIntoJar ('org.matsim:matsim:11.0') {changing = true}
-    packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
-    packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
+    packIntoJar ('org.matsim:matsim:12.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:otfvis:12.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:emissions:12.0') {changing = true}
     packIntoJar ('com.conveyal:gtfs-lib:5.0.7')
 
     def junitVersion = "5.5.2"
@@ -55,7 +61,7 @@ dependencies {
 sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
-    josmCompileVersion = 17023
+    josmCompileVersion = 17428
     manifest {
         author = "Nico Kuehnel"
         description = "Allows to edit and extract network information for the traffic simulation MATSim"
@@ -64,6 +70,7 @@ josm {
         mainClass = "org.matsim.contrib.josm.MATSimPlugin"
         pluginDependencies << 'jts' << 'javafx' << 'geotools'
         website = new URL("http://www.matsim.org")
+        oldVersionDownloadLink 17023, 'v1.0.7', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.7/matsim.jar')
         oldVersionDownloadLink 16392, 'v1.0.6', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.6/matsim.jar')
         oldVersionDownloadLink 16239, 'v1.0.5', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.5/matsim.jar')
         oldVersionDownloadLink 15007, 'v1.0.3', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v1.0.3/matsim.jar')
