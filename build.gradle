@@ -1,5 +1,5 @@
 plugins {
-    id("org.openstreetmap.josm").version("0.6.5")
+    id("org.openstreetmap.josm").version("0.7.1")
     id 'java'
     id 'eclipse'
     id 'idea'
@@ -58,7 +58,7 @@ dependencies {
     testImplementation ("org.awaitility:awaitility:4.0.1")
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 archivesBaseName = "matsim"
 josm {
     josmCompileVersion = 17428
@@ -85,7 +85,7 @@ josm {
         oldVersionDownloadLink  9278, 'v0.5.9', new URL('https://github.com/matsim-org/josm-matsim-plugin/releases/download/v0.5.9/matsim.jar')
     }
     i18n {
-      pathTransformer = getPathTransformer("github.com/matsim-org/josm-matsim-plugin/blob")
+      pathTransformer = getPathTransformer(project.projectDir, "github.com/matsim-org/josm-matsim-plugin/blob")
     }
 }
 
