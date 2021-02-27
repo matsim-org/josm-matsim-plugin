@@ -44,9 +44,9 @@ dependencies {
     if (openjfxClasspath != null) {
         implementation(files(openjfxClasspath))
     }
-    packIntoJar ('org.matsim:matsim:12.0') {changing = true}
-    packIntoJar ('org.matsim.contrib:otfvis:12.0') {changing = true}
-    packIntoJar ('org.matsim.contrib:emissions:12.0') {changing = true}
+    packIntoJar ('org.matsim:matsim:11.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:otfvis:11.0') {changing = true}
+    packIntoJar ('org.matsim.contrib:emissions:11.0') {changing = true}
     packIntoJar ('com.conveyal:gtfs-lib:5.0.7')
 
     def junitVersion = "5.5.2"
