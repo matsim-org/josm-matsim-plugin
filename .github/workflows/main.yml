@@ -15,6 +15,10 @@ jobs:
         uses: actions/checkout@v2
       - name: build jar
         run: ./gradlew build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Package
+          path: build/dist
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
