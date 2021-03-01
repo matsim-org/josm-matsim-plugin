@@ -58,7 +58,7 @@ dependencies {
     testImplementation ("org.awaitility:awaitility:4.0.1")
 }
 
-sourceCompatibility = 8
+sourceCompatibility = 1.8
 archivesBaseName = "matsim"
 josm {
     josmCompileVersion = 17428
