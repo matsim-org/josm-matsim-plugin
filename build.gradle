@@ -9,7 +9,7 @@ plugins {
 // local Maven cache. We use it to get the MATSim snapshot.
 repositories {
     maven {
-        url("https://dl.bintray.com/matsim/matsim")
+        url("https://repo.matsim.org/repository/matsim")
         content {
             includeGroup("org.matsim")
             includeGroup("org.matsim.contrib")
